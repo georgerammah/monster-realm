@@ -527,3 +527,12 @@ function openFriends(tab){
 }
 SUBMENUS.social[2][1]=()=>openFriends('online');
 SUBMENUS.social[3][1]=()=>openFriends('rank');
+
+skillDesc=(function(prev){ return function(id,L){ L=L||1;
+  if(id==='pounce') return `Amplifies all damage by ${Math.round(lv(SK.pounce.v,L)*100)}%.`;
+  if(id==='spark') return `Gives ${Math.round(lv(SK.spark.v,L)*100)}% chance to do a critical 2x damage on any attack for 4 turns.`;
+  if(id==='bolt') return `Strong lightning attack that deals ${Math.round(lv(SK.bolt.dmg,L))} damage and has a 50% chance to do 2x damage.`;
+  if(id==='staticd') return `Unleash an electrical discharge at your enemy to cause ${Math.round(lv(SK.staticd.dmg,L))} direct damage and ${Math.round(lv(SK.staticd.stormTick,L))} damage each turn for 2 turns.`;
+  return prev(id,L); }; })(skillDesc);
+ST_ICON.crit=['star','#f2b600'];
+PAS_IC.pounce='claw';

@@ -1177,10 +1177,11 @@ const SK = {
   furyfist:{n:'Fury Fist', el:'neutral', t:'passive', k:'passive', p:'fury', v:[.12,.03]},
   emberspit:{n:'Ember Spit', el:'fire', t:'enemy', k:'hit', mp:[12,6], dmg:[16,9], burn:[.4,.03], btick:[5,3]},
   double:{n:'Double Attack', el:'neutral', t:'enemy', k:'hit', mp:[14,7], dmg:[11,7], hits:2},
-  pounce:{n:'Pounce', el:'neutral', t:'enemy', k:'hit', mp:[16,8], dmg:[18,11], fullBonus:.6},
+  pounce:{n:'Pounce', el:'neutral', t:'passive', k:'passive', p:'pounce', v:[.05,.01]},
   shock:{n:'Shock', el:'bolt', t:'enemy', k:'hit', mp:[14,7], dmg:[18,10], stun:[.2,.02]},
-  bolt:{n:'Bolt', el:'bolt', t:'enemy', k:'hit', mp:[22,11], dmg:[26,15], drainFrac:.35},
-  spark:{n:'Spark', el:'bolt', t:'enemy', k:'hit', mp:[12,6], dmg:[12,7], stun:[.35,.03]},
+  bolt:{n:'Bolt', el:'bolt', t:'enemy', k:'hit', mp:[20,12], dmg:[26,13], dbl:.5},
+  staticd:{n:'Static Discharge', el:'bolt', t:'enemy', k:'hit', mp:[20,9], dmg:[20,12], stormTick:[14,12], stormTurns:2},
+  spark:{n:'Spark', el:'bolt', t:'self', k:'buff', mp:[10,6], buff:'crit', v:[.40,.04], turns:4},
   stormcloud:{n:'Storm Cloud', el:'bolt', t:'enemy', k:'dot', mp:[16,8], dot:'storm', tick:[8,5], turns:3},
   splash:{n:'Splash', el:'water', t:'enemy', k:'hit', mp:[15,8], dmg:[25,13], bubble:1},
   wave:{n:'Wave', el:'water', t:'enemy', k:'hit', mp:[18,8], dmg:[16,9], weaken:[.15,.02]},
@@ -1215,7 +1216,7 @@ const SK = {
   hardened:{n:'Hardened', el:'earth', t:'passive', k:'passive', p:'hard', v:[.15,.02]},
   camelback:{n:'Camel Back', el:'water', t:'passive', k:'passive', p:'camel', v:[3,1]}
 };
-const BUFF_N = {pers:'Perseverance', bubble:'Bubble', lsh:'Spark shield', fsh:'Fire shield', nsh:'Leaf shield', mshield:'Mana Shield', absorb:'Absorb', focus:'Focus', charge:'Charged', evade:'Evasive', cripple:'Crippled', roots:'Roots', heal:'Heal'};
+const BUFF_N = {pers:'Perseverance', bubble:'Bubble', lsh:'Spark shield', fsh:'Fire shield', nsh:'Leaf shield', mshield:'Mana Shield', absorb:'Absorb', crit:'Spark', focus:'Focus', charge:'Charged', evade:'Evasive', cripple:'Crippled', roots:'Roots', heal:'Heal'};
 const lv = (arr,L)=> arr[0]+arr[1]*(L-1);
 function skDmg(id,L,m){ const s=SK[id]; return s.dmg? Math.round(lv(s.dmg,L)) : Math.round(m.atk*(s.m?lv(s.m,L):1)); }
 function skCost(id,L){ const s=SK[id]; if(!s||!s.mp) return 0; return Math.round(lv(s.mp,L||1)); }
@@ -1254,7 +1255,7 @@ const SP = [
   ['shellby','Shellby','shell',['#7fd6c2','#2f8f7a','#e6fbf5'],['hydrate','perseverance','blizzard','grounded']],
   ['coraldon','Coraldon','shell',['#ff9fb0','#3f86d8','#fff0f3'],['mshield','firefocus','camelback','pounce']],
   ['brinemaw','Brinemaw','shell',['#6d7fe0','#2a356f','#e6e9ff'],['absorb','splash','purge','sweaty']],
-  ['voltkit','Voltkit','volt',['#ffd84d','#3a3a3c','#fff8d6'],['shock','charge','aircurrent','pounce']],
+  ['voltkit','Voltkit','volt',['#ffd84d','#3a3a3c','#fff8d6'],['shock','staticd','charge','pounce']],
   ['sparkpaw','Sparkpaw','volt',['#f7a84a','#5b3a8c','#fff1de'],['shock','firefocus','lshield','roots']],
   ['thundra','Thundra','volt',['#b9a7ff','#f5c400','#f3efff'],['stormcloud','purge','cripple','thickskin']],
   ['ampurr','Ampurr','volt',['#9ad7ff','#f2b600','#eef8ff'],['bolt','nshield','spark','sweaty']],
@@ -1348,7 +1349,7 @@ function beginTurn(b){
     const a = actor(b); const m=a.m;
     if(m.hp<=0){ b.turnIdx++; continue; }
     const st=m.st;
-    ['bubble','lsh','fsh','nsh','mshield','absorb','focus','evade','cripple','pers'].forEach(k=>{ if(st[k]>0){ st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } });
+    ['bubble','lsh','fsh','nsh','mshield','absorb','crit','focus','evade','cripple','pers'].forEach(k=>{ if(st[k]>0){ st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } });
     m.mp = Math.min(m.maxmp, m.mp+3+Math.round(m.maxmp*0.03)+Math.round(m.pas.camel||0));
     for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm']]){
       if(st[k]>0 && m.hp>0){ const d=Math.max(1,Math.round(st[k+'D'])); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el}); log(b,`${m.n} is hurt by ${nm}.`); }
@@ -1389,7 +1390,8 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   let dmg = mult*elemMult(el, d.el)*(0.9+rnd(b)*0.2);
   dmg *= dmgMods;
   if(a.st.cripple>0) dmg*=1-a.st.crippleV;
-  const crit = rnd(b)<0.08; if(crit) dmg*=1.5;
+  const crit = rnd(b)<(a.st.crit>0?a.st.critV:0.08); if(crit) dmg*=(a.st.crit>0?2:1.5);
+  if(a.pas.pounce) dmg*=1+a.pas.pounce;
   if(d.pas.thick) dmg*=1-d.pas.thick;
   if(el==='bolt' && d.pas.grounded) dmg*=1-d.pas.grounded;
   if((el==='fire'||el==='water') && d.pas.sweaty) dmg*=1-d.pas.sweaty;
@@ -1443,7 +1445,9 @@ function act(b, action){
       if(sk.fullBonus && d0.hp>=d0.maxhp) tm*=1+sk.fullBonus;
       if(sk.burnBonus && d0.st.burn>0) tm*=1+sk.burnBonus;
       if(sk.missingBonus) tm*=1+sk.missingBonus*(1-me.hp/me.maxhp);
+      if(sk.dbl && rnd(b)<sk.dbl) tm*=2;
       for(let h=0;h<(sk.hits||1);h++) tot+=dealHit(b,a,foe,ti,skDmg(skId,L,me),sk.el,tm,sk.pierce);
+      if(sk.stormTick && d0.hp>0){ d0.st.storm=sk.stormTurns; d0.st.stormD=lv(sk.stormTick,L); b.ev.push({k:'buff',s:foe,i:ti,b:'storm'}); }
       if(d0.hp>0 && sk.drainFrac){ const x=Math.min(d0.mp, Math.round(tot*sk.drainFrac)); d0.mp-=x; }
       if(d0.hp>0 && sk.weaken){ d0.st.cripple=2; d0.st.crippleV=Math.max(d0.st.crippleV||0, lv(sk.weaken,L)); b.ev.push({k:'buff',s:foe,i:ti,b:'cripple'}); }
       const d=b.sides[foe].mons[ti]; if(d.hp<=0) return;
@@ -4780,6 +4784,15 @@ function openFriends(tab){
 }
 SUBMENUS.social[2][1]=()=>openFriends('online');
 SUBMENUS.social[3][1]=()=>openFriends('rank');
+
+skillDesc=(function(prev){ return function(id,L){ L=L||1;
+  if(id==='pounce') return `Amplifies all damage by ${Math.round(lv(SK.pounce.v,L)*100)}%.`;
+  if(id==='spark') return `Gives ${Math.round(lv(SK.spark.v,L)*100)}% chance to do a critical 2x damage on any attack for 4 turns.`;
+  if(id==='bolt') return `Strong lightning attack that deals ${Math.round(lv(SK.bolt.dmg,L))} damage and has a 50% chance to do 2x damage.`;
+  if(id==='staticd') return `Unleash an electrical discharge at your enemy to cause ${Math.round(lv(SK.staticd.dmg,L))} direct damage and ${Math.round(lv(SK.staticd.stormTick,L))} damage each turn for 2 turns.`;
+  return prev(id,L); }; })(skillDesc);
+ST_ICON.crit=['star','#f2b600'];
+PAS_IC.pounce='claw';
 
 </script>
 </body></html>
