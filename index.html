@@ -5002,6 +5002,9 @@ renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.
   document.querySelectorAll('#battle .fighter').forEach(el=>{ const s=el.dataset.s, i=el.dataset.i, f=el.querySelector('.fname'); if(!f) return;
     const k=s; if(!B.fnT[k]||B.fnT[k].i!==i){ B.fnT[k]={i,t:now}; }
     const el2=(now-B.fnT[k].t)/1000; if(el2<2.8){ f.classList.add('fnon'); f.style.animationDelay=(-el2)+'s'; } }); }; })(renderBattle);
+// tap anywhere outside the move card (or another move) to dismiss it
+addEventListener('pointerdown',e=>{ const el=document.getElementById('abinfo'); if(!el||!el.classList.contains('show')) return;
+  if(e.target.closest&&e.target.closest('#abinfo,.ab')) return; hideInfo(); },true);
 
 </script>
 </body></html>
