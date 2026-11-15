@@ -8,7 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Monster Realm">
-<meta name="theme-color" content="#162236">
+<meta name="theme-color" content="#1d1d22">
 <script>window.MR_BACKEND='https://script.google.com/macros/s/AKfycby5DE_LY38JXkaPxdOrTCVbP0X-6nRm2i48vg6oQIvuUlU4CqajFBsDSMSWyyxJODnb/exec';</script>
 <script src="adapter.js"></script>
 
@@ -560,6 +560,59 @@ body.inbattle #hud,body.inbattle #bar{display:none}
 @keyframes swoosh{0%{opacity:0;transform:rotate(-40deg) scale(.7)}25%{opacity:1}100%{opacity:0;transform:rotate(30deg) scale(1.08)}}
 .swoosh.l{animation-name:swooshL}@keyframes swooshL{0%{opacity:0;transform:scaleX(-1) rotate(-40deg) scale(.7)}25%{opacity:1}100%{opacity:0;transform:scaleX(-1) rotate(30deg) scale(1.08)}}
 .arena.solo{top:calc(env(safe-area-inset-top) + 130px)}
+
+/* ===== landscape ===== */
+#bar #qbadge{left:auto;right:-4px;top:-8px}
+.fighter.casting .fname{opacity:0}
+html,body{background:#1d1d22}
+#rotate{display:none}
+@media (orientation:portrait) and (pointer:coarse){
+  #rotate{display:flex;position:fixed;inset:0;z-index:999;background:radial-gradient(ellipse at 50% 45%,#3a3a40,#121216);color:#fff;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;font:20px "Lilita One",system-ui;padding:30px}
+  #rotate .ph{width:70px;height:120px;border:5px solid #fff;border-radius:14px;animation:rot 2s ease-in-out infinite}
+  @keyframes rot{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+}
+@media (orientation:landscape) and (max-height:560px){
+  /* splash */
+  .sp-title span{font-size:min(12vh,64px)!important}.sp-title span+span{font-size:min(15vh,80px)!important}
+  .sp-mon{width:min(26vh,150px)}.sp-load{margin-top:5vh}
+  /* home */
+  #hud{padding:calc(env(safe-area-inset-top) + 4px) max(10px,env(safe-area-inset-right)) 4px max(10px,env(safe-area-inset-left))}
+  .avatar{width:50px;height:50px}.hcol{max-width:640px}
+  .banner{top:auto;bottom:calc(env(safe-area-inset-bottom) + 70px);font-size:18px;padding:6px 18px}
+  .pet{width:min(20vw,34vh)}
+  .sun{top:70px}
+  #bar{padding:4px max(8px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 4px) max(8px,env(safe-area-inset-left))}
+  .gb{height:42px;font-size:min(2.4vw,19px)}
+  .sheet{width:min(100%,460px)}
+  .story-lila{width:min(30vw,260px);bottom:0;right:2%}.story-box{right:min(30vw,260px);bottom:12px;min-height:0}
+  .lila-wrap{padding-bottom:10px}.lila-por{width:90px}.lila-txt p{font-size:15px}
+  /* team / zone screens */
+  .tfield{height:62vh;min-height:0}.tslots{top:8%}.tcard{width:min(20vw,30vh)}.tcard.empty{height:min(26vw,40vh)}
+  .bench-row .tcard{width:min(16vw,26vh)}
+  .zsel .tfield{min-height:calc(100vh - 60px);gap:10px;padding:10px}.zcards{max-width:720px}.zart{height:min(24vw,36vh)}
+  .zc-mon{max-height:34vh}.zc-svg svg{max-height:30vh}.letsgo{font-size:min(6vh,30px);padding:6px 22px}
+  .tlist{display:grid;grid-template-columns:1fr 1fr;padding:10px max(10px,env(safe-area-inset-right)) 70px max(10px,env(safe-area-inset-left))}
+  /* battle */
+  .bhud{padding:calc(env(safe-area-inset-top) + 4px) max(8px,env(safe-area-inset-right)) 0 max(8px,env(safe-area-inset-left))}
+  .bhp{max-width:42vw}.bpor{width:40px;height:40px}.lb{height:17px}.lb b{font-size:12px;line-height:17px}.hicons{margin-top:4px}.hi .ic{width:24px!important;height:24px!important}
+  .arena,.arena.solo{top:64px;bottom:96px}
+  .fighter{width:min(18vw,28vh)}.fighter.n1,.fighter.solo{width:min(24vw,40vh)}
+  .fname{font-size:min(5vh,30px)}
+  .castname{top:58px;font-size:min(7vh,36px)}
+  .dock{min-height:0;padding:0 max(8px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 4px) max(8px,env(safe-area-inset-left))}
+  .dwho{display:none}.abil{max-width:760px}.ab{max-width:96px;padding:6px 0 4px}
+  .ab .ic{width:46px!important;height:46px!important}.ab em{top:32px;right:calc(50% - 30px);min-width:20px;height:20px;line-height:20px;font-size:12px}.ab b{font-size:12px}
+  .blog2{bottom:92px}.abinfo{bottom:96px}
+  .tring{bottom:calc(env(safe-area-inset-bottom) + 98px);width:52px;height:52px}.tring b{font-size:18px}
+  .await.sm{bottom:110px}
+  .pk{max-width:640px;padding:10px 12px 12px}.pk-t{font-size:min(7vh,30px)}.pk-row{margin:6px 0 8px}.pk-m{max-width:150px}.pk-m svg{max-height:30vh;width:auto}
+  .go-mon{height:min(34vh,170px)}
+  /* intro */
+  .intro{gap:5vh}.iv-title{font-size:min(12vh,60px)}.iv-band.mid{padding:10px max(14px,env(safe-area-inset-left))}
+  /* reward popups */
+  .sheet.reward{max-height:94vh;overflow-y:auto;width:min(calc(100% - 20px),520px);padding:10px 14px}
+  .rw-t,.lvup-t{font-size:min(10vh,48px)}.rw-mons{max-height:22vh}.runner svg{max-height:20vh;width:auto}
+}
 </style></head>
 <body>
 <div id="hud"></div><main id="view"></main>
@@ -570,7 +623,7 @@ body.inbattle #hud,body.inbattle #bar{display:none}
   <button class="gb blue" data-p="shop"><span>Shop</span></button>
   <button class="gb red" data-p="battle"><span>Battle</span></button>
 </nav>
-<div id="splash"></div><div id="battle"></div><div id="sheets"></div><div id="toast"></div>
+<div id="rotate"><div class="ph"></div><div>Rotate your phone to play</div></div><div id="splash"></div><div id="battle"></div><div id="sheets"></div><div id="toast"></div>
 <script>
 // ===== DATA =====
 const EL = {
@@ -2369,6 +2422,7 @@ function animateBattle(root,b,animating){
   if(actE && animating){
     const ac=fEl(actE.s,actE.i); const left = actE.s===B.mySide;
     const nm=document.createElement('div'); nm.className='castname '+(left?'l':'r'); nm.textContent=sk.n; root.appendChild(nm); setTimeout(()=>nm.remove(),1300);
+    const acf=fEl(actE.s,actE.i); if(acf){ acf.classList.add('casting'); setTimeout(()=>acf.classList.remove('casting'),1300); }
     const hits=evs.filter(e=>e.k==='hit' && e.s!==actE.s);
     const ranged = sk.pow && sk.el!=='neutral';
     if(ac) ac.classList.add(sk.pow&&!ranged?(left?'dash-r':'dash-l'):sk.pow?(left?'lunge-r':'lunge-l'):'cast');

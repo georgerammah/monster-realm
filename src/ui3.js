@@ -282,6 +282,7 @@ function animateBattle(root,b,animating){
   if(actE && animating){
     const ac=fEl(actE.s,actE.i); const left = actE.s===B.mySide;
     const nm=document.createElement('div'); nm.className='castname '+(left?'l':'r'); nm.textContent=sk.n; root.appendChild(nm); setTimeout(()=>nm.remove(),1300);
+    const acf=fEl(actE.s,actE.i); if(acf){ acf.classList.add('casting'); setTimeout(()=>acf.classList.remove('casting'),1300); }
     const hits=evs.filter(e=>e.k==='hit' && e.s!==actE.s);
     const ranged = sk.pow && sk.el!=='neutral';
     if(ac) ac.classList.add(sk.pow&&!ranged?(left?'dash-r':'dash-l'):sk.pow?(left?'lunge-r':'lunge-l'):'cast');
