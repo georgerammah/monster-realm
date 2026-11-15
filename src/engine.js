@@ -27,7 +27,8 @@ const FAM = {
 // t: enemy | self | ally | allE | allA | passive.  mp:[base, per level]
 const SK = {
   basic:{n:'Attack', el:'neutral', t:'enemy', k:'hit', mp:[0,0], m:[1,0]},
-  devour:{n:'Devour', el:'neutral', t:'enemy', k:'hit', mp:[5,3], m:[1,.08], leech:.5},
+  devour:{n:'Devour', el:'neutral', t:'enemy', k:'hit', mp:[5,5], m:[1,0], leech:.5, leechL:[.5,.05]},
+  souleater:{n:'Soul Eater', el:'neutral', t:'enemy', k:'hit', mp:[8,4], m:[.8,.02], mpAtk:[.4,.01]},
   blast:{n:'Blast', el:'fire', t:'enemy', k:'hit', mp:[16,8], dmg:[22,13], pierce:1},
   furyfist:{n:'Fury Fist', el:'neutral', t:'passive', k:'passive', p:'fury', v:[.12,.03]},
   emberspit:{n:'Ember Spit', el:'fire', t:'enemy', k:'hit', mp:[12,6], dmg:[16,9], burn:[.4,.03], btick:[5,3]},
@@ -306,7 +307,8 @@ function act(b, action){
       if(sk.stun && rnd(b)<lv(sk.stun,L)){ d.st.stun=1; log(b,`${d.n} is stunned!`); }
       if(sk.burnmp){ const x=Math.min(d.mp, Math.round(lv(sk.burnmp,L))); d.mp-=x; }
     });
-    if(sk.leech && tot>0 && me.hp>0){ const hv=Math.round(tot*sk.leech); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
+    if(sk.mpAtk && tot>0 && me.hp>0){ const d1=b.sides[foe].mons[targets[0]]; const x=Math.min(d1?d1.mp:0, Math.round(me.atk*lv(sk.mpAtk,L))); if(x>0){ d1.mp-=x; me.mp=Math.min(me.maxmp,me.mp+x); } }
+    if(sk.leech && tot>0 && me.hp>0){ const hv=Math.round(tot*(sk.leechL?lv(sk.leechL,L):sk.leech)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.mpgain && tot>0){ me.mp=Math.min(me.maxmp, me.mp+Math.round(tot*sk.mpgain)); }
     if(sk.recoil && tot>0 && me.hp>0){ const r=Math.max(1,Math.round(tot*sk.recoil)); me.hp=Math.max(0,me.hp-r); b.ev.push({k:'hit',s:a.s,i:a.i,v:r,el:'fire',recoil:1}); log(b,`${me.n} is hurt by the recoil!`); if(me.hp<=0) log(b,`${me.n} fainted.`); }
     if(sk.selfCleanse){ me.st.burn=0; me.st.poison=0; }

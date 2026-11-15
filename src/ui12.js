@@ -282,7 +282,7 @@ function zoneCompleteScreen(zi){
 }
 
 // ---- story rivals: Jay and Bob ----
-SPI.rival_jay={id:'rival_jay',n:'Jay',fam:'hound',col:['#c0392b','#2b2b2b','#f3d9a8'],tw:{},sk:['furyfist','devour','pounce','emberspit'],rival:1};
+SPI.rival_jay={id:'rival_jay',n:'Jay',fam:'hound',col:['#c0392b','#2b2b2b','#f3d9a8'],tw:{},sk:['furyfist','devour','souleater','pounce'],rival:1};
 SPI.rival_bob={id:'rival_bob',n:'Bob',fam:'shell',col:['#5b4a8a','#c9a227','#efe6ff'],tw:{},sk:['hardened','splash','wave','grounded'],rival:1};
 const RIVALS={
   'jay1':{sp:'rival_jay',name:'Jay',zone:'beach',title:'Teach Jay a lesson in manners!',
@@ -322,7 +322,7 @@ hudPanel=(function(prev){ return function(b,side,right,ctx){ const h=prev(b,side
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b||B.b.single) return; const root=$('#battle');
   root.querySelectorAll('.bhp .hi').forEach(bindTip);
   if(B.mode==='campaign'&&B.meta&&B.meta.zi!=null){ const f=root.querySelector('.bfield'); if(f&&!f.dataset.z){ f.dataset.z=1; f.innerHTML=`<div class="bzscene">${zoneScene(ZONES[B.meta.zi].id)}</div>`; } } }; })(renderBattle);
-skillDesc=(function(prev){ return function(id,L){ if(id==='splash') return `Shoots a powerful bubble that deals ${Math.round(lv(SK.splash.dmg,L||1))} water damage.`; if(id==='devour'){ const p=Math.round(lv(SK.devour.m,L||1)*100); return `Attack the foe with ${p}% of your monster's attack and devour their life, stealing 50% of the damage dealt.`; } return prev(id,L); }; })(skillDesc);
+skillDesc=(function(prev){ return function(id,L){ if(id==='splash') return `Shoots a powerful bubble that deals ${Math.round(lv(SK.splash.dmg,L||1))} water damage.`; if(id==='devour') return `Attack the enemy and devour their life essence, stealing ${Math.round(lv(SK.devour.leechL,L||1)*100)}% of damage dealt.`; if(id==='souleater') return `Strike the enemy's soul, dealing ${Math.round(lv(SK.souleater.m,L||1)*100)}% of your attack damage and stealing ${Math.round(lv(SK.souleater.mpAtk,L||1)*100)}% of your attack in mana.`; return prev(id,L); }; })(skillDesc);
 
 // ---- Breta: Lila's friend who scans new monsters ----
 function bretaSVG(){
@@ -349,3 +349,22 @@ openBattle=(function(prev){ return function(){ const r=prev.apply(this,arguments
   return r; }; })(openBattle);
 
 ST_ICON.absorb=['swirl','#2f8cff'];
+
+// ---- ability upgrade buttons + train popup ----
+upCost=function(sl){ return 200*sl; };
+drawMon=(function(prev){ return function(){ prev(); if(!MONSH) return; const m=monBy(MONSH.uid); if(!m) return; const b=MONSH.sh.body;
+  b.querySelectorAll('[data-up]').forEach(x=>{ const id=x.dataset.up, sl=m.skl[id]||1, need=upNeed(sl+1), can=m.lvl>=need;
+    const nb=document.createElement('button'); nb.className='upb2'+(can?' glow':''); nb.innerHTML='<i>+</i><span>upgrade</span>'; x.replaceWith(nb);
+    nb.onclick=()=>{ if(!can) return alertBox(`${SPI[m.sp].n} needs to be level ${need} to train this ability.`); trainPopup(m,id); }; }); }; })(drawMon);
+function trainPopup(m,id){
+  const sl=m.skl[id]||1, nl=sl+1, k=SK[id], c=upCost(sl), cost=skCost(id,nl);
+  const w=document.createElement('div'); w.className='abox-wrap';
+  w.innerHTML=`<div class="tpop"><h3>Train level ${nl} ${esc(k.n)}</h3>
+    <div class="tp-card"><div class="tp-ic">${icon(skIconKey(id),EL[k.el].c,64)}<b>level ${nl}</b></div><div><b class="tp-n">${esc(k.n)}</b>${k.k!=='passive'?`<div class="tp-c">mana cost: ${cost}</div>`:''}<p>${skillDesc(id,nl)}</p></div></div>
+    <div class="tp-cost">Cost: $${c.toLocaleString()}</div><div class="tp-btns"><button class="tp-b" id="tpc">CANCEL</button><button class="tp-b" id="tpt">TRAIN</button></div>
+    <div class="tp-have">You have: $${(S.cash|0).toLocaleString()}</div></div>`;
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add('on'));
+  const close=()=>{ w.classList.remove('on'); setTimeout(()=>w.remove(),200); };
+  w.querySelector('#tpc').onclick=close;
+  w.querySelector('#tpt').onclick=()=>{ if((S.cash|0)<c){ close(); return alertBox(`You need $${c.toLocaleString()} to train this.`); } S.cash-=c; m.skl[id]=nl; persist(); close(); drawMon(); renderHUD(); toast(`${k.n} is now level ${nl}!`); };
+}

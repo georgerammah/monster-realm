@@ -1023,6 +1023,23 @@ body.rot .shopscr .thud{padding-left:calc(var(--sa-left) + 10px)!important;paddi
 .t-rv{margin-left:auto;width:min(calc(13*var(--vh)),62px);flex:none;margin-top:-6px;margin-bottom:-10px}.t-rv svg{width:100%;display:block;transform:scaleX(-1)}
 
 .bzscene{position:absolute;inset:0}.bzscene .zscene{width:100%;height:100%;display:block}
+
+.upb2{flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;padding:0 4px}
+.upb2 i{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:900 34px/1 -apple-system,system-ui;font-style:normal;color:#fff;background:radial-gradient(circle at 40% 30%,#3fd27a,#11793a 70%);box-shadow:inset 0 -3px 0 rgba(0,0,0,.25),0 0 0 2px #0d5a2b}
+.upb2 span{font:13px "Lilita One",system-ui;color:#1d1d1d}
+.upb2.glow i{animation:upglow 1s ease-in-out infinite}
+@keyframes upglow{50%{box-shadow:inset 0 -3px 0 rgba(0,0,0,.25),0 0 0 2px #0d5a2b,0 0 14px 6px rgba(255,90,40,.75)}}
+.upb2:not(.glow){opacity:.85}
+.tpop{width:min(calc(62*var(--vw)),560px);border-radius:16px;background:#fff6c8;box-shadow:0 0 0 4px #fff,0 0 0 6px #6a6a6a,0 14px 30px rgba(0,0,0,.4);padding:calc(2*var(--vh)) 16px calc(2*var(--vh));text-align:center;transform:scale(.85);opacity:0;transition:.2s}
+.abox-wrap.on .tpop{transform:none;opacity:1}
+.tpop h3{margin:0 0 calc(1.4*var(--vh));font:min(calc(7*var(--vh)),30px) "Lilita One",system-ui;font-weight:400;color:#111}
+.tp-card{display:flex;gap:12px;align-items:center;text-align:left;background:#ccf3c4;border-radius:10px;box-shadow:0 0 0 2px #8a8a8a;padding:10px 12px}
+.tp-ic{display:flex;flex-direction:column;align-items:center;gap:2px;flex:none}.tp-ic b{font:15px "Lilita One",system-ui;font-weight:400}
+.tp-n{font:20px Georgia,serif}.tp-c{font:15px Georgia,serif;color:#555}.tp-card p{margin:4px 0 0;font:15px/1.3 Georgia,serif;color:#333}
+.tp-cost{margin:calc(1.4*var(--vh)) 0;font:min(calc(5.6*var(--vh)),24px) Georgia,serif}
+.tp-btns{display:flex;gap:16px;justify-content:center}
+.tp-b{min-width:130px;padding:calc(1.2*var(--vh)) 18px;border-radius:8px;font:min(calc(6*var(--vh)),26px) "Lilita One",system-ui;color:#fff;background:linear-gradient(#f0563a,#b8200e);box-shadow:0 0 0 3px #fff,0 4px 0 #6a1206}
+.tp-have{margin-top:calc(1.4*var(--vh));font:min(calc(4.6*var(--vh)),19px) Georgia,serif}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -1064,7 +1081,8 @@ const FAM = {
 // t: enemy | self | ally | allE | allA | passive.  mp:[base, per level]
 const SK = {
   basic:{n:'Attack', el:'neutral', t:'enemy', k:'hit', mp:[0,0], m:[1,0]},
-  devour:{n:'Devour', el:'neutral', t:'enemy', k:'hit', mp:[5,3], m:[1,.08], leech:.5},
+  devour:{n:'Devour', el:'neutral', t:'enemy', k:'hit', mp:[5,5], m:[1,0], leech:.5, leechL:[.5,.05]},
+  souleater:{n:'Soul Eater', el:'neutral', t:'enemy', k:'hit', mp:[8,4], m:[.8,.02], mpAtk:[.4,.01]},
   blast:{n:'Blast', el:'fire', t:'enemy', k:'hit', mp:[16,8], dmg:[22,13], pierce:1},
   furyfist:{n:'Fury Fist', el:'neutral', t:'passive', k:'passive', p:'fury', v:[.12,.03]},
   emberspit:{n:'Ember Spit', el:'fire', t:'enemy', k:'hit', mp:[12,6], dmg:[16,9], burn:[.4,.03], btick:[5,3]},
@@ -1343,7 +1361,8 @@ function act(b, action){
       if(sk.stun && rnd(b)<lv(sk.stun,L)){ d.st.stun=1; log(b,`${d.n} is stunned!`); }
       if(sk.burnmp){ const x=Math.min(d.mp, Math.round(lv(sk.burnmp,L))); d.mp-=x; }
     });
-    if(sk.leech && tot>0 && me.hp>0){ const hv=Math.round(tot*sk.leech); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
+    if(sk.mpAtk && tot>0 && me.hp>0){ const d1=b.sides[foe].mons[targets[0]]; const x=Math.min(d1?d1.mp:0, Math.round(me.atk*lv(sk.mpAtk,L))); if(x>0){ d1.mp-=x; me.mp=Math.min(me.maxmp,me.mp+x); } }
+    if(sk.leech && tot>0 && me.hp>0){ const hv=Math.round(tot*(sk.leechL?lv(sk.leechL,L):sk.leech)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.mpgain && tot>0){ me.mp=Math.min(me.maxmp, me.mp+Math.round(tot*sk.mpgain)); }
     if(sk.recoil && tot>0 && me.hp>0){ const r=Math.max(1,Math.round(tot*sk.recoil)); me.hp=Math.max(0,me.hp-r); b.ev.push({k:'hit',s:a.s,i:a.i,v:r,el:'fire',recoil:1}); log(b,`${me.n} is hurt by the recoil!`); if(me.hp<=0) log(b,`${me.n} fainted.`); }
     if(sk.selfCleanse){ me.st.burn=0; me.st.poison=0; }
@@ -2613,7 +2632,7 @@ const ICON = {
 function skIconKey(id){
   const s=SK[id];
   if(id==='basic') return 'fist';
-  if(['pounce','double','furyfist','devour'].includes(id)) return 'claw'; if(['feedback','feed','absorb'].includes(id)) return 'swirl';
+  if(['pounce','double','furyfist','devour','souleater'].includes(id)) return 'claw'; if(['feedback','feed','absorb'].includes(id)) return 'swirl';
   if(s.k==='passive') return 'star';
   if(s.sh==='bubble') return 'bubble'; if(s.k==='shield') return s.sh==='lsh'?'bolt':s.sh==='fsh'?'fire':'shield';
   if(s.buff==='mshield') return 'shield'; if(s.buff==='charge'||s.buff==='focus') return 'up'; if(s.buff==='evade') return 'wind'; if(s.buff==='cripple') return 'drop';
@@ -4426,7 +4445,7 @@ function zoneCompleteScreen(zi){
 }
 
 // ---- story rivals: Jay and Bob ----
-SPI.rival_jay={id:'rival_jay',n:'Jay',fam:'hound',col:['#c0392b','#2b2b2b','#f3d9a8'],tw:{},sk:['furyfist','devour','pounce','emberspit'],rival:1};
+SPI.rival_jay={id:'rival_jay',n:'Jay',fam:'hound',col:['#c0392b','#2b2b2b','#f3d9a8'],tw:{},sk:['furyfist','devour','souleater','pounce'],rival:1};
 SPI.rival_bob={id:'rival_bob',n:'Bob',fam:'shell',col:['#5b4a8a','#c9a227','#efe6ff'],tw:{},sk:['hardened','splash','wave','grounded'],rival:1};
 const RIVALS={
   'jay1':{sp:'rival_jay',name:'Jay',zone:'beach',title:'Teach Jay a lesson in manners!',
@@ -4466,7 +4485,7 @@ hudPanel=(function(prev){ return function(b,side,right,ctx){ const h=prev(b,side
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b||B.b.single) return; const root=$('#battle');
   root.querySelectorAll('.bhp .hi').forEach(bindTip);
   if(B.mode==='campaign'&&B.meta&&B.meta.zi!=null){ const f=root.querySelector('.bfield'); if(f&&!f.dataset.z){ f.dataset.z=1; f.innerHTML=`<div class="bzscene">${zoneScene(ZONES[B.meta.zi].id)}</div>`; } } }; })(renderBattle);
-skillDesc=(function(prev){ return function(id,L){ if(id==='splash') return `Shoots a powerful bubble that deals ${Math.round(lv(SK.splash.dmg,L||1))} water damage.`; if(id==='devour'){ const p=Math.round(lv(SK.devour.m,L||1)*100); return `Attack the foe with ${p}% of your monster's attack and devour their life, stealing 50% of the damage dealt.`; } return prev(id,L); }; })(skillDesc);
+skillDesc=(function(prev){ return function(id,L){ if(id==='splash') return `Shoots a powerful bubble that deals ${Math.round(lv(SK.splash.dmg,L||1))} water damage.`; if(id==='devour') return `Attack the enemy and devour their life essence, stealing ${Math.round(lv(SK.devour.leechL,L||1)*100)}% of damage dealt.`; if(id==='souleater') return `Strike the enemy's soul, dealing ${Math.round(lv(SK.souleater.m,L||1)*100)}% of your attack damage and stealing ${Math.round(lv(SK.souleater.mpAtk,L||1)*100)}% of your attack in mana.`; return prev(id,L); }; })(skillDesc);
 
 // ---- Breta: Lila's friend who scans new monsters ----
 function bretaSVG(){
@@ -4493,6 +4512,25 @@ openBattle=(function(prev){ return function(){ const r=prev.apply(this,arguments
   return r; }; })(openBattle);
 
 ST_ICON.absorb=['swirl','#2f8cff'];
+
+// ---- ability upgrade buttons + train popup ----
+upCost=function(sl){ return 200*sl; };
+drawMon=(function(prev){ return function(){ prev(); if(!MONSH) return; const m=monBy(MONSH.uid); if(!m) return; const b=MONSH.sh.body;
+  b.querySelectorAll('[data-up]').forEach(x=>{ const id=x.dataset.up, sl=m.skl[id]||1, need=upNeed(sl+1), can=m.lvl>=need;
+    const nb=document.createElement('button'); nb.className='upb2'+(can?' glow':''); nb.innerHTML='<i>+</i><span>upgrade</span>'; x.replaceWith(nb);
+    nb.onclick=()=>{ if(!can) return alertBox(`${SPI[m.sp].n} needs to be level ${need} to train this ability.`); trainPopup(m,id); }; }); }; })(drawMon);
+function trainPopup(m,id){
+  const sl=m.skl[id]||1, nl=sl+1, k=SK[id], c=upCost(sl), cost=skCost(id,nl);
+  const w=document.createElement('div'); w.className='abox-wrap';
+  w.innerHTML=`<div class="tpop"><h3>Train level ${nl} ${esc(k.n)}</h3>
+    <div class="tp-card"><div class="tp-ic">${icon(skIconKey(id),EL[k.el].c,64)}<b>level ${nl}</b></div><div><b class="tp-n">${esc(k.n)}</b>${k.k!=='passive'?`<div class="tp-c">mana cost: ${cost}</div>`:''}<p>${skillDesc(id,nl)}</p></div></div>
+    <div class="tp-cost">Cost: $${c.toLocaleString()}</div><div class="tp-btns"><button class="tp-b" id="tpc">CANCEL</button><button class="tp-b" id="tpt">TRAIN</button></div>
+    <div class="tp-have">You have: $${(S.cash|0).toLocaleString()}</div></div>`;
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add('on'));
+  const close=()=>{ w.classList.remove('on'); setTimeout(()=>w.remove(),200); };
+  w.querySelector('#tpc').onclick=close;
+  w.querySelector('#tpt').onclick=()=>{ if((S.cash|0)<c){ close(); return alertBox(`You need $${c.toLocaleString()} to train this.`); } S.cash-=c; m.skl[id]=nl; persist(); close(); drawMon(); renderHUD(); toast(`${k.n} is now level ${nl}!`); };
+}
 
 </script>
 </body></html>
