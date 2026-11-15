@@ -1301,9 +1301,9 @@ html,body{touch-action:manipulation}
 
 .zs-team{position:relative;cursor:pointer}.zs-tchg{position:absolute;right:10px;top:8px;font-style:normal;color:#e8dcf5;opacity:.8;font-size:min(calc(6*var(--vh)),22px)}
 
-.fighter.enter .fart{animation:none!important}
-.fighter.l.enter2 .fart{animation:bounceinL 1.5s cubic-bezier(.35,.7,.4,1) both}
-.fighter.r.enter2 .fart{animation:bounceinR 1.5s cubic-bezier(.35,.7,.4,1) both}
+.fighter.enter .fart,.fighter.enter2 .fart{animation:none!important}
+.fighter.l.enter2 .fart{animation:bounceinL 1.5s cubic-bezier(.35,.7,.4,1) both!important}
+.fighter.r.enter2 .fart{animation:bounceinR 1.5s cubic-bezier(.35,.7,.4,1) both!important}
 
 .tipmk{position:fixed!important;z-index:201!important;display:flex!important;flex-direction:row!important;align-items:center;gap:10px!important;background:#fbf4c4!important;color:#3a3220!important;border-radius:14px!important;padding:7px 9px 7px 14px!important;box-shadow:0 0 0 2px #fffbe6,0 6px 14px rgba(0,0,0,.35)!important;max-width:min(calc(52*var(--vw)),440px)!important;pointer-events:none}
 .tipmk.l{padding:7px 14px 7px 9px!important}

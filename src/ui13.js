@@ -272,7 +272,9 @@ function fxTackle(ac,tgt,left){ const art=ac.querySelector('.fart'); if(!art) re
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.enT=B.enT||{}; const now=Date.now();
   document.querySelectorAll('#battle .fighter').forEach(el=>{ const s=el.dataset.s, i=el.dataset.i, f=el.querySelector('.fart'); if(!f) return;
     if(!B.enT[s]||B.enT[s].i!==i) B.enT[s]={i,t:now};
-    const e=(now-B.enT[s].t)/1000; if(e<1.5){ el.classList.add('enter2'); f.style.animationDelay=(-e)+'s'; } else { el.classList.remove('enter2'); f.style.animationDelay=''; } }); }; })(renderBattle);
+    const e=(now-B.enT[s].t)/1000; if(e<1.5&&!f._enA){ const L=el.classList.contains('l'), d=L?1:-1, W=document.body.clientWidth*1.2;
+      f._enA=f.animate([{transform:`translateX(${-d*W}px)`,easing:'cubic-bezier(.25,.55,.4,1)'},{transform:`translateX(${d*8}%) scale(.92,1.06)`,offset:.5},{transform:`translateX(${-d*4}%) translateY(-10%) scale(1.04,.96)`,offset:.72},{transform:`translateX(${d*2}%) scale(.98,1.02)`,offset:.86},{transform:'none'}],{duration:1500,easing:'linear'});
+      f._enA.currentTime=e*1000; } }); }; })(renderBattle);
 
 // ---------- Monster Kingdom style info bubble: description only, sits over the icon row with a tab down to the icon ----------
 function stDesc(m,k){ const s=m.st, P=v=>Math.round((v||0)*100)+'%';
