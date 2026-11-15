@@ -229,3 +229,32 @@ animateBattle=(function(prev){ return function(root,b,animating){
 function taskDone(zi,k){ const id=ZONES[zi].id; return !!(S.tdone&&S.tdone[id]&&S.tdone[id][k]); }
 taskProg=(function(prev){ return function(zi){ const p=prev(zi); const id=ZONES[zi].id, tl=taskList(zi);
   S.tdone=S.tdone||{}; const d=S.tdone[id]=S.tdone[id]||[]; tl.forEach((t,k)=>{ if(p[k]>=t.reps){ d[k]=1; p[k]=0; } }); return p; }; })(taskProg);
+
+// ---------- passive/item icons: tap to show what it does; it stays until you tap elsewhere ----------
+removeEventListener('pointerup',endTip,true); removeEventListener('touchend',endTip,true); removeEventListener('pointercancel',endTip,true); removeEventListener('touchcancel',endTip,true);
+const endTip2=()=>{ TIPDRAG=false; };
+addEventListener('pointerup',endTip2,true); addEventListener('touchend',endTip2,true); addEventListener('pointercancel',endTip2,true); addEventListener('touchcancel',endTip2,true);
+addEventListener('pointerdown',e=>{ if(!(e.target.closest&&e.target.closest('.hi'))){ TIPH=null; hideTips(); } },true);
+placeTip=(function(prev){ return function(h){ prev(h); const tip=document.querySelector('.tipb'); if(!tip||!h) return; const r=localRect(h);
+  if(parseFloat(tip.style.top)<r.top+r.height && parseFloat(tip.style.top)+tip.offsetHeight>r.top-2) tip.style.top=(r.top+r.height+10)+'px'; }; })(placeTip);
+bindTip=(function(prev){ return function(h){ prev(h); if(h._tip3) return; h._tip3=1; h.addEventListener('click',e=>{ e.stopPropagation(); TIPH=null; placeTip(h); }); }; })(bindTip);
+
+// ---------- tap a monster in battle: monster + stats, then abilities, then special items ----------
+monInfo=function(b,s,i){
+  const m=b.sides[s].mons[i]; if(!m) return; const sp=SPI[m.sp], mine=s===B.mySide;
+  const all=(sp.sk||[]).slice(0,slotsOf(m.lvl)); const fx=m.fx||{};
+  const items=[fx.rmp&&'manabowl', fx.rhp&&'lifebowl', fx.dflat&&'blade'].filter(Boolean);
+  const eff=Object.keys(ST_ICON).filter(k=>m.st[k]>0);
+  const sh=sheet(`<div class="minfo2"><div class="mi2-l"><div class="mi-art">${monSVG(m.sp,m.lvl)}</div>
+      <div class="mi-nm"><span class="lvb">${m.lvl}</span><b>${esc(m.n)}</b></div>
+      <div class="lb life"><i style="width:${m.hp/m.maxhp*100}%"></i><b>${m.hp} / ${m.maxhp} life</b></div>
+      <div class="lb mana"><i style="width:${m.mp/m.maxmp*100}%"></i><b>${m.mp} / ${m.maxmp} mana</b></div>
+      <div class="mi-atk">Attack <b>${m.atk}</b></div>
+      ${eff.length?`<div class="mi-eff">${eff.map(k=>`<span>${icon(ST_ICON[k][0],ST_ICON[k][1],18)} ${BUFF_N[k]||k} · ${m.st[k]}</span>`).join('')}</div>`:''}</div>
+    <div class="mi2-r"><h3>Abilities</h3><div class="pabil">${all.map(id=>{ const k=SK[id]; if(!k) return ''; const L=(m.skl&&m.skl[id])||1, c=skCost(id,L);
+        return `<div class="pab ${k.k==='passive'?'pas':''}">${icon(skIconKey(id),(EL[k.el]||EL.neutral).c,34)}<div class="pab-t"><b>${esc(k.n)} <span class="sl">Lv ${L}</span>${k.k==='passive'?' <span class="pastag">Passive</span>':''}</b><span>${skillDesc(id,L)}${c?` · ${c} mana`:''}</span></div></div>`; }).join('')}</div>
+      ${items.length?`<h3>Items</h3><div class="mi2-items">${items.map(id=>`<div class="pab"><span class="mi2-it">${itemSVG(id)}</span><div class="pab-t"><b>${ITEMS[id].n}</b><span>${id==='manabowl'?`Recovers ${fx.rmp} mana after each turn`:id==='lifebowl'?`Recovers ${fx.rhp} life after each turn`:`+${fx.dflat} damage on attacks, takes +${fx.tflat} more`}</span></div></div>`).join('')}</div>`:''}</div></div>`,{cls:'mi2sheet'});
+  return sh; };
+renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; const b=B.b;
+  document.querySelectorAll('#battle .bhp .bpor').forEach(p=>{ if(p.id==='swapb') return; const hp=p.closest('.bhp'); if(!hp) return; const s=+hp.dataset.hs; if(s===B.mySide&&p.classList.contains('swapper')) return;
+    p.style.cursor='pointer'; p.onclick=e=>{ e.stopPropagation(); const sd=b.sides[s]; monInfo(b,s,sd.active!=null?sd.active:+hp.dataset.hi||0); }; }); }; })(renderBattle);
