@@ -536,3 +536,47 @@ skillDesc=(function(prev){ return function(id,L){ L=L||1;
   return prev(id,L); }; })(skillDesc);
 ST_ICON.crit=['star','#f2b600'];
 PAS_IC.pounce='claw';
+
+// ===== Arena: Choose Your Champions -> READY -> Live Arena matchmaking =====
+function openChampions(){
+  closeSub(); if(PANEL) PANEL.sh.close();
+  const sh=sheet(`<div class="tscreen champs"></div>`,{cls:'full'});
+  const draw=()=>{ const tm=teamMons();
+    sh.body.querySelector('.champs').innerHTML=`${hubHud()}<h2 class="cc-title">Choose Your Champions</h2>
+      <div class="cc-row">${[0,1,2].map(i=>{ const m=tm[i]; if(!m) return `<button class="cc-card empty" data-add="1"><span>+</span><b>Add a monster</b></button>`;
+        const st=monStats(m), sp=SPI[m.sp];
+        return `<div class="cc-card"><button class="cc-x" data-rm="${m.uid}">✕</button><div class="cc-h"><span class="lvb">${m.lvl}</span><b>${esc(sp.n)}</b></div>
+          <div class="cc-art">${monSVG(m.sp,m.lvl)}</div><div class="cc-st"><span><i class="h">♥</i>${st.hp}</span><span><i class="m">💧</i>${st.mp}</span><span><i class="a">★</i>${st.atk}</span></div></div>`; }).join('')}</div>
+      <div class="cc-bot"><div class="cc-av">${avatarSVG(myAvatar())}</div><div class="cc-rank">Rank: ${rankBadge(myRank(),34)} <b>${myRank()}</b></div><button class="cc-ready" id="ccr"><i></i>READY!</button></div>`;
+    const q=s=>sh.body.querySelector(s);
+    q('#bhb').onclick=()=>{ sh.close(); openBattleHub(); };
+    sh.body.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{ if(S.team.length<=1) return alertBox('You need at least one champion!'); S.team=S.team.filter(u=>u!==b.dataset.rm); persist(); draw(); });
+    sh.body.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{ const bench=S.mons.filter(m=>!S.team.includes(m.uid)).sort((a,b)=>b.lvl-a.lvl);
+      if(!bench.length) return alertBox("You don't have any other monsters yet!");
+      const p=sheet(`<h2>Add a Champion</h2><div class="cc-pick">${bench.map(m=>`<button class="cc-pk" data-pk="${m.uid}">${monSVG(m.sp,m.lvl)}<b>${esc(SPI[m.sp].n)}</b><span class="lvb">${m.lvl}</span></button>`).join('')}</div>`);
+      p.body.querySelectorAll('[data-pk]').forEach(x=>x.onclick=()=>{ if(S.team.length<3) S.team.push(x.dataset.pk); persist(); p.close(); draw(); }); });
+    q('#ccr').onclick=()=>{ if(!S.team.length) return alertBox('Add a champion first!'); startSearch(sh); };
+  };
+  draw();
+}
+let SEARCH=null;
+NET.updatePresence=(function(prev){ return function(){ if(!NET.room||!S) return; try{ NET.room.presence({cid:NET.cid, name:S.name||'Trainer', power:teamPower(), rank:myRank(), busy:!!B, searching:!!SEARCH, avatar:myAvatar()}); }catch(e){ prev(); } }; })(NET.updatePresence);
+function stopSearch(){ if(!SEARCH) return; clearInterval(SEARCH.t); SEARCH.w&&SEARCH.w.remove(); SEARCH=null; NET.updatePresence(); }
+function startSearch(champSh){
+  if(NET.status!=='on'){ return confirmBox("Live Arena needs an internet connection. Battle a computer trainer instead?","BATTLE",()=>{ champSh.close(); startBattle({mode:'rival', foe:rivalTeam()}); }); }
+  const w=document.createElement('div'); w.className='abox-wrap on';
+  w.innerHTML=`<div class="srch"><button class="nm-x" id="sx">✕</button><h2>Live Arena!</h2><div class="sr-box"><div class="sr-spin"></div><p>Searching for opponent...</p></div><div class="sr-est">Estimated wait: 1 minute</div><div class="sr-btns"><button class="tp-b" id="sc">CANCEL</button><button class="tp-b blue" id="scpu" style="display:none">VS COMPUTER</button></div></div>`;
+  document.body.appendChild(w);
+  SEARCH={w,t0:Date.now(),tried:{},champSh}; NET.updatePresence();
+  w.querySelector('#sx').onclick=stopSearch; w.querySelector('#sc').onclick=stopSearch;
+  w.querySelector('#scpu').onclick=()=>{ stopSearch(); champSh.close(); startBattle({mode:'rival', foe:rivalTeam()}); };
+  SEARCH.t=setInterval(()=>{ if(!SEARCH) return;
+    if(B){ const c=SEARCH.champSh; stopSearch(); c&&c.close(); return; }
+    if(Date.now()-SEARCH.t0>20000) w.querySelector('#scpu').style.display='';
+    const c=NET.peers.filter(p=>!p.me&&p.searching&&!p.busy&&p.cid&&p.cid>NET.cid&&!(SEARCH.tried[p.cid]>Date.now()-8000));
+    if(c.length&&!NET.pending){ c.sort((a,b)=>Math.abs((a.rank|0)-myRank())-Math.abs((b.rank|0)-myRank())); SEARCH.tried[c[0].cid]=Date.now(); NET.challenge(c[0].cid); }
+  },1500);
+}
+NET.showIncoming=(function(prev){ return function(d){ prev(d); if(SEARCH){ const a=[...document.querySelectorAll('#acc')].pop(); if(a) setTimeout(()=>a.click(),50); } }; })(NET.showIncoming);
+openBattle=(function(prev){ return function(){ if(SEARCH){ const c=SEARCH.champSh; stopSearch(); try{ c&&c.close(); }catch(_){} } return prev.apply(this,arguments); }; })(openBattle);
+openPanelRaw=(function(prev){ return function(name){ if(name==='battle') return openChampions(); return prev(name); }; })(openPanelRaw);
