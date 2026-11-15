@@ -11,7 +11,12 @@ function handle(p){
     switch (p.a) {
       case 'ping': return out({ok:1});
       case 'get': return out({ok:1, v:getSave(p.k)});
-      case 'set': setSave(p.k, p.v); return out({ok:1});
+      case 'set':
+        if (String(p.k||'').indexOf('config/') === 0) {
+          const key = PropertiesService.getScriptProperties().getProperty('ADMIN_KEY');
+          if (!key || p.admin !== key) return out({ok:0, err:'admin'});
+        }
+        setSave(p.k, p.v); return out({ok:1});
       case 'emit': return out(emit(p));
       case 'poll': return out(poll(p));
       case 'presence': return out(presence(p));

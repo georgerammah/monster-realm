@@ -70,6 +70,17 @@ const SK = {
   sweaty:{n:'Sweaty', el:'water', t:'passive', k:'passive', p:'sweaty', v:[.25,.03]},
   thickskin:{n:'Thick Skin', el:'neutral', t:'passive', k:'passive', p:'thick', v:[.08,.015]},
   hardened:{n:'Hardened', el:'earth', t:'passive', k:'passive', p:'hard', v:[.15,.02]},
+  zap:{n:'Zap', el:'bolt', t:'enemy', k:'hit', mp:[8,5], dmg:[14,8]},
+  thunder:{n:'Thunder', el:'bolt', t:'enemy', k:'hit', mp:[24,12], dmg:[30,16], stun:[.15,.02]},
+  arclightning:{n:'Arc Lightning', el:'bolt', t:'enemy', k:'hit', mp:[18,9], dmg:[12,7], hits:2},
+  regrowth:{n:'Regrowth', el:'nature', t:'self', k:'heal', mp:[14,7], hot:[.06,.01], turns:4},
+  manaheal:{n:'Mana Heal', el:'water', t:'self', k:'heal', mp:[20,10], heal:[.25,.03]},
+  natureswill:{n:"Nature's Will", el:'nature', t:'self', k:'buff', mp:[12,6], buff:'charge', v:[.15,.03], turns:3},
+  invuln:{n:'Invulnerability', el:'neutral', t:'self', k:'shield', mp:[30,10], sh:'ash', amt:[999,0], turns:1},
+  manashards:{n:'Mana Shards', el:'water', t:'enemy', k:'hit', mp:[16,8], dmg:[18,10], burnmp:[10,5]},
+  toxicfumes:{n:'Toxic Fumes', el:'nature', t:'enemy', k:'dot', mp:[18,9], dot:'poison', tick:[9,5], turns:3},
+  berserk:{n:'Berserk', el:'neutral', t:'self', k:'buff', mp:[16,8], buff:'charge', v:[.3,.04], turns:3},
+  trample:{n:'Trample', el:'neutral', t:'enemy', k:'hit', mp:[12,6], m:[1.1,.05], stun:[.15,.02]},
   camelback:{n:'Camel Back', el:'water', t:'passive', k:'passive', p:'camel', v:[3,1]}
 };
 const BUFF_N = {pers:'Perseverance', bubble:'Bubble', lsh:'Spark shield', fsh:'Fire shield', nsh:'Leaf shield', mshield:'Mana Shield', absorb:'Absorb', crit:'Spark', focus:'Focus', charge:'Charged', evade:'Evasive', cripple:'Crippled', roots:'Roots', heal:'Heal'};
@@ -104,6 +115,7 @@ function skillDesc(id, L){
   }
   return '';
 }
+const skillDescBase=skillDesc;
 
 // species: id, name, fam, colors [main, accent, light], abilities [start, start, Lv10, Lv20]
 const SP = [
@@ -239,7 +251,7 @@ function validTargets(b, s, skId){
   if(t==='ally') return b.sides[s].mons.map((m,i)=>m.hp>0?i:-1).filter(i=>i>=0);
   return [];
 }
-const SHIELD_VS = {bubble:['neutral','fire','bolt'], lsh:null, fsh:['fire','neutral'], nsh:null};
+const SHIELD_VS = {bubble:['neutral','fire','bolt'], lsh:null, fsh:['fire','neutral'], nsh:null, ash:null};
 function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   const a=as.m; const d = b.sides[ds].mons[di]; if(d.hp<=0) return 0;
   if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:ds,i:di}); log(b,`${d.n} dodged!`); return 0; }
@@ -257,7 +269,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   if(el==='neutral' && d.pas.hard) dmg*=1-d.pas.hard;
   dmg = Math.max(1, Math.round(dmg));
   let blocked=0;
-  for(const sh of (pierce?[]:['bubble','fsh','lsh','nsh'])){
+  for(const sh of (pierce?[]:['bubble','fsh','lsh','nsh','ash'])){
     if(dmg<=0) break;
     if(d.st[sh]>0 && d.st[sh+'Hp']>0 && (!SHIELD_VS[sh] || SHIELD_VS[sh].includes(el))){ const ab=Math.min(dmg, d.st[sh+'Hp']); d.st[sh+'Hp']-=ab; dmg-=ab; blocked+=ab; if(d.st[sh+'Hp']<=0){ d.st[sh]=0; log(b,`${d.n}'s shield broke!`); } }
   }

@@ -29,7 +29,7 @@
   let lobbyRoom=null;
   const db={ collection:path=>({ doc:k=>({
     get:()=>call({a:'get', k:path+'/'+k}).then(r=>r.ok&&r.v?JSON.parse(r.v):null),
-    set:v=>call({a:'set', k:path+'/'+k, v:JSON.stringify(v)})
+    set:v=>call({a:'set', k:path+'/'+k, v:JSON.stringify(v), admin:(path==='config'?(get('mr-admin-key')||''):undefined)})
   }) }) };
   const user={ id:async()=>uid, me:async()=>({id:uid}), isOwner:()=>true, canEdit:()=>true, can:()=>true };
   window.claude={ use: async n => !URL ? null : n==='db'?db : n==='user'?user : n==='room'?(lobbyRoom=lobbyRoom||mkRoom('lobby')) : null };
