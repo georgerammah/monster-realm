@@ -196,7 +196,7 @@ function animateBattle(root,b,animating){
         if(e.crit) { root.classList.remove('quake'); void root.offsetWidth; root.classList.add('quake'); }
       }
       if(e.k==='heal'){ for(let n=0;n<6;n++){ const s=document.createElement('i'); s.className='sparkle'; s.style.left=(15+Math.random()*70)+'%'; s.style.animationDelay=(n*0.07)+'s'; el.appendChild(s); setTimeout(()=>s.remove(),1300);} }
-      if(e.k==='buff'){ const r=document.createElement('i'); r.className='ring'; r.style.setProperty('--c', e.b==='bubble'?'#2f8cff':e.b==='thorns'?'#f2b600':e.b==='atkUp'?'#ff9f0a':e.b==='defUp'?'#a2845e':'#5e8bff'); el.appendChild(r); setTimeout(()=>r.remove(),750); }
+      if(e.k==='buff'){ const r=document.createElement('i'); r.className='ring'; r.style.setProperty('--c', e.b==='bubble'?'#22a6e3':e.b==='thorns'?'#f7b500':e.b==='atkUp'?'#ff9f0a':e.b==='defUp'?'#a2845e':'#5e8bff'); el.appendChild(r); setTimeout(()=>r.remove(),750); }
       el.appendChild(f);
       syncCard(b,e.s,e.i);
     }, delay);

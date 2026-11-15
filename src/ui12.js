@@ -348,7 +348,7 @@ openBattle=(function(prev){ return function(){ const r=prev.apply(this,arguments
       setTimeout(()=>lilaSay([sp.rival?`That's ${sp.n}! Careful — he hits hard with ${atk?atk.n:'his attacks'}.`:`It's a ${sp.n}! Look out for its ${atk?atk.n:'attacks'}!`],{who:'breta'}).then(()=>{ if(B){ B.paused=false; drive(); } }),500); } } }catch(_){}
   return r; }; })(openBattle);
 
-ST_ICON.absorb=['swirl','#2f8cff'];
+ST_ICON.absorb=['swirl','#22a6e3'];
 
 // ---- ability upgrade buttons + train popup ----
 upCost=function(sl){ return 200*sl; };
@@ -534,7 +534,7 @@ skillDesc=(function(prev){ return function(id,L){ L=L||1;
   if(id==='bolt') return `Strong lightning attack that deals ${Math.round(lv(SK.bolt.dmg,L))} damage and has a 50% chance to do 2x damage.`;
   if(id==='staticd') return `Unleash an electrical discharge at your enemy to cause ${Math.round(lv(SK.staticd.dmg,L))} direct damage and ${Math.round(lv(SK.staticd.stormTick,L))} damage each turn for 2 turns.`;
   return prev(id,L); }; })(skillDesc);
-ST_ICON.crit=['star','#f2b600'];
+ST_ICON.crit=['star','#f7b500'];
 PAS_IC.pounce='claw';
 
 // ===== Arena: Choose Your Champions -> READY -> Live Arena matchmaking =====

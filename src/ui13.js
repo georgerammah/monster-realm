@@ -1,4 +1,4 @@
-// ===== V13: Move Studio (admin) — define every move without code =====
+// ===== V13: Ability Studio (admin) — define every move without code =====
 const MOVE_KINDS=[['hit','Attack'],['dot','Damage over time'],['shield','Shield'],['buff','Buff (self)'],['debuff','Debuff (foe)'],['heal','Heal'],['drain','Steal (life/mana)'],['passive','Passive']];
 const BUFF_TYPES=[['crit','Critical chance (2x)'],['evade','Dodge chance'],['focus','Fire damage up'],['charge','All damage up'],['mshield','Mana soaks damage'],['absorb','Damage taken → mana'],['pers','Damage reduction']];
 const PAS_TYPES=[['fury','+% physical damage'],['pounce','+% all damage'],['roots','Heal % each turn'],['grounded','Resist lightning'],['sweaty','Resist fire & water'],['thick','Resist all damage'],['hard','Resist physical'],['camel','+ mana each turn']];
@@ -64,7 +64,7 @@ skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; if(!s)
 // ---------- unique usernames + server-decided admins ----------
 let ADMIN=false; try{ ADMIN=localStorage.getItem('mr-admin')==='1'; }catch(_){}
 function setAdmin(v){ ADMIN=!!v; try{ localStorage.setItem('mr-admin',ADMIN?'1':'0'); localStorage.removeItem('mr-admin-key'); }catch(_){}
-  SUBMENUS.menu=SUBMENUS.menu.filter(x=>x[0]!=='Move Studio'); if(ADMIN) SUBMENUS.menu.push(['Move Studio',()=>openStudio()]); }
+  SUBMENUS.menu=SUBMENUS.menu.filter(x=>x[0]!=='Ability Studio'); if(ADMIN) SUBMENUS.menu.push(['Ability Studio',()=>openStudio()]); }
 setAdmin(ADMIN);
 function nameError(err){ return err==='taken'?'That name is already taken. Try another one!':err==='invalid'?'Names can be 2–16 letters, numbers, spaces, - _ or .':"Couldn't check that name right now. Try again."; }
 async function claimName(name){ if(!window.MR_ACCT) return {ok:1}; try{ const r=await MR_ACCT.claim(name); if(r&&r.ok) setAdmin(r.admin); return r||{ok:0}; }catch(_){ return {ok:0,err:'net'}; } }
@@ -110,8 +110,8 @@ function drawStudio(){
     if(isPair) return `<label class="sf"><span>${label}${help?`<i>${help}</i>`:''}</span><div class="sf2"><input inputmode="decimal" data-k="${k}" data-t="${type}" data-i="0" value="${show(val(k,0))}" placeholder="Lv 1${isP?' %':''}"><b>+</b><input inputmode="decimal" data-k="${k}" data-t="${type}" data-i="1" value="${show(val(k,1))}" placeholder="per lv"></div></label>`;
     return `<label class="sf"><span>${label}${help?`<i>${help}</i>`:''}</span><input inputmode="decimal" data-k="${k}" data-t="${type}" value="${show(v)}" placeholder="${isP?'%':''}"></label>`; };
   const L=st.L, el=EL[d.el]||EL.neutral;
-  st.sh.body.querySelector('.studio').innerHTML=`<div class="plankbar"><button class="backb" id="stb">Back</button><div class="plank">Move Studio</div><button class="findb" id="stnew">+ NEW</button></div>
-   <div class="st-wrap"><div class="st-list"><input class="st-q" id="stq" placeholder="Search ${Object.keys(SK).length-1} moves" value="${esc(st.q)}">
+  st.sh.body.querySelector('.studio').innerHTML=`<div class="plankbar"><button class="backb" id="stb">Back</button><div class="plank">Ability Studio</div><button class="findb" id="stnew">+ NEW</button></div>
+   <div class="st-wrap"><div class="st-list"><input class="st-q" id="stq" placeholder="Search ${Object.keys(SK).length-1} abilities" value="${esc(st.q)}">
      ${ids.map(id=>`<button class="st-it ${id===st.sel?'on':''}" data-id="${id}">${icon(skIconKey(id),(EL[SK[id].el]||EL.neutral).c,26)}<b>${esc(SK[id].n)}</b>${MOVE_OVR[id]?'<em>edited</em>':''}</button>`).join('')}</div>
    <div class="st-ed">
      <div class="st-prev">${icon(skIconKey(st.sel),el.c,48)}<div><b>${esc(d.n||'')}</b><span>${kind==='passive'?'passive':'mana cost: '+(d.mp?Math.round(lv(d.mp,L)):0)}</span><p id="stdesc"></p></div>
@@ -149,7 +149,7 @@ function drawStudio(){
       st.dirty=true; drawStudio(); }); });
   q('#stsave').onclick=()=>{ if(!st.dirty) return; saveMove(st.sel, d); };
   const rv=q('#strev'); if(rv) rv.onclick=()=>confirmBox(`Put ${esc(d.n)} back to its original settings?`,'RESET',()=>{ const o=Object.assign({},MOVE_OVR); delete o[st.sel]; pushMoves(o,()=>{ st.draft=null; st.dirty=false; drawStudio(); toast('Reset to default'); }); });
-  q('#stnew').onclick=()=>{ const go=()=>{ let n=1, id; do{ id='custom'+n++; }while(SK[id]); SK[id]={n:'New Move',el:'neutral',t:'enemy',k:'hit',mp:[10,5],dmg:[15,8]}; st.sel=id; st.draft=JSON.parse(JSON.stringify(SK[id])); st.dirty=true; drawStudio(); }; if(st.dirty) confirmBox('Discard unsaved changes?','DISCARD',go); else go(); };
+  q('#stnew').onclick=()=>{ const go=()=>{ let n=1, id; do{ id='custom'+n++; }while(SK[id]); SK[id]={n:'New Ability',el:'neutral',t:'enemy',k:'hit',mp:[10,5],dmg:[15,8]}; st.sel=id; st.draft=JSON.parse(JSON.stringify(SK[id])); st.dirty=true; drawStudio(); }; if(st.dirty) confirmBox('Discard unsaved changes?','DISCARD',go); else go(); };
 }
 function saveMove(id,d){ const o=Object.assign({},MOVE_OVR); o[id]=JSON.parse(JSON.stringify(d)); pushMoves(o,()=>{ STUDIO.draft=null; STUDIO.dirty=false; drawStudio(); toast(`${d.n} saved for everyone`); }); }
 async function pushMoves(o,done){

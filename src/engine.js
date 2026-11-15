@@ -1,7 +1,7 @@
 // ===== DATA =====
 const EL = {
-  water:{n:'Water',c:'#2f8cff'}, fire:{n:'Fire',c:'#ff6a3d'}, bolt:{n:'Lightning',c:'#f2b600'},
-  nature:{n:'Nature',c:'#30c05a'}, earth:{n:'Earth',c:'#a2845e'}, wind:{n:'Wind',c:'#4fc3e8'}, neutral:{n:'Physical',c:'#ff7a2a'}
+  water:{n:'Water',c:'#22a6e3'}, fire:{n:'Fire',c:'#e3262d'}, bolt:{n:'Lightning',c:'#f7b500'},
+  nature:{n:'Nature',c:'#1fa03a'}, earth:{n:'Earth',c:'#a2845e'}, wind:{n:'Wind',c:'#4fc3e8'}, neutral:{n:'Physical',c:'#f05a22'}
 };
 const STRONG = {water:['fire'], fire:['nature','wind'], nature:['water','earth'], bolt:['water','wind'], earth:['bolt','fire'], wind:['nature']};
 function elemMult(a, d){
@@ -126,15 +126,15 @@ const SP = [
   ['voltkit','Voltkit','volt',['#ffd84d','#3a3a3c','#fff8d6'],['shock','staticd','charge','pounce']],
   ['sparkpaw','Sparkpaw','volt',['#f7a84a','#5b3a8c','#fff1de'],['shock','firefocus','lshield','roots']],
   ['thundra','Thundra','volt',['#b9a7ff','#f5c400','#f3efff'],['stormcloud','purge','cripple','thickskin']],
-  ['ampurr','Ampurr','volt',['#9ad7ff','#f2b600','#eef8ff'],['bolt','nshield','spark','sweaty']],
+  ['ampurr','Ampurr','volt',['#9ad7ff','#f7b500','#eef8ff'],['bolt','nshield','spark','sweaty']],
   ['gravelpup','Gravelpup','hound',['#c3a27a','#6e5435','#f5ebdd'],['burn','cripple','fshield','grounded']],
   ['cragmaw','Cragmaw','hound',['#9a9aa3','#4a4a52','#ececf0'],['flicker','poison','burn','thickskin']],
-  ['ashfang','Ashfang','hound',['#8f6f5c','#ff6a3d','#f1e3da'],['blast','furyfist','emberspit','double']],
+  ['ashfang','Ashfang','hound',['#8f6f5c','#e3262d','#f1e3da'],['blast','furyfist','emberspit','double']],
   ['rubblejaw','Rubblejaw','hound',['#b5c27a','#5d6b2e','#f3f6df'],['moltencore','feed','flame','roots']],
   ['emberling','Emberling','drake',['#ff8a5c','#c23b22','#ffe8dc'],['blast','charge','burn','double']],
   ['scorchet','Scorchet','drake',['#ffb347','#8c2f1c','#fff1dc'],['furyfist','firefocus','emberspit','pounce']],
   ['pyrodrake','Pyrodrake','drake',['#e0475b','#5a1a2a','#ffe3e7'],['firewall','flicker','moltencore','grounded']],
-  ['magmaw','Magmaw','drake',['#5c5470','#ff6a3d','#ecebf2'],['flame','hardened','fshield','thickskin']],
+  ['magmaw','Magmaw','drake',['#5c5470','#e3262d','#ecebf2'],['flame','hardened','fshield','thickskin']],
   ['gustling','Gustling','wing',['#8fd3ff','#2a7fb8','#effaff'],['emberspit','leech','blast','double']],
   ['featherby','Featherby','wing',['#ffd1e8','#c2588f','#fff5fa'],['furyfist','bubble','moltencore','roots']],
   ['squallix','Squallix','wing',['#6f8bff','#ffd84d','#eef1ff'],['firewall','flame','fshield','thickskin']],

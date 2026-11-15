@@ -14,7 +14,7 @@ function zoneUnlocked(i){ return i===0 || (S.zones[ZONES[i-1].id]||0)>=4; }
 
 // ===== icons =====
 const ICON = {
-  fist:'<path d="M8 11V8a1.5 1.5 0 0 1 3 0v2V6.5a1.5 1.5 0 0 1 3 0V10V7.5a1.5 1.5 0 0 1 3 0V13c0 3-2 6-5.5 6S6 17 6 14v-2a1.5 1.5 0 0 1 2-1" fill="#fff"/>',
+  fist:'<g transform="translate(0 .5)" fill="#fff" stroke="#c8461a" stroke-width=".7" stroke-linejoin="round"><rect x="8.4" y="15" width="7.2" height="5" rx="1"/><rect x="6.3" y="10" width="11.8" height="6.8" rx="2.4"/><rect x="6.3" y="5" width="3.1" height="7.4" rx="1.55"/><rect x="9.2" y="4.4" width="3.1" height="7.8" rx="1.55"/><rect x="12.1" y="4.6" width="3.1" height="7.6" rx="1.55"/><rect x="15" y="5.6" width="3.1" height="6.8" rx="1.55"/><path d="M5.6 12.6c0-1.2 1-1.9 2.2-1.9h5.4c1 0 1.7.8 1.7 1.7s-.8 1.7-1.7 1.7H9.6c-.6 1.4-1.8 2.2-3 2.2-.6-.8-1-2.2-1-3.7z"/></g>',
   fire:'<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 1.5 1 2 2.5 2 4 1-2 1-4 1-7z" fill="#fff"/>',
   water:'<path d="M12 3c3 5 6 8 6 11a6 6 0 0 1-12 0c0-3 3-6 6-11z" fill="#fff"/>',
   bolt:'<path d="M13 2 5 13h6l-1 9 8-12h-6z" fill="#fff"/>',
@@ -34,15 +34,15 @@ const ICON = {
 function skIconKey(id){
   const s=SK[id];
   if(id==='basic') return 'fist';
-  if(['pounce','double','furyfist','devour','souleater'].includes(id)) return 'claw'; if(['feedback','feed','absorb'].includes(id)) return 'swirl';
+  if(s.el==='neutral'&&s.k!=='passive'&&s.k!=='heal'&&!s.buff) return 'fist'; if(['feedback','feed','absorb'].includes(id)) return 'swirl';
   if(s.k==='passive') return 'star';
   if(s.sh==='bubble') return 'bubble'; if(s.k==='shield') return s.sh==='lsh'?'bolt':s.sh==='fsh'?'fire':'shield';
   if(s.buff==='mshield') return 'shield'; if(s.buff==='charge'||s.buff==='focus') return 'up'; if(s.buff==='evade') return 'wind'; if(s.buff==='cripple') return 'drop';
   if(s.k==='heal') return 'heart';
-  return {fire:'fire',water:'water',bolt:'bolt',nature:'nature',earth:'earth',wind:'wind'}[s.el]||'claw';
+  return {fire:'fire',water:'water',bolt:'bolt',nature:'nature',earth:'earth',wind:'wind',neutral:'fist'}[s.el]||'fist';
 }
 function icon(key,bg,size){ return `<span class="ic" style="background:${bg};width:${size}px;height:${size}px"><svg viewBox="0 0 24 24">${ICON[key]}</svg></span>`; }
-const ST_ICON={pers:['up','#30c05a'],burn:['fire','#ff6a3d'],poison:['drop','#30c05a'],storm:['bolt','#7a6ad8'],stun:['star','#f2b600'],bubble:['bubble','#2f8cff'],lsh:['bolt','#f2b600'],fsh:['fire','#e0475b'],nsh:['nature','#30c05a'],mshield:['shield','#5e8bff'],focus:['up','#ff9f0a'],charge:['up','#e0475b'],evade:['wind','#4fc3e8'],cripple:['drop','#8a5ad8'],roots:['heart','#30c05a']};
+const ST_ICON={pers:['up','#1fa03a'],burn:['fire','#e3262d'],poison:['drop','#1fa03a'],storm:['bolt','#7a6ad8'],stun:['star','#f7b500'],bubble:['bubble','#22a6e3'],lsh:['bolt','#f7b500'],fsh:['fire','#e0475b'],nsh:['nature','#1fa03a'],mshield:['shield','#5e8bff'],focus:['up','#ff9f0a'],charge:['up','#e0475b'],evade:['wind','#4fc3e8'],cripple:['drop','#8a5ad8'],roots:['heart','#1fa03a']};
 
 // ===== HUD with dollars =====
 function renderHUD(){

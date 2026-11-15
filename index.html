@@ -106,7 +106,7 @@ body.inbattle #tabs,body.inbattle #top{display:none}
 #toast{position:fixed;left:50%;bottom:calc(var(--sa-bottom) + 90px);transform:translate(-50%,20px);background:rgba(28,28,30,.92);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;opacity:0;transition:.25s;z-index:100;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 /* battle */
-#battle{position:fixed;inset:0;z-index:20;background:linear-gradient(180deg,color-mix(in srgb,#ff6a3d 10%,var(--bg)),var(--bg) 40%,var(--bg) 60%,color-mix(in srgb,#2f8cff 10%,var(--bg)));display:none;flex-direction:column;padding:calc(var(--sa-top) + 8px) 10px calc(var(--sa-bottom) + 10px)}
+#battle{position:fixed;inset:0;z-index:20;background:linear-gradient(180deg,color-mix(in srgb,#e3262d 10%,var(--bg)),var(--bg) 40%,var(--bg) 60%,color-mix(in srgb,#22a6e3 10%,var(--bg)));display:none;flex-direction:column;padding:calc(var(--sa-top) + 8px) 10px calc(var(--sa-bottom) + 10px)}
 #battle.open{display:flex}
 .btop{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mu);font-weight:500}
 .btop .foe-n{margin-left:auto;font-weight:600;color:var(--tx)}
@@ -117,7 +117,7 @@ body.inbattle #tabs,body.inbattle #top{display:none}
 .bname{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;margin:2px 0 4px}.bname span{font-size:11px;color:var(--mu)}
 .bmon .bar{height:5px;margin-top:3px}.bnum{font-size:10.5px;color:var(--mu);margin-top:2px;font-variant-numeric:tabular-nums}
 .sts{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;min-height:15px}.st{font-style:normal;font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:6px;background:var(--fill)}
-.st.burn{color:#ff6a3d}.st.poison{color:#30c05a}.st.stun{color:#f2b600}.st.bubble{color:#2f8cff}.st.ms{color:#5e8bff}.st.up{color:#ff9f0a}.st.guard{color:#a2845e}.st.spark{color:#f2b600}
+.st.burn{color:#e3262d}.st.poison{color:#1fa03a}.st.stun{color:#f7b500}.st.bubble{color:#22a6e3}.st.ms{color:#5e8bff}.st.up{color:#ff9f0a}.st.guard{color:#a2845e}.st.spark{color:#f7b500}
 .bmon.acting{box-shadow:0 0 0 2.5px var(--ac),0 6px 18px rgba(0,122,255,.2);transform:translateY(-3px)}
 .bmon.target{box-shadow:0 0 0 2.5px #ff9f0a;cursor:pointer;animation:pulse 1s infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 4px rgba(255,159,10,.5)}}
@@ -394,7 +394,7 @@ body.inbattle #hud,body.inbattle #bar{display:none}
 .float2{position:absolute;left:50%;top:0;transform:translateX(-50%);font:min(calc(9*var(--vw)),40px) "Lilita One",system-ui;color:#e81e1e;-webkit-text-stroke:2px #fff;paint-order:stroke;text-shadow:0 3px 0 rgba(0,0,0,.25);animation:fl2 1.2s ease-out both;pointer-events:none;white-space:nowrap;z-index:5}
 .float2.heal{color:#22b84a}.float2.buff,.float2.stun{color:#1d6fe0;font-size:min(calc(6*var(--vw)),24px)}.float2.crit{font-size:min(calc(12*var(--vw)),52px)}
 @keyframes fl2{0%{opacity:0;transform:translate(-50%,10px) scale(.5)}18%{opacity:1;transform:translate(-50%,-6px) scale(1.15)}30%{transform:translate(-50%,-6px) scale(1)}100%{opacity:0;transform:translate(-50%,-44px)}}
-.eff2{position:absolute;left:50%;top:-22px;transform:translateX(-50%);white-space:nowrap;font:14px "Lilita One",system-ui;color:#ffd60a;-webkit-text-stroke:1px #6a3a00;paint-order:stroke;animation:fl2 1.3s both;z-index:5}.eff2.crit{top:-40px;color:#ff6a3d}
+.eff2{position:absolute;left:50%;top:-22px;transform:translateX(-50%);white-space:nowrap;font:14px "Lilita One",system-ui;color:#ffd60a;-webkit-text-stroke:1px #6a3a00;paint-order:stroke;animation:fl2 1.3s both;z-index:5}.eff2.crit{top:-40px;color:#e3262d}
 .ring2{position:absolute;left:5%;right:5%;top:10%;bottom:10%;border-radius:50%;pointer-events:none;border:4px solid var(--c);box-shadow:0 0 22px var(--c),inset 0 0 18px var(--c);animation:ring .8s ease-out forwards}
 .castname{position:absolute;top:calc(var(--sa-top) + 128px);font:min(calc(10*var(--vw)),44px) "Lilita One",system-ui;color:#fff;-webkit-text-stroke:2px rgba(0,0,0,.45);paint-order:stroke;text-shadow:0 3px 0 rgba(0,0,0,.25);pointer-events:none;z-index:9;animation:cn 1.3s ease-out both;white-space:nowrap}
 .castname.l{left:6%}.castname.r{right:6%}
@@ -1141,7 +1141,7 @@ button,.pbtn{touch-action:manipulation}
 .cc-x{position:absolute;right:-12px;top:-14px;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 40% 30%,#ff7a6a,#c8261a);color:#fff;font:900 20px/40px system-ui;box-shadow:0 0 0 3px #fff;z-index:2}
 .cc-h{display:flex;align-items:center;gap:8px;padding:calc(.8*var(--vh)) 10px;background:#fff;border-radius:8px 8px 0 0;border-bottom:2px solid #ddd;font:min(calc(6*var(--vh)),26px) "Lilita One",system-ui}.cc-h b{font-weight:400}
 .cc-art{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:4px}.cc-art svg{max-width:100%;max-height:100%}
-.cc-st{display:flex;justify-content:space-around;padding:calc(.8*var(--vh)) 6px;font:min(calc(5*var(--vh)),20px) "Lilita One",system-ui;color:#333}.cc-st i{font-style:normal;margin-right:3px}.cc-st .h{color:#e0475b}.cc-st .a{color:#f2b600}.cc-st .m{font-size:.8em}
+.cc-st{display:flex;justify-content:space-around;padding:calc(.8*var(--vh)) 6px;font:min(calc(5*var(--vh)),20px) "Lilita One",system-ui;color:#333}.cc-st i{font-style:normal;margin-right:3px}.cc-st .h{color:#e0475b}.cc-st .a{color:#f7b500}.cc-st .m{font-size:.8em}
 .cc-bot{flex:none;display:flex;align-items:center;gap:16px;padding:calc(1*var(--vh)) calc(var(--sa-right) + 14px) calc(var(--sa-bottom) + 1.2*var(--vh)) calc(var(--sa-left) + 14px);background:rgba(0,0,0,.35)}
 .cc-av{width:calc(14*var(--vh));height:calc(14*var(--vh));border-radius:6px;overflow:hidden;box-shadow:0 0 0 3px #3fb0ff}.cc-av svg{width:100%;height:100%;display:block}
 .cc-rank{flex:1;display:flex;align-items:center;gap:10px;font:min(calc(8*var(--vh)),38px) Georgia,serif;color:#fff}.cc-rank b{font-weight:400}
@@ -1242,8 +1242,8 @@ html,body{touch-action:manipulation}
 <script>
 // ===== DATA =====
 const EL = {
-  water:{n:'Water',c:'#2f8cff'}, fire:{n:'Fire',c:'#ff6a3d'}, bolt:{n:'Lightning',c:'#f2b600'},
-  nature:{n:'Nature',c:'#30c05a'}, earth:{n:'Earth',c:'#a2845e'}, wind:{n:'Wind',c:'#4fc3e8'}, neutral:{n:'Physical',c:'#ff7a2a'}
+  water:{n:'Water',c:'#22a6e3'}, fire:{n:'Fire',c:'#e3262d'}, bolt:{n:'Lightning',c:'#f7b500'},
+  nature:{n:'Nature',c:'#1fa03a'}, earth:{n:'Earth',c:'#a2845e'}, wind:{n:'Wind',c:'#4fc3e8'}, neutral:{n:'Physical',c:'#f05a22'}
 };
 const STRONG = {water:['fire'], fire:['nature','wind'], nature:['water','earth'], bolt:['water','wind'], earth:['bolt','fire'], wind:['nature']};
 function elemMult(a, d){
@@ -1368,15 +1368,15 @@ const SP = [
   ['voltkit','Voltkit','volt',['#ffd84d','#3a3a3c','#fff8d6'],['shock','staticd','charge','pounce']],
   ['sparkpaw','Sparkpaw','volt',['#f7a84a','#5b3a8c','#fff1de'],['shock','firefocus','lshield','roots']],
   ['thundra','Thundra','volt',['#b9a7ff','#f5c400','#f3efff'],['stormcloud','purge','cripple','thickskin']],
-  ['ampurr','Ampurr','volt',['#9ad7ff','#f2b600','#eef8ff'],['bolt','nshield','spark','sweaty']],
+  ['ampurr','Ampurr','volt',['#9ad7ff','#f7b500','#eef8ff'],['bolt','nshield','spark','sweaty']],
   ['gravelpup','Gravelpup','hound',['#c3a27a','#6e5435','#f5ebdd'],['burn','cripple','fshield','grounded']],
   ['cragmaw','Cragmaw','hound',['#9a9aa3','#4a4a52','#ececf0'],['flicker','poison','burn','thickskin']],
-  ['ashfang','Ashfang','hound',['#8f6f5c','#ff6a3d','#f1e3da'],['blast','furyfist','emberspit','double']],
+  ['ashfang','Ashfang','hound',['#8f6f5c','#e3262d','#f1e3da'],['blast','furyfist','emberspit','double']],
   ['rubblejaw','Rubblejaw','hound',['#b5c27a','#5d6b2e','#f3f6df'],['moltencore','feed','flame','roots']],
   ['emberling','Emberling','drake',['#ff8a5c','#c23b22','#ffe8dc'],['blast','charge','burn','double']],
   ['scorchet','Scorchet','drake',['#ffb347','#8c2f1c','#fff1dc'],['furyfist','firefocus','emberspit','pounce']],
   ['pyrodrake','Pyrodrake','drake',['#e0475b','#5a1a2a','#ffe3e7'],['firewall','flicker','moltencore','grounded']],
-  ['magmaw','Magmaw','drake',['#5c5470','#ff6a3d','#ecebf2'],['flame','hardened','fshield','thickskin']],
+  ['magmaw','Magmaw','drake',['#5c5470','#e3262d','#ecebf2'],['flame','hardened','fshield','thickskin']],
   ['gustling','Gustling','wing',['#8fd3ff','#2a7fb8','#effaff'],['emberspit','leech','blast','double']],
   ['featherby','Featherby','wing',['#ffd1e8','#c2588f','#fff5fa'],['furyfist','bubble','moltencore','roots']],
   ['squallix','Squallix','wing',['#6f8bff','#ffd84d','#eef1ff'],['firewall','flame','fshield','thickskin']],
@@ -2769,7 +2769,7 @@ function animateBattle(root,b,animating){
         if(e.crit) { root.classList.remove('quake'); void root.offsetWidth; root.classList.add('quake'); }
       }
       if(e.k==='heal'){ for(let n=0;n<6;n++){ const s=document.createElement('i'); s.className='sparkle'; s.style.left=(15+Math.random()*70)+'%'; s.style.animationDelay=(n*0.07)+'s'; el.appendChild(s); setTimeout(()=>s.remove(),1300);} }
-      if(e.k==='buff'){ const r=document.createElement('i'); r.className='ring'; r.style.setProperty('--c', e.b==='bubble'?'#2f8cff':e.b==='thorns'?'#f2b600':e.b==='atkUp'?'#ff9f0a':e.b==='defUp'?'#a2845e':'#5e8bff'); el.appendChild(r); setTimeout(()=>r.remove(),750); }
+      if(e.k==='buff'){ const r=document.createElement('i'); r.className='ring'; r.style.setProperty('--c', e.b==='bubble'?'#22a6e3':e.b==='thorns'?'#f7b500':e.b==='atkUp'?'#ff9f0a':e.b==='defUp'?'#a2845e':'#5e8bff'); el.appendChild(r); setTimeout(()=>r.remove(),750); }
       el.appendChild(f);
       syncCard(b,e.s,e.i);
     }, delay);
@@ -2816,7 +2816,7 @@ function zoneUnlocked(i){ return i===0 || (S.zones[ZONES[i-1].id]||0)>=4; }
 
 // ===== icons =====
 const ICON = {
-  fist:'<path d="M8 11V8a1.5 1.5 0 0 1 3 0v2V6.5a1.5 1.5 0 0 1 3 0V10V7.5a1.5 1.5 0 0 1 3 0V13c0 3-2 6-5.5 6S6 17 6 14v-2a1.5 1.5 0 0 1 2-1" fill="#fff"/>',
+  fist:'<g transform="translate(0 .5)" fill="#fff" stroke="#c8461a" stroke-width=".7" stroke-linejoin="round"><rect x="8.4" y="15" width="7.2" height="5" rx="1"/><rect x="6.3" y="10" width="11.8" height="6.8" rx="2.4"/><rect x="6.3" y="5" width="3.1" height="7.4" rx="1.55"/><rect x="9.2" y="4.4" width="3.1" height="7.8" rx="1.55"/><rect x="12.1" y="4.6" width="3.1" height="7.6" rx="1.55"/><rect x="15" y="5.6" width="3.1" height="6.8" rx="1.55"/><path d="M5.6 12.6c0-1.2 1-1.9 2.2-1.9h5.4c1 0 1.7.8 1.7 1.7s-.8 1.7-1.7 1.7H9.6c-.6 1.4-1.8 2.2-3 2.2-.6-.8-1-2.2-1-3.7z"/></g>',
   fire:'<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 1.5 1 2 2.5 2 4 1-2 1-4 1-7z" fill="#fff"/>',
   water:'<path d="M12 3c3 5 6 8 6 11a6 6 0 0 1-12 0c0-3 3-6 6-11z" fill="#fff"/>',
   bolt:'<path d="M13 2 5 13h6l-1 9 8-12h-6z" fill="#fff"/>',
@@ -2836,15 +2836,15 @@ const ICON = {
 function skIconKey(id){
   const s=SK[id];
   if(id==='basic') return 'fist';
-  if(['pounce','double','furyfist','devour','souleater'].includes(id)) return 'claw'; if(['feedback','feed','absorb'].includes(id)) return 'swirl';
+  if(s.el==='neutral'&&s.k!=='passive'&&s.k!=='heal'&&!s.buff) return 'fist'; if(['feedback','feed','absorb'].includes(id)) return 'swirl';
   if(s.k==='passive') return 'star';
   if(s.sh==='bubble') return 'bubble'; if(s.k==='shield') return s.sh==='lsh'?'bolt':s.sh==='fsh'?'fire':'shield';
   if(s.buff==='mshield') return 'shield'; if(s.buff==='charge'||s.buff==='focus') return 'up'; if(s.buff==='evade') return 'wind'; if(s.buff==='cripple') return 'drop';
   if(s.k==='heal') return 'heart';
-  return {fire:'fire',water:'water',bolt:'bolt',nature:'nature',earth:'earth',wind:'wind'}[s.el]||'claw';
+  return {fire:'fire',water:'water',bolt:'bolt',nature:'nature',earth:'earth',wind:'wind',neutral:'fist'}[s.el]||'fist';
 }
 function icon(key,bg,size){ return `<span class="ic" style="background:${bg};width:${size}px;height:${size}px"><svg viewBox="0 0 24 24">${ICON[key]}</svg></span>`; }
-const ST_ICON={pers:['up','#30c05a'],burn:['fire','#ff6a3d'],poison:['drop','#30c05a'],storm:['bolt','#7a6ad8'],stun:['star','#f2b600'],bubble:['bubble','#2f8cff'],lsh:['bolt','#f2b600'],fsh:['fire','#e0475b'],nsh:['nature','#30c05a'],mshield:['shield','#5e8bff'],focus:['up','#ff9f0a'],charge:['up','#e0475b'],evade:['wind','#4fc3e8'],cripple:['drop','#8a5ad8'],roots:['heart','#30c05a']};
+const ST_ICON={pers:['up','#1fa03a'],burn:['fire','#e3262d'],poison:['drop','#1fa03a'],storm:['bolt','#7a6ad8'],stun:['star','#f7b500'],bubble:['bubble','#22a6e3'],lsh:['bolt','#f7b500'],fsh:['fire','#e0475b'],nsh:['nature','#1fa03a'],mshield:['shield','#5e8bff'],focus:['up','#ff9f0a'],charge:['up','#e0475b'],evade:['wind','#4fc3e8'],cripple:['drop','#8a5ad8'],roots:['heart','#1fa03a']};
 
 // ===== HUD with dollars =====
 function renderHUD(){
@@ -3658,9 +3658,9 @@ const PAS_IC={fury:'fist',sweaty:'drop',roots:'heart',thick:'shield',grounded:'e
 function hudIcons(m){
   if(!m) return '';
   const out=[];
-  Object.keys(m.pas||{}).forEach(p=>{ const id=Object.keys(SK).find(k=>SK[k].p===p); out.push(`<span class="hi" data-tip="${id?esc(SK[id].n+' (passive, Lv '+(m.skl[id]||1)+')|'+skillDesc(id,m.skl[id]||1)):''}">${icon(p==='roots'?'plus':PAS_IC[p]||'star','#ff6a3d',30)}</span>`); });
+  Object.keys(m.pas||{}).forEach(p=>{ const id=Object.keys(SK).find(k=>SK[k].p===p); out.push(`<span class="hi" data-tip="${id?esc(SK[id].n+' (passive, Lv '+(m.skl[id]||1)+')|'+skillDesc(id,m.skl[id]||1)):''}">${icon(p==='roots'?'plus':PAS_IC[p]||'star','#e3262d',30)}</span>`); });
   const f=m.fx||{};
-  if(f.dflat) out.push(`<span class="hi" data-tip="Brute Blades|+${f.dflat} damage on attacks, +${f.tflat} damage taken">${icon('star','#ff6a3d',30)}</span>`);
+  if(f.dflat) out.push(`<span class="hi" data-tip="Brute Blades|+${f.dflat} damage on attacks, +${f.tflat} damage taken">${icon('star','#e3262d',30)}</span>`);
   if(f.rhp) out.push(`<span class="hi" data-tip="Life Bowl|Recovers ${f.rhp} life after each turn">${icon('plus','#e0475b',30)}</span>`);
   if(f.rmp) out.push(`<span class="hi" data-tip="Mana Bowl|Recovers ${f.rmp} mana after each turn">${icon('plus','#4a9cf0',30)}</span>`);
   Object.keys(ST_ICON).filter(k=>m.st[k]>0).forEach(k=>out.push(`<span class="hi st" data-tip="${BUFF_N[k]||k}|Active for ${m.st[k]} more turn${m.st[k]>1?'s':''}">${icon(ST_ICON[k][0],ST_ICON[k][1],26)}</span>`));
@@ -4715,7 +4715,7 @@ openBattle=(function(prev){ return function(){ const r=prev.apply(this,arguments
       setTimeout(()=>lilaSay([sp.rival?`That's ${sp.n}! Careful — he hits hard with ${atk?atk.n:'his attacks'}.`:`It's a ${sp.n}! Look out for its ${atk?atk.n:'attacks'}!`],{who:'breta'}).then(()=>{ if(B){ B.paused=false; drive(); } }),500); } } }catch(_){}
   return r; }; })(openBattle);
 
-ST_ICON.absorb=['swirl','#2f8cff'];
+ST_ICON.absorb=['swirl','#22a6e3'];
 
 // ---- ability upgrade buttons + train popup ----
 upCost=function(sl){ return 200*sl; };
@@ -4901,7 +4901,7 @@ skillDesc=(function(prev){ return function(id,L){ L=L||1;
   if(id==='bolt') return `Strong lightning attack that deals ${Math.round(lv(SK.bolt.dmg,L))} damage and has a 50% chance to do 2x damage.`;
   if(id==='staticd') return `Unleash an electrical discharge at your enemy to cause ${Math.round(lv(SK.staticd.dmg,L))} direct damage and ${Math.round(lv(SK.staticd.stormTick,L))} damage each turn for 2 turns.`;
   return prev(id,L); }; })(skillDesc);
-ST_ICON.crit=['star','#f2b600'];
+ST_ICON.crit=['star','#f7b500'];
 PAS_IC.pounce='claw';
 
 // ===== Arena: Choose Your Champions -> READY -> Live Arena matchmaking =====
@@ -5041,7 +5041,7 @@ renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.
 addEventListener('pointerdown',e=>{ const el=document.getElementById('abinfo'); if(!el||!el.classList.contains('show')) return;
   if(e.target.closest&&e.target.closest('#abinfo,.ab')) return; hideInfo(); },true);
 
-// ===== V13: Move Studio (admin) — define every move without code =====
+// ===== V13: Ability Studio (admin) — define every move without code =====
 const MOVE_KINDS=[['hit','Attack'],['dot','Damage over time'],['shield','Shield'],['buff','Buff (self)'],['debuff','Debuff (foe)'],['heal','Heal'],['drain','Steal (life/mana)'],['passive','Passive']];
 const BUFF_TYPES=[['crit','Critical chance (2x)'],['evade','Dodge chance'],['focus','Fire damage up'],['charge','All damage up'],['mshield','Mana soaks damage'],['absorb','Damage taken → mana'],['pers','Damage reduction']];
 const PAS_TYPES=[['fury','+% physical damage'],['pounce','+% all damage'],['roots','Heal % each turn'],['grounded','Resist lightning'],['sweaty','Resist fire & water'],['thick','Resist all damage'],['hard','Resist physical'],['camel','+ mana each turn']];
@@ -5107,7 +5107,7 @@ skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; if(!s)
 // ---------- unique usernames + server-decided admins ----------
 let ADMIN=false; try{ ADMIN=localStorage.getItem('mr-admin')==='1'; }catch(_){}
 function setAdmin(v){ ADMIN=!!v; try{ localStorage.setItem('mr-admin',ADMIN?'1':'0'); localStorage.removeItem('mr-admin-key'); }catch(_){}
-  SUBMENUS.menu=SUBMENUS.menu.filter(x=>x[0]!=='Move Studio'); if(ADMIN) SUBMENUS.menu.push(['Move Studio',()=>openStudio()]); }
+  SUBMENUS.menu=SUBMENUS.menu.filter(x=>x[0]!=='Ability Studio'); if(ADMIN) SUBMENUS.menu.push(['Ability Studio',()=>openStudio()]); }
 setAdmin(ADMIN);
 function nameError(err){ return err==='taken'?'That name is already taken. Try another one!':err==='invalid'?'Names can be 2–16 letters, numbers, spaces, - _ or .':"Couldn't check that name right now. Try again."; }
 async function claimName(name){ if(!window.MR_ACCT) return {ok:1}; try{ const r=await MR_ACCT.claim(name); if(r&&r.ok) setAdmin(r.admin); return r||{ok:0}; }catch(_){ return {ok:0,err:'net'}; } }
@@ -5153,8 +5153,8 @@ function drawStudio(){
     if(isPair) return `<label class="sf"><span>${label}${help?`<i>${help}</i>`:''}</span><div class="sf2"><input inputmode="decimal" data-k="${k}" data-t="${type}" data-i="0" value="${show(val(k,0))}" placeholder="Lv 1${isP?' %':''}"><b>+</b><input inputmode="decimal" data-k="${k}" data-t="${type}" data-i="1" value="${show(val(k,1))}" placeholder="per lv"></div></label>`;
     return `<label class="sf"><span>${label}${help?`<i>${help}</i>`:''}</span><input inputmode="decimal" data-k="${k}" data-t="${type}" value="${show(v)}" placeholder="${isP?'%':''}"></label>`; };
   const L=st.L, el=EL[d.el]||EL.neutral;
-  st.sh.body.querySelector('.studio').innerHTML=`<div class="plankbar"><button class="backb" id="stb">Back</button><div class="plank">Move Studio</div><button class="findb" id="stnew">+ NEW</button></div>
-   <div class="st-wrap"><div class="st-list"><input class="st-q" id="stq" placeholder="Search ${Object.keys(SK).length-1} moves" value="${esc(st.q)}">
+  st.sh.body.querySelector('.studio').innerHTML=`<div class="plankbar"><button class="backb" id="stb">Back</button><div class="plank">Ability Studio</div><button class="findb" id="stnew">+ NEW</button></div>
+   <div class="st-wrap"><div class="st-list"><input class="st-q" id="stq" placeholder="Search ${Object.keys(SK).length-1} abilities" value="${esc(st.q)}">
      ${ids.map(id=>`<button class="st-it ${id===st.sel?'on':''}" data-id="${id}">${icon(skIconKey(id),(EL[SK[id].el]||EL.neutral).c,26)}<b>${esc(SK[id].n)}</b>${MOVE_OVR[id]?'<em>edited</em>':''}</button>`).join('')}</div>
    <div class="st-ed">
      <div class="st-prev">${icon(skIconKey(st.sel),el.c,48)}<div><b>${esc(d.n||'')}</b><span>${kind==='passive'?'passive':'mana cost: '+(d.mp?Math.round(lv(d.mp,L)):0)}</span><p id="stdesc"></p></div>
@@ -5192,7 +5192,7 @@ function drawStudio(){
       st.dirty=true; drawStudio(); }); });
   q('#stsave').onclick=()=>{ if(!st.dirty) return; saveMove(st.sel, d); };
   const rv=q('#strev'); if(rv) rv.onclick=()=>confirmBox(`Put ${esc(d.n)} back to its original settings?`,'RESET',()=>{ const o=Object.assign({},MOVE_OVR); delete o[st.sel]; pushMoves(o,()=>{ st.draft=null; st.dirty=false; drawStudio(); toast('Reset to default'); }); });
-  q('#stnew').onclick=()=>{ const go=()=>{ let n=1, id; do{ id='custom'+n++; }while(SK[id]); SK[id]={n:'New Move',el:'neutral',t:'enemy',k:'hit',mp:[10,5],dmg:[15,8]}; st.sel=id; st.draft=JSON.parse(JSON.stringify(SK[id])); st.dirty=true; drawStudio(); }; if(st.dirty) confirmBox('Discard unsaved changes?','DISCARD',go); else go(); };
+  q('#stnew').onclick=()=>{ const go=()=>{ let n=1, id; do{ id='custom'+n++; }while(SK[id]); SK[id]={n:'New Ability',el:'neutral',t:'enemy',k:'hit',mp:[10,5],dmg:[15,8]}; st.sel=id; st.draft=JSON.parse(JSON.stringify(SK[id])); st.dirty=true; drawStudio(); }; if(st.dirty) confirmBox('Discard unsaved changes?','DISCARD',go); else go(); };
 }
 function saveMove(id,d){ const o=Object.assign({},MOVE_OVR); o[id]=JSON.parse(JSON.stringify(d)); pushMoves(o,()=>{ STUDIO.draft=null; STUDIO.dirty=false; drawStudio(); toast(`${d.n} saved for everyone`); }); }
 async function pushMoves(o,done){
