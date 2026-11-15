@@ -957,6 +957,57 @@ body.rot #hud,body.rot #bar,body.rot .bhud,body.rot .dock{padding-left:calc(var(
 body.rot .tring{left:calc(var(--sa-left) + 10px)!important}
 body.rot .mailb{right:calc(var(--sa-right) + 16px)!important}
 body.rot .ld-ver{right:calc(var(--sa-right) + 12px)!important}
+
+.abox-wrap{position:fixed;inset:0;z-index:400;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0);transition:background .2s}
+.abox-wrap.on{background:rgba(0,0,0,.35)}
+.abox{width:min(calc(46*var(--vw)),380px);border-radius:16px;background:linear-gradient(#3f5f9a,#1e3566);box-shadow:0 0 0 3px #c9d6ee,0 12px 30px rgba(0,0,0,.45);padding:16px 14px 14px;text-align:center;color:#fff;transform:scale(.85);opacity:0;transition:.2s}
+.abox-wrap.on .abox{transform:none;opacity:1}
+.abox p{margin:0 0 14px;font:600 min(calc(5*var(--vh)),20px)/1.25 -apple-system,system-ui,sans-serif}
+.abox-ok{width:100%;padding:10px;border-radius:10px;background:linear-gradient(#5d7fc0,#2c4a8a);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 1px #9fb3dc;color:#fff;font:700 18px -apple-system,system-ui,sans-serif}
+.shopscr{height:calc(100*var(--vh));display:flex;flex-direction:column;overflow:hidden;background:
+ repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 2px,transparent 2px 80px),
+ linear-gradient(#b9895a 0,#a8794b 34%,#7a5432 34.5%,#8f6440 37%,#b9895a 37.5%,#a8794b 70%,#7a5432 70.5%,#8f6440 73%,#b08354 73.5%)}
+.shopscr .thud{flex:none}
+.s2tabs{flex:none;display:flex;gap:min(calc(2*var(--vw)),14px);justify-content:center;padding:calc(1.4*var(--vh)) calc(var(--sa-left) + 10px) calc(.8*var(--vh)) calc(var(--sa-left) + 10px)}
+.s2tab{flex:1;max-width:170px;padding:calc(1*var(--vh)) 6px;border-radius:8px;font:min(calc(5*var(--vh)),22px) "Lilita One",system-ui;color:#fff;background:linear-gradient(#4f8fe6,#1f4fa8);box-shadow:0 0 0 2px #e8f0ff,0 3px 0 #10306a;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.s2tab.on{background:linear-gradient(#2a3f78,#14234a);box-shadow:0 0 0 2px #c7d3ef,inset 0 2px 6px rgba(0,0,0,.4)}
+.s2body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;padding-bottom:calc(var(--sa-bottom) + 1.5*var(--vh))}
+.s2row{flex:1;min-height:0;display:flex;align-items:center;gap:min(calc(2.5*var(--vw)),20px);overflow-x:auto;padding:0 calc(var(--sa-right) + 14px) 0 calc(var(--sa-left) + 14px)}
+.s2item{flex:none;width:min(calc(28*var(--vh)),150px);aspect-ratio:.86;border-radius:10px;background:rgba(255,255,255,.72);box-shadow:0 0 0 2px rgba(60,40,20,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;transition:transform .15s}
+.s2item.sel{background:#fff;transform:scale(1.1);box-shadow:0 0 0 3px #2a1a08,0 8px 16px rgba(0,0,0,.25)}
+.s2item.dim{opacity:.55}
+.s2art{width:70%}.s2art svg{width:100%;display:block}
+.s2item span{font:min(calc(5*var(--vh)),22px) "Lilita One",system-ui;color:#2a1a08}.g{color:#3aa83a}
+.s2det{flex:none;margin:0 calc(var(--sa-right) + 12px) 0 calc(var(--sa-left) + 12px);border-radius:14px;background:#bfeefc;box-shadow:0 0 0 2px #2a3a48;overflow:hidden}
+.s2h{display:flex;justify-content:space-between;align-items:center;padding:calc(.8*var(--vh)) 14px;background:#d8f5ff;border-bottom:2px solid #2a3a48;font:min(calc(5.4*var(--vh)),24px) "Lilita One",system-ui;color:#111}.s2h b{font-weight:400}
+.s2r{display:flex;align-items:center;gap:14px;padding:calc(.8*var(--vh)) 14px 0;font:min(calc(4.6*var(--vh)),20px) -apple-system,system-ui;color:#222}
+.s2c{font:min(calc(5*var(--vh)),22px) "Lilita One",system-ui}.s2lv{flex:1;text-align:center}
+.s2btn{padding:calc(.9*var(--vh)) 22px;border-radius:8px;font:min(calc(5*var(--vh)),22px) "Lilita One",system-ui;color:#fff;background:linear-gradient(#3f7fe0,#1a46a0);box-shadow:0 0 0 2px #fff,0 3px 0 #0e2d6a}
+.s2btn.eq{background:linear-gradient(#4cc35a,#22862e);box-shadow:0 0 0 2px #fff,0 3px 0 #145a1c}
+.s2det p{margin:0;padding:calc(.6*var(--vh)) 14px calc(1.2*var(--vh));font:min(calc(4.4*var(--vh)),19px) -apple-system,system-ui;color:#222}
+.s2cards{flex:1;display:flex;align-items:center;justify-content:center;gap:min(calc(3*var(--vw)),24px);padding:0 calc(var(--sa-right) + 14px) 0 calc(var(--sa-left) + 14px)}
+.s2card{width:min(calc(22*var(--vw)),calc(46*var(--vh)),210px);border-radius:14px;background:#fff8ec;box-shadow:0 0 0 2px #2a1a08,0 8px 16px rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;gap:calc(.8*var(--vh));padding:calc(2*var(--vh)) 10px;text-align:center;color:#2a1a08}
+.s2card b{font:min(calc(5*var(--vh)),22px) "Lilita One",system-ui;font-weight:400}.s2card span{font:min(calc(3.6*var(--vh)),15px) -apple-system,system-ui;color:#5a4a3a}
+.s2card em{font:min(calc(5*var(--vh)),22px) "Lilita One",system-ui;font-style:normal}
+.s2card .egg{width:calc(14*var(--vh));height:calc(17*var(--vh))}
+.s2m{width:calc(14*var(--vh))}.s2m svg{width:100%;display:block}
+.s2card.soon{opacity:.85}.s2soon{background:#ece2d2;border-radius:8px;padding:3px 10px}
+.sheet:has(.shopscr){overflow:hidden!important;padding:0!important}
+body.rot .shopscr .thud{padding-left:calc(var(--sa-left) + 10px)!important;padding-right:calc(var(--sa-right) + 10px)!important}
+
+.task.bump .t-prog{animation:tbump .45s ease}
+@keyframes tbump{40%{transform:scale(1.06);filter:brightness(1.3)}}
+.runner{animation:none!important}
+.runner svg{animation:pounce 1.1s cubic-bezier(.3,0,.3,1) infinite!important;transform-origin:50% 90%}
+@keyframes pounce{0%,100%{transform:translateX(-6%) rotate(0)}30%{transform:translateX(-12%) rotate(-6deg) scaleY(.94)}55%{transform:translateX(14%) translateY(-10%) rotate(8deg) scale(1.08)}75%{transform:translateX(6%) rotate(2deg)}}
+
+.sheet:has(.zdone){overflow:hidden!important;padding:0!important}
+.zdone .tfield{height:calc(100*var(--vh))!important;min-height:0!important;position:relative}
+.zd-dim{position:absolute;inset:0;background:rgba(10,20,40,.55);z-index:2}
+.zd-title{position:absolute;z-index:3;left:0;right:0;top:calc(10*var(--vh));margin:0;text-align:center;font:min(calc(10*var(--vh)),52px) "Lilita One",system-ui;font-weight:400;color:#fff;text-shadow:0 3px 0 #1d2a3a}
+.zd-lila{position:absolute;z-index:3;left:calc(var(--sa-left) + 16%);bottom:0;width:min(calc(30*var(--vw)),calc(62*var(--vh)))}.zd-lila svg{width:100%;display:block}
+.zd-side{position:absolute;z-index:3;right:calc(var(--sa-right) + 8%);top:calc(36*var(--vh));width:min(calc(36*var(--vw)),340px);text-align:center;color:#e8e8e8;font:min(calc(6*var(--vh)),26px)/1.3 Georgia,serif}
+.zd-done{margin-top:calc(7*var(--vh));padding:calc(1.6*var(--vh)) 44px;border-radius:10px;font:min(calc(7*var(--vh)),32px) "Lilita One",system-ui;color:#fff;background:linear-gradient(#ff6a3a,#d8401a);box-shadow:0 0 0 3px #fff,0 4px 0 #7a1e08}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

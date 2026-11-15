@@ -966,6 +966,57 @@ body.rot #hud,body.rot #bar,body.rot .bhud,body.rot .dock{padding-left:calc(var(
 body.rot .tring{left:calc(var(--sa-left) + 10px)!important}
 body.rot .mailb{right:calc(var(--sa-right) + 16px)!important}
 body.rot .ld-ver{right:calc(var(--sa-right) + 12px)!important}
+
+.abox-wrap{position:fixed;inset:0;z-index:400;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0);transition:background .2s}
+.abox-wrap.on{background:rgba(0,0,0,.35)}
+.abox{width:min(calc(46*var(--vw)),380px);border-radius:16px;background:linear-gradient(#3f5f9a,#1e3566);box-shadow:0 0 0 3px #c9d6ee,0 12px 30px rgba(0,0,0,.45);padding:16px 14px 14px;text-align:center;color:#fff;transform:scale(.85);opacity:0;transition:.2s}
+.abox-wrap.on .abox{transform:none;opacity:1}
+.abox p{margin:0 0 14px;font:600 min(calc(5*var(--vh)),20px)/1.25 -apple-system,system-ui,sans-serif}
+.abox-ok{width:100%;padding:10px;border-radius:10px;background:linear-gradient(#5d7fc0,#2c4a8a);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 1px #9fb3dc;color:#fff;font:700 18px -apple-system,system-ui,sans-serif}
+.shopscr{height:calc(100*var(--vh));display:flex;flex-direction:column;overflow:hidden;background:
+ repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 2px,transparent 2px 80px),
+ linear-gradient(#b9895a 0,#a8794b 34%,#7a5432 34.5%,#8f6440 37%,#b9895a 37.5%,#a8794b 70%,#7a5432 70.5%,#8f6440 73%,#b08354 73.5%)}
+.shopscr .thud{flex:none}
+.s2tabs{flex:none;display:flex;gap:min(calc(2*var(--vw)),14px);justify-content:center;padding:calc(1.4*var(--vh)) calc(var(--sa-left) + 10px) calc(.8*var(--vh)) calc(var(--sa-left) + 10px)}
+.s2tab{flex:1;max-width:170px;padding:calc(1*var(--vh)) 6px;border-radius:8px;font:min(calc(5*var(--vh)),22px) "Lilita One",system-ui;color:#fff;background:linear-gradient(#4f8fe6,#1f4fa8);box-shadow:0 0 0 2px #e8f0ff,0 3px 0 #10306a;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.s2tab.on{background:linear-gradient(#2a3f78,#14234a);box-shadow:0 0 0 2px #c7d3ef,inset 0 2px 6px rgba(0,0,0,.4)}
+.s2body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;padding-bottom:calc(var(--sa-bottom) + 1.5*var(--vh))}
+.s2row{flex:1;min-height:0;display:flex;align-items:center;gap:min(calc(2.5*var(--vw)),20px);overflow-x:auto;padding:0 calc(var(--sa-right) + 14px) 0 calc(var(--sa-left) + 14px)}
+.s2item{flex:none;width:min(calc(28*var(--vh)),150px);aspect-ratio:.86;border-radius:10px;background:rgba(255,255,255,.72);box-shadow:0 0 0 2px rgba(60,40,20,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;transition:transform .15s}
+.s2item.sel{background:#fff;transform:scale(1.1);box-shadow:0 0 0 3px #2a1a08,0 8px 16px rgba(0,0,0,.25)}
+.s2item.dim{opacity:.55}
+.s2art{width:70%}.s2art svg{width:100%;display:block}
+.s2item span{font:min(calc(5*var(--vh)),22px) "Lilita One",system-ui;color:#2a1a08}.g{color:#3aa83a}
+.s2det{flex:none;margin:0 calc(var(--sa-right) + 12px) 0 calc(var(--sa-left) + 12px);border-radius:14px;background:#bfeefc;box-shadow:0 0 0 2px #2a3a48;overflow:hidden}
+.s2h{display:flex;justify-content:space-between;align-items:center;padding:calc(.8*var(--vh)) 14px;background:#d8f5ff;border-bottom:2px solid #2a3a48;font:min(calc(5.4*var(--vh)),24px) "Lilita One",system-ui;color:#111}.s2h b{font-weight:400}
+.s2r{display:flex;align-items:center;gap:14px;padding:calc(.8*var(--vh)) 14px 0;font:min(calc(4.6*var(--vh)),20px) -apple-system,system-ui;color:#222}
+.s2c{font:min(calc(5*var(--vh)),22px) "Lilita One",system-ui}.s2lv{flex:1;text-align:center}
+.s2btn{padding:calc(.9*var(--vh)) 22px;border-radius:8px;font:min(calc(5*var(--vh)),22px) "Lilita One",system-ui;color:#fff;background:linear-gradient(#3f7fe0,#1a46a0);box-shadow:0 0 0 2px #fff,0 3px 0 #0e2d6a}
+.s2btn.eq{background:linear-gradient(#4cc35a,#22862e);box-shadow:0 0 0 2px #fff,0 3px 0 #145a1c}
+.s2det p{margin:0;padding:calc(.6*var(--vh)) 14px calc(1.2*var(--vh));font:min(calc(4.4*var(--vh)),19px) -apple-system,system-ui;color:#222}
+.s2cards{flex:1;display:flex;align-items:center;justify-content:center;gap:min(calc(3*var(--vw)),24px);padding:0 calc(var(--sa-right) + 14px) 0 calc(var(--sa-left) + 14px)}
+.s2card{width:min(calc(22*var(--vw)),calc(46*var(--vh)),210px);border-radius:14px;background:#fff8ec;box-shadow:0 0 0 2px #2a1a08,0 8px 16px rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;gap:calc(.8*var(--vh));padding:calc(2*var(--vh)) 10px;text-align:center;color:#2a1a08}
+.s2card b{font:min(calc(5*var(--vh)),22px) "Lilita One",system-ui;font-weight:400}.s2card span{font:min(calc(3.6*var(--vh)),15px) -apple-system,system-ui;color:#5a4a3a}
+.s2card em{font:min(calc(5*var(--vh)),22px) "Lilita One",system-ui;font-style:normal}
+.s2card .egg{width:calc(14*var(--vh));height:calc(17*var(--vh))}
+.s2m{width:calc(14*var(--vh))}.s2m svg{width:100%;display:block}
+.s2card.soon{opacity:.85}.s2soon{background:#ece2d2;border-radius:8px;padding:3px 10px}
+.sheet:has(.shopscr){overflow:hidden!important;padding:0!important}
+body.rot .shopscr .thud{padding-left:calc(var(--sa-left) + 10px)!important;padding-right:calc(var(--sa-right) + 10px)!important}
+
+.task.bump .t-prog{animation:tbump .45s ease}
+@keyframes tbump{40%{transform:scale(1.06);filter:brightness(1.3)}}
+.runner{animation:none!important}
+.runner svg{animation:pounce 1.1s cubic-bezier(.3,0,.3,1) infinite!important;transform-origin:50% 90%}
+@keyframes pounce{0%,100%{transform:translateX(-6%) rotate(0)}30%{transform:translateX(-12%) rotate(-6deg) scaleY(.94)}55%{transform:translateX(14%) translateY(-10%) rotate(8deg) scale(1.08)}75%{transform:translateX(6%) rotate(2deg)}}
+
+.sheet:has(.zdone){overflow:hidden!important;padding:0!important}
+.zdone .tfield{height:calc(100*var(--vh))!important;min-height:0!important;position:relative}
+.zd-dim{position:absolute;inset:0;background:rgba(10,20,40,.55);z-index:2}
+.zd-title{position:absolute;z-index:3;left:0;right:0;top:calc(10*var(--vh));margin:0;text-align:center;font:min(calc(10*var(--vh)),52px) "Lilita One",system-ui;font-weight:400;color:#fff;text-shadow:0 3px 0 #1d2a3a}
+.zd-lila{position:absolute;z-index:3;left:calc(var(--sa-left) + 16%);bottom:0;width:min(calc(30*var(--vw)),calc(62*var(--vh)))}.zd-lila svg{width:100%;display:block}
+.zd-side{position:absolute;z-index:3;right:calc(var(--sa-right) + 8%);top:calc(36*var(--vh));width:min(calc(36*var(--vw)),340px);text-align:center;color:#e8e8e8;font:min(calc(6*var(--vh)),26px)/1.3 Georgia,serif}
+.zd-done{margin-top:calc(7*var(--vh));padding:calc(1.6*var(--vh)) 44px;border-radius:10px;font:min(calc(7*var(--vh)),32px) "Lilita One",system-ui;color:#fff;background:linear-gradient(#ff6a3a,#d8401a);box-shadow:0 0 0 3px #fff,0 4px 0 #7a1e08}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -2639,9 +2690,9 @@ function drawTasks(){
       <div class="hrow"><div class="hbar cash"><span class="ico c">$</span><b>${S.cash|0}</b></div><div class="hbar shrooms"><span class="ico m">${mushroomSVG('#b04fd6')}</span><b>${S.mush}</b></div></div></div>
       <div class="thmon">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div></div>
     <div class="tlist">${tl.map((t,k)=>{
-      const done=pr[k]>=t.reps; const prevDone=tl.slice(0,k).every((x,j)=>pr[j]>=x.reps); const lockBoss=!prevDone; const lvOk=m.lvl>=t.lv, mpOk=!t.mp||st.mp>=t.mp, hpOk=!t.hp||st.hp>=t.hp;
-      const can=!lockBoss&&lvOk&&mpOk&&hpOk;
-      const why = lockBoss?'Finish the activity above first': !lvOk?`Needs Lv ${t.lv}`: !mpOk?`Needs ${t.mp} mana (has ${st.mp}) — try items or stat points`: !hpOk?`Needs ${t.hp} life (has ${st.hp}) — try items or stat points`:'';
+      const done=pr[k]>=t.reps; const lockBoss=t.t==='boss'&&!nonBossDone; const lvOk=m.lvl>=t.lv, mpOk=!t.mp||st.mp>=t.mp, hpOk=!t.hp||st.hp>=t.hp;
+      const can=!lockBoss;
+      const why = lockBoss?'Finish the other activities first':'';
       return `<div class="task ${done?'done':''} ${t.t} ${lockBoss?'lockedq':''}">
         <div class="t-h">${t.t!=='act'?`<span class="tkind">${t.t==='boss'?'BOSS':'BATTLE'}</span>`:''}${esc(t.n)}</div>
         <div class="t-grid">
@@ -2653,13 +2704,20 @@ function drawTasks(){
         </div>${why?`<div class="t-why">${why}</div>`:''}</div>`; }).join('')}</div>
     <div class="zfoot"><div class="zbar big"><i style="width:${zonePct(zi)}%"></i><em>${z.n} — ${zonePct(zi)}% complete</em></div></div>`;
   sh.body.querySelector('#tb').onclick=sh.close;
-  sh.body.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>doTask(zi,+b.dataset.task));
+  sh.body.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{ const t=tl[+b.dataset.task];
+    if(m.lvl<t.lv) return alertBox("Your monster's level isn't high enough for this task!");
+    if(t.mp&&st.mp<t.mp) return alertBox("Your mana isn't high enough for this task!");
+    if(t.hp&&st.hp<t.hp) return alertBox("Your life isn't high enough for this task!");
+    doTask(zi,+b.dataset.task); });
 }
 function doTask(zi,k){
   const t=taskList(zi)[k]; const m=monBy(S.zoneMon)||teamMons()[0];
   if(!spend(t.en)){ drawTasks(); return; }
+  { const pr0=taskProg(zi); if(pr0[k]>=t.reps) pr0[k]=0; }
   if(t.t==='act'){
-    const pr=taskProg(zi); pr[k]=Math.min(t.reps,pr[k]+1); S.cash=(S.cash|0)+t.cash; const r=giveXp(m,t.xp);
+    const pr=taskProg(zi); pr[k]=Math.min(t.reps,pr[k]+1);
+    if(pr[k]<t.reps){ persist(); drawTasks(); renderHUD(); const tk=document.querySelectorAll('.tasks .task')[k]; if(tk){ tk.classList.add('bump'); setTimeout(()=>tk.classList.remove('bump'),450); } return; }
+    S.cash=(S.cash|0)+t.cash; const r=giveXp(m,t.xp);
     persist(); drawTasks(); renderHUD();
     rewardPopup({title:'SUCCESS!', cash:t.cash, xp:t.xp, mons:[{m,r}], onClose:afterTaskTut});
     return;
@@ -2869,9 +2927,9 @@ function finishBattle(){
   const win = b.over && b.winner===B.mySide;
   if(mode==='campaign' && meta.task!=null){
     const zi=meta.zi, k=meta.task; const t=taskList(zi)[k]; const m=monBy(meta.uid); const z=ZONES[zi];
-    let cash=0, xp=Math.round(t.xp*(win?1:0.3)), mush=0; const extra=[];
-    if(win){ S.stats.wins++; const pr=taskProg(zi); pr[k]=Math.min(t.reps,pr[k]+1); cash=t.cash;
-      if(t.t==='boss' && (S.zones[z.id]||0)<4){ S.zones[z.id]=4; mush=5;
+    let cash=0, xp=0, mush=0; const extra=[]; let partial=false, zoneJust=false;
+    if(win){ S.stats.wins++; const pr=taskProg(zi); pr[k]=Math.min(t.reps,pr[k]+1); if(pr[k]>=t.reps){ cash=t.cash; xp=t.xp; } else partial=`${pr[k]} / ${t.reps}`;
+      if(t.t==='boss' && (S.zones[z.id]||0)<4){ S.zones[z.id]=4; mush=5; zoneJust=true;
         if(zi>0){ const pool=SP.filter(x=>x.fam===z.fam); // each of the zone's monsters has an equal chance
           const nm=addMon(pool[Math.floor(Math.random()*pool.length)].id, Math.max(2,z.lv)); if(S.team.length<3) S.team.push(nm.uid); extra.push([`You found a new monster!`,nm]); } }
     }
@@ -2879,7 +2937,9 @@ function finishBattle(){
     const r=m?giveXp(m,xp):null;
     persist(); closeBattle(); openTasks(zi);
     const tutDone = S.tut===3 && win; if(tutDone){ S.tut=4; persist(); }
+    if(partial&&!tutDone){ toast(`Victory! ${partial}`); return; }
     rewardPopup({title:win?'VICTORY!':'DEFEAT', lose:!win, cash, xp, mush, mons:m?[{m,r}]:[], onClose:async()=>{
+      if(zoneJust) await zoneCompleteScreen(zi);
       for(const [tt,mm] of extra){ await new Promise(res=>{ const s=reveal2(mm,tt,res); }); }
       if(tutDone){ await lilaSay(["See? It's that easy!","Next, let's visit the shop and pick up some mana wood. It gives your monster more mana!"]); S.tut=5; persist(); if(TASKSH) TASKSH.sh.close(); setTimeout(()=>pointAt('[data-p="shop"]'),400); }
       showLevelUps();
@@ -3139,7 +3199,7 @@ function pickItem(m,slot){
       ${!ids.length&&!cur?'<p class="muted center" style="grid-column:1/-1">You don\'t have any items yet.</p>':''}</div>
     <div class="actions"><button class="btn gbtn" id="psel">Select</button></div></div>`);
   sh.body.querySelectorAll('[data-pi]').forEach(x=>x.onclick=()=>{ sel=x.dataset.pi||null; sh.body.querySelectorAll('[data-pi]').forEach(y=>y.classList.toggle('sel',y===x)); });
-  sh.body.querySelector('#toshop').onclick=()=>{ sh.close(); MONSH&&MONSH.sh.close(); openPanel('shop'); };
+  sh.body.querySelector('#toshop').onclick=()=>{ sh.close(); MONSH&&MONSH.sh.close(); openShop({m,slot}); };
   sh.body.querySelector('#psel').onclick=()=>{
     if(sel && ITEMS[sel].lv>m.lvl) return toast(`Needs Lv ${ITEMS[sel].lv}`);
     if(sel===cur){ sh.close(); return; }
@@ -4285,6 +4345,77 @@ pickZone=function(cb){
   const cur=sh.body.querySelector(`[data-pz="${S.lastZone|0}"]`), row=sh.body.querySelector('.zd-row'); if(cur) setTimeout(()=>{ row.scrollLeft=cur.offsetLeft-(row.clientWidth-cur.offsetWidth)/2; },30);
 };
 const _dt12=drawTeam; drawTeam=function(){ _dt12(); const f=TEAMSH&&TEAMSH.body.querySelector('.tfield .scene'); if(f) f.outerHTML=sceneBG(); };
+
+// ---- simple alert popup ----
+function alertBox(msg){
+  const w=document.createElement('div'); w.className='abox-wrap';
+  w.innerHTML=`<div class="abox"><p>${esc(msg)}</p><button class="abox-ok">OK</button></div>`;
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add('on'));
+  const close=()=>{ w.classList.remove('on'); setTimeout(()=>w.remove(),200); };
+  w.querySelector('.abox-ok').onclick=close; w.onclick=e=>{ if(e.target===w) close(); };
+}
+
+// ---- full-screen shop ----
+let SHOPSH=null, SHOPCTX=null;
+const SHOP_TABS=[['items','Items'],['eggs','Eggs'],['energy','Energy'],['mush','Mushrooms']];
+function openShop(ctx){
+  if(PANEL) PANEL.sh.close(); if(SHOPSH) SHOPSH.close();
+  SHOPCTX=ctx||null; if(ctx) SHOPTAB='items';
+  if(S.tut===5){ SHOPTAB='items'; SHOPSEL='manawood'; }
+  const sh=sheet(`<div class="tscreen shopscr"></div>`,{cls:'full', onClose:()=>{ if(SHOPSH===sh){ SHOPSH=null; SHOPCTX=null; } render(); }});
+  SHOPSH=sh; drawShop();
+  if(S.tut===5) setTimeout(()=>pointAt('#buy'),400);
+}
+openPanel=(function(prev){ return function(name){ if(name==='shop') return openShop(); return prev(name); }; })(openPanel);
+function drawShop(){
+  if(!SHOPSH) return; const sh=SHOPSH; tickEnergy(); S.inv=S.inv||{};
+  let body='';
+  if(SHOPTAB==='items'){
+    const ids=Object.keys(ITEMS); const sel=SHOPSEL&&ITEMS[SHOPSEL]?SHOPSEL:ids[0]; const it=ITEMS[sel], have=S.inv[sel]|0;
+    const m=SHOPCTX&&SHOPCTX.m; const canEq=m&&have>0;
+    body=`<div class="s2row">${ids.map(id=>`<button class="s2item ${id===sel?'sel':''} ${ITEMS[id].lv>highLvl()?'dim':''}" data-si="${id}"><div class="s2art">${itemSVG(id)}</div><span><b class="g">$</b> ${ITEMS[id].cost}</span></button>`).join('')}</div>
+      <div class="s2det"><div class="s2h"><b>${it.n}</b><span>Inventory: x${have}</span></div>
+        <div class="s2r"><span class="s2c"><b class="g">$</b> ${it.cost}</span><span class="s2lv">Requires Level: <b>${it.lv}</b></span>
+          ${canEq?`<button class="s2btn eq" id="s2eq">EQUIP</button>`:''}<button class="s2btn" id="buy" data-buy="${sel}">BUY</button></div>
+        <p>${itemDesc(sel)}</p></div>`;
+  } else if(SHOPTAB==='eggs'){
+    body=`<div class="s2cards"><button class="s2card" id="hatch"><div class="egg"></div><b>Mystery Egg</b><span>Hatches a random monster</span><em>10 🍄</em></button>
+      <button class="s2card" id="hatchc"><div class="egg plain"></div><b>Monster Egg</b><span>A random monster, a few levels lower</span><em class="g">$${eggCost()}</em></button></div>`;
+  } else if(SHOPTAB==='energy'){
+    body=`<div class="s2cards"><button class="s2card" id="refill"><div class="egg bolt">⚡</div><b>Energy Refill</b><span>Fill your energy to max</span><em>15 🍄</em></button></div>`;
+  } else {
+    body=`<div class="s2cards">${[[60,'$0.99'],[330,'$4.99'],[700,'$9.99'],[1500,'$19.99']].map(([n,p])=>`<div class="s2card soon"><div class="s2m">${mushroomSVG('#b04fd6')}</div><b>${n} Mushrooms</b><em>${p}</em><span class="s2soon">Coming soon</span></div>`).join('')}</div>`;
+  }
+  sh.body.querySelector('.shopscr').innerHTML=`<div class="thud"><button class="backb" id="s2b">Back</button>
+      <div class="thcol"><div class="hbar energy"><span class="ico">⚡</span><div class="ebar"><i style="width:${S.energy/S.maxEnergy*100}%"></i><b>${S.energy<S.maxEnergy?`+1 in ${nextEnergyIn()} · `:''}${S.energy} / ${S.maxEnergy}</b></div></div>
+      <div class="hrow"><div class="hbar cash"><span class="ico c">$</span><b>${S.cash|0}</b></div><div class="hbar shrooms"><span class="ico m">${mushroomSVG('#b04fd6')}</span><b>${S.mush}</b></div></div></div></div>
+    <div class="s2tabs">${SHOP_TABS.map(([k,n])=>`<button class="s2tab ${SHOPTAB===k?'on':''}" data-st2="${k}">${n}</button>`).join('')}</div>
+    <div class="s2body">${body}</div>`;
+  const q=s=>sh.body.querySelector(s);
+  q('#s2b').onclick=sh.close;
+  sh.body.querySelectorAll('[data-st2]').forEach(b=>b.onclick=()=>{ SHOPTAB=b.dataset.st2; drawShop(); });
+  sh.body.querySelectorAll('[data-si]').forEach(b=>b.onclick=()=>{ SHOPSEL=b.dataset.si; const r=q('.s2row'), x=r.scrollLeft; drawShop(); q('.s2row').scrollLeft=x; });
+  const bu=q('#buy'); if(bu) bu.onclick=()=>{ const r=q('.s2row'), x=r?r.scrollLeft:0; buyItem(bu.dataset.buy); if(S.tut===6){ sh.close(); return; } drawShop(); const r2=q('.s2row'); if(r2) r2.scrollLeft=x; };
+  const eq=q('#s2eq'); if(eq) eq.onclick=()=>{ const {m,slot}=SHOPCTX, id=SHOPSEL||Object.keys(ITEMS)[0];
+    if(ITEMS[id].lv>m.lvl) return alertBox(`${SPI[m.sp].n} needs to be level ${ITEMS[id].lv} to use this.`);
+    const cur=m.eq[slot]; if(cur) S.inv[cur]=(S.inv[cur]|0)+1; S.inv[id]--; m.eq[slot]=id; persist(); sh.close(); openMon(m.uid); toast(`Equipped ${ITEMS[id].n}!`); };
+  const h=q('#hatch'); if(h) h.onclick=()=>{ hatch(); drawShop(); };
+  const hc=q('#hatchc'); if(hc) hc.onclick=()=>{ hatchCash(); drawShop(); };
+  const rf=q('#refill'); if(rf) rf.onclick=()=>{ tickEnergy(); if(S.energy>=S.maxEnergy) return toast('Energy is already full'); if(S.mush<15) return toast('You need 15 🍄'); S.mush-=15; S.energy=S.maxEnergy; S.energyAt=Date.now(); persist(); drawShop(); toast('Energy refilled!'); };
+  const cur=q('.s2item.sel'), row=q('.s2row'); if(cur&&row&&!row._init){ row._init=1; row.scrollLeft=cur.offsetLeft-(row.clientWidth-cur.offsetWidth)/2; }
+}
+
+// ---- zone complete screen ----
+function zoneCompleteScreen(zi){
+  return new Promise(res=>{
+    const z=ZONES[zi];
+    const sh=sheet(`<div class="tscreen zdone"><div class="tfield">${sceneBG()}<div class="zd-dim"></div>
+      <h2 class="zd-title">You completed ${esc(z.n)}!</h2>
+      <div class="zd-lila">${lilaSVG()}</div>
+      <div class="zd-side"><p>${zi===0?'When you complete other zones you find new monsters!':'You found a new monster in this zone!'}</p><button class="zd-done" id="zdd">DONE</button></div></div></div>`,{cls:'full',locked:true,onClose:res});
+    sh.body.querySelector('#zdd').onclick=sh.close;
+  });
+}
 
 </script>
 </body></html>

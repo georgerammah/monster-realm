@@ -119,9 +119,9 @@ function drawTasks(){
       <div class="hrow"><div class="hbar cash"><span class="ico c">$</span><b>${S.cash|0}</b></div><div class="hbar shrooms"><span class="ico m">${mushroomSVG('#b04fd6')}</span><b>${S.mush}</b></div></div></div>
       <div class="thmon">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div></div>
     <div class="tlist">${tl.map((t,k)=>{
-      const done=pr[k]>=t.reps; const prevDone=tl.slice(0,k).every((x,j)=>pr[j]>=x.reps); const lockBoss=!prevDone; const lvOk=m.lvl>=t.lv, mpOk=!t.mp||st.mp>=t.mp, hpOk=!t.hp||st.hp>=t.hp;
-      const can=!lockBoss&&lvOk&&mpOk&&hpOk;
-      const why = lockBoss?'Finish the activity above first': !lvOk?`Needs Lv ${t.lv}`: !mpOk?`Needs ${t.mp} mana (has ${st.mp}) — try items or stat points`: !hpOk?`Needs ${t.hp} life (has ${st.hp}) — try items or stat points`:'';
+      const done=pr[k]>=t.reps; const lockBoss=t.t==='boss'&&!nonBossDone; const lvOk=m.lvl>=t.lv, mpOk=!t.mp||st.mp>=t.mp, hpOk=!t.hp||st.hp>=t.hp;
+      const can=!lockBoss;
+      const why = lockBoss?'Finish the other activities first':'';
       return `<div class="task ${done?'done':''} ${t.t} ${lockBoss?'lockedq':''}">
         <div class="t-h">${t.t!=='act'?`<span class="tkind">${t.t==='boss'?'BOSS':'BATTLE'}</span>`:''}${esc(t.n)}</div>
         <div class="t-grid">
@@ -133,13 +133,20 @@ function drawTasks(){
         </div>${why?`<div class="t-why">${why}</div>`:''}</div>`; }).join('')}</div>
     <div class="zfoot"><div class="zbar big"><i style="width:${zonePct(zi)}%"></i><em>${z.n} — ${zonePct(zi)}% complete</em></div></div>`;
   sh.body.querySelector('#tb').onclick=sh.close;
-  sh.body.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>doTask(zi,+b.dataset.task));
+  sh.body.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{ const t=tl[+b.dataset.task];
+    if(m.lvl<t.lv) return alertBox("Your monster's level isn't high enough for this task!");
+    if(t.mp&&st.mp<t.mp) return alertBox("Your mana isn't high enough for this task!");
+    if(t.hp&&st.hp<t.hp) return alertBox("Your life isn't high enough for this task!");
+    doTask(zi,+b.dataset.task); });
 }
 function doTask(zi,k){
   const t=taskList(zi)[k]; const m=monBy(S.zoneMon)||teamMons()[0];
   if(!spend(t.en)){ drawTasks(); return; }
+  { const pr0=taskProg(zi); if(pr0[k]>=t.reps) pr0[k]=0; }
   if(t.t==='act'){
-    const pr=taskProg(zi); pr[k]=Math.min(t.reps,pr[k]+1); S.cash=(S.cash|0)+t.cash; const r=giveXp(m,t.xp);
+    const pr=taskProg(zi); pr[k]=Math.min(t.reps,pr[k]+1);
+    if(pr[k]<t.reps){ persist(); drawTasks(); renderHUD(); const tk=document.querySelectorAll('.tasks .task')[k]; if(tk){ tk.classList.add('bump'); setTimeout(()=>tk.classList.remove('bump'),450); } return; }
+    S.cash=(S.cash|0)+t.cash; const r=giveXp(m,t.xp);
     persist(); drawTasks(); renderHUD();
     rewardPopup({title:'SUCCESS!', cash:t.cash, xp:t.xp, mons:[{m,r}], onClose:afterTaskTut});
     return;
@@ -349,9 +356,9 @@ function finishBattle(){
   const win = b.over && b.winner===B.mySide;
   if(mode==='campaign' && meta.task!=null){
     const zi=meta.zi, k=meta.task; const t=taskList(zi)[k]; const m=monBy(meta.uid); const z=ZONES[zi];
-    let cash=0, xp=Math.round(t.xp*(win?1:0.3)), mush=0; const extra=[];
-    if(win){ S.stats.wins++; const pr=taskProg(zi); pr[k]=Math.min(t.reps,pr[k]+1); cash=t.cash;
-      if(t.t==='boss' && (S.zones[z.id]||0)<4){ S.zones[z.id]=4; mush=5;
+    let cash=0, xp=0, mush=0; const extra=[]; let partial=false, zoneJust=false;
+    if(win){ S.stats.wins++; const pr=taskProg(zi); pr[k]=Math.min(t.reps,pr[k]+1); if(pr[k]>=t.reps){ cash=t.cash; xp=t.xp; } else partial=`${pr[k]} / ${t.reps}`;
+      if(t.t==='boss' && (S.zones[z.id]||0)<4){ S.zones[z.id]=4; mush=5; zoneJust=true;
         if(zi>0){ const pool=SP.filter(x=>x.fam===z.fam); // each of the zone's monsters has an equal chance
           const nm=addMon(pool[Math.floor(Math.random()*pool.length)].id, Math.max(2,z.lv)); if(S.team.length<3) S.team.push(nm.uid); extra.push([`You found a new monster!`,nm]); } }
     }
@@ -359,7 +366,9 @@ function finishBattle(){
     const r=m?giveXp(m,xp):null;
     persist(); closeBattle(); openTasks(zi);
     const tutDone = S.tut===3 && win; if(tutDone){ S.tut=4; persist(); }
+    if(partial&&!tutDone){ toast(`Victory! ${partial}`); return; }
     rewardPopup({title:win?'VICTORY!':'DEFEAT', lose:!win, cash, xp, mush, mons:m?[{m,r}]:[], onClose:async()=>{
+      if(zoneJust) await zoneCompleteScreen(zi);
       for(const [tt,mm] of extra){ await new Promise(res=>{ const s=reveal2(mm,tt,res); }); }
       if(tutDone){ await lilaSay(["See? It's that easy!","Next, let's visit the shop and pick up some mana wood. It gives your monster more mana!"]); S.tut=5; persist(); if(TASKSH) TASKSH.sh.close(); setTimeout(()=>pointAt('[data-p="shop"]'),400); }
       showLevelUps();

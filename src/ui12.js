@@ -209,3 +209,74 @@ pickZone=function(cb){
   const cur=sh.body.querySelector(`[data-pz="${S.lastZone|0}"]`), row=sh.body.querySelector('.zd-row'); if(cur) setTimeout(()=>{ row.scrollLeft=cur.offsetLeft-(row.clientWidth-cur.offsetWidth)/2; },30);
 };
 const _dt12=drawTeam; drawTeam=function(){ _dt12(); const f=TEAMSH&&TEAMSH.body.querySelector('.tfield .scene'); if(f) f.outerHTML=sceneBG(); };
+
+// ---- simple alert popup ----
+function alertBox(msg){
+  const w=document.createElement('div'); w.className='abox-wrap';
+  w.innerHTML=`<div class="abox"><p>${esc(msg)}</p><button class="abox-ok">OK</button></div>`;
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add('on'));
+  const close=()=>{ w.classList.remove('on'); setTimeout(()=>w.remove(),200); };
+  w.querySelector('.abox-ok').onclick=close; w.onclick=e=>{ if(e.target===w) close(); };
+}
+
+// ---- full-screen shop ----
+let SHOPSH=null, SHOPCTX=null;
+const SHOP_TABS=[['items','Items'],['eggs','Eggs'],['energy','Energy'],['mush','Mushrooms']];
+function openShop(ctx){
+  if(PANEL) PANEL.sh.close(); if(SHOPSH) SHOPSH.close();
+  SHOPCTX=ctx||null; if(ctx) SHOPTAB='items';
+  if(S.tut===5){ SHOPTAB='items'; SHOPSEL='manawood'; }
+  const sh=sheet(`<div class="tscreen shopscr"></div>`,{cls:'full', onClose:()=>{ if(SHOPSH===sh){ SHOPSH=null; SHOPCTX=null; } render(); }});
+  SHOPSH=sh; drawShop();
+  if(S.tut===5) setTimeout(()=>pointAt('#buy'),400);
+}
+openPanel=(function(prev){ return function(name){ if(name==='shop') return openShop(); return prev(name); }; })(openPanel);
+function drawShop(){
+  if(!SHOPSH) return; const sh=SHOPSH; tickEnergy(); S.inv=S.inv||{};
+  let body='';
+  if(SHOPTAB==='items'){
+    const ids=Object.keys(ITEMS); const sel=SHOPSEL&&ITEMS[SHOPSEL]?SHOPSEL:ids[0]; const it=ITEMS[sel], have=S.inv[sel]|0;
+    const m=SHOPCTX&&SHOPCTX.m; const canEq=m&&have>0;
+    body=`<div class="s2row">${ids.map(id=>`<button class="s2item ${id===sel?'sel':''} ${ITEMS[id].lv>highLvl()?'dim':''}" data-si="${id}"><div class="s2art">${itemSVG(id)}</div><span><b class="g">$</b> ${ITEMS[id].cost}</span></button>`).join('')}</div>
+      <div class="s2det"><div class="s2h"><b>${it.n}</b><span>Inventory: x${have}</span></div>
+        <div class="s2r"><span class="s2c"><b class="g">$</b> ${it.cost}</span><span class="s2lv">Requires Level: <b>${it.lv}</b></span>
+          ${canEq?`<button class="s2btn eq" id="s2eq">EQUIP</button>`:''}<button class="s2btn" id="buy" data-buy="${sel}">BUY</button></div>
+        <p>${itemDesc(sel)}</p></div>`;
+  } else if(SHOPTAB==='eggs'){
+    body=`<div class="s2cards"><button class="s2card" id="hatch"><div class="egg"></div><b>Mystery Egg</b><span>Hatches a random monster</span><em>10 🍄</em></button>
+      <button class="s2card" id="hatchc"><div class="egg plain"></div><b>Monster Egg</b><span>A random monster, a few levels lower</span><em class="g">$${eggCost()}</em></button></div>`;
+  } else if(SHOPTAB==='energy'){
+    body=`<div class="s2cards"><button class="s2card" id="refill"><div class="egg bolt">⚡</div><b>Energy Refill</b><span>Fill your energy to max</span><em>15 🍄</em></button></div>`;
+  } else {
+    body=`<div class="s2cards">${[[60,'$0.99'],[330,'$4.99'],[700,'$9.99'],[1500,'$19.99']].map(([n,p])=>`<div class="s2card soon"><div class="s2m">${mushroomSVG('#b04fd6')}</div><b>${n} Mushrooms</b><em>${p}</em><span class="s2soon">Coming soon</span></div>`).join('')}</div>`;
+  }
+  sh.body.querySelector('.shopscr').innerHTML=`<div class="thud"><button class="backb" id="s2b">Back</button>
+      <div class="thcol"><div class="hbar energy"><span class="ico">⚡</span><div class="ebar"><i style="width:${S.energy/S.maxEnergy*100}%"></i><b>${S.energy<S.maxEnergy?`+1 in ${nextEnergyIn()} · `:''}${S.energy} / ${S.maxEnergy}</b></div></div>
+      <div class="hrow"><div class="hbar cash"><span class="ico c">$</span><b>${S.cash|0}</b></div><div class="hbar shrooms"><span class="ico m">${mushroomSVG('#b04fd6')}</span><b>${S.mush}</b></div></div></div></div>
+    <div class="s2tabs">${SHOP_TABS.map(([k,n])=>`<button class="s2tab ${SHOPTAB===k?'on':''}" data-st2="${k}">${n}</button>`).join('')}</div>
+    <div class="s2body">${body}</div>`;
+  const q=s=>sh.body.querySelector(s);
+  q('#s2b').onclick=sh.close;
+  sh.body.querySelectorAll('[data-st2]').forEach(b=>b.onclick=()=>{ SHOPTAB=b.dataset.st2; drawShop(); });
+  sh.body.querySelectorAll('[data-si]').forEach(b=>b.onclick=()=>{ SHOPSEL=b.dataset.si; const r=q('.s2row'), x=r.scrollLeft; drawShop(); q('.s2row').scrollLeft=x; });
+  const bu=q('#buy'); if(bu) bu.onclick=()=>{ const r=q('.s2row'), x=r?r.scrollLeft:0; buyItem(bu.dataset.buy); if(S.tut===6){ sh.close(); return; } drawShop(); const r2=q('.s2row'); if(r2) r2.scrollLeft=x; };
+  const eq=q('#s2eq'); if(eq) eq.onclick=()=>{ const {m,slot}=SHOPCTX, id=SHOPSEL||Object.keys(ITEMS)[0];
+    if(ITEMS[id].lv>m.lvl) return alertBox(`${SPI[m.sp].n} needs to be level ${ITEMS[id].lv} to use this.`);
+    const cur=m.eq[slot]; if(cur) S.inv[cur]=(S.inv[cur]|0)+1; S.inv[id]--; m.eq[slot]=id; persist(); sh.close(); openMon(m.uid); toast(`Equipped ${ITEMS[id].n}!`); };
+  const h=q('#hatch'); if(h) h.onclick=()=>{ hatch(); drawShop(); };
+  const hc=q('#hatchc'); if(hc) hc.onclick=()=>{ hatchCash(); drawShop(); };
+  const rf=q('#refill'); if(rf) rf.onclick=()=>{ tickEnergy(); if(S.energy>=S.maxEnergy) return toast('Energy is already full'); if(S.mush<15) return toast('You need 15 🍄'); S.mush-=15; S.energy=S.maxEnergy; S.energyAt=Date.now(); persist(); drawShop(); toast('Energy refilled!'); };
+  const cur=q('.s2item.sel'), row=q('.s2row'); if(cur&&row&&!row._init){ row._init=1; row.scrollLeft=cur.offsetLeft-(row.clientWidth-cur.offsetWidth)/2; }
+}
+
+// ---- zone complete screen ----
+function zoneCompleteScreen(zi){
+  return new Promise(res=>{
+    const z=ZONES[zi];
+    const sh=sheet(`<div class="tscreen zdone"><div class="tfield">${sceneBG()}<div class="zd-dim"></div>
+      <h2 class="zd-title">You completed ${esc(z.n)}!</h2>
+      <div class="zd-lila">${lilaSVG()}</div>
+      <div class="zd-side"><p>${zi===0?'When you complete other zones you find new monsters!':'You found a new monster in this zone!'}</p><button class="zd-done" id="zdd">DONE</button></div></div></div>`,{cls:'full',locked:true,onClose:res});
+    sh.body.querySelector('#zdd').onclick=sh.close;
+  });
+}

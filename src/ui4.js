@@ -151,7 +151,7 @@ function pickItem(m,slot){
       ${!ids.length&&!cur?'<p class="muted center" style="grid-column:1/-1">You don\'t have any items yet.</p>':''}</div>
     <div class="actions"><button class="btn gbtn" id="psel">Select</button></div></div>`);
   sh.body.querySelectorAll('[data-pi]').forEach(x=>x.onclick=()=>{ sel=x.dataset.pi||null; sh.body.querySelectorAll('[data-pi]').forEach(y=>y.classList.toggle('sel',y===x)); });
-  sh.body.querySelector('#toshop').onclick=()=>{ sh.close(); MONSH&&MONSH.sh.close(); openPanel('shop'); };
+  sh.body.querySelector('#toshop').onclick=()=>{ sh.close(); MONSH&&MONSH.sh.close(); openShop({m,slot}); };
   sh.body.querySelector('#psel').onclick=()=>{
     if(sel && ITEMS[sel].lv>m.lvl) return toast(`Needs Lv ${ITEMS[sel].lv}`);
     if(sel===cur){ sh.close(); return; }
