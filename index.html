@@ -1051,6 +1051,26 @@ body.rot .shopscr .thud{padding-left:calc(var(--sa-left) + 10px)!important;paddi
 .abox-row{display:flex;gap:10px}.abox-ok.red{background:linear-gradient(#f0563a,#b8200e);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 1px #f3a091}
 
 .mprice{display:inline-block;width:1.3em;vertical-align:-.15em}.mprice svg{width:100%;display:block}
+
+.zd-done.go i{display:inline-flex;width:1.1em;height:1.1em;border-radius:50%;background:radial-gradient(#7dff5a,#2a9a12);align-items:center;justify-content:center;font-size:.55em;font-style:normal;vertical-align:.1em;box-shadow:0 0 0 2px #fff;margin-left:6px}
+.nmpop{position:relative;width:min(calc(66*var(--vw)),620px);border-radius:18px;background:linear-gradient(#1f3f9a,#14307e);box-shadow:0 0 0 5px #fff,0 0 0 7px #5a5a5a,0 16px 34px rgba(0,0,0,.45);padding:calc(2*var(--vh)) 22px calc(4*var(--vh));transform:scale(.8);opacity:0;transition:.25s cubic-bezier(.2,1.4,.4,1)}
+.abox-wrap.on .nmpop{transform:none;opacity:1}
+.nm-x{position:absolute;right:-14px;top:-14px;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 40% 30%,#ff7a6a,#c8261a);color:#fff;font:900 22px/44px system-ui;box-shadow:0 0 0 3px #fff,0 3px 6px rgba(0,0,0,.3);z-index:2}
+.nm-t{margin:0;text-align:center;transform:rotate(-4deg);font:min(calc(13*var(--vh)),68px) "Lilita One",system-ui;font-weight:400;background:linear-gradient(#f6ff3a,#5be22a);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:3px #b0249a;paint-order:stroke fill;filter:drop-shadow(0 4px 0 #6a0f5c)}
+.nm-s{position:absolute;color:#ffe02a;font-style:normal;text-shadow:0 2px 0 #a07800;animation:nmtw 1.4s ease-in-out infinite}
+.nm-s.s1{left:-6px;top:34%;font-size:44px}.nm-s.s2{left:34px;top:34%;font-size:32px;animation-delay:-.4s}.nm-s.s3{right:-10px;bottom:6%;font-size:56px;animation-delay:-.8s}.nm-s.s4{right:-6px;top:12%;font-size:34px;animation-delay:-1.1s}
+@keyframes nmtw{50%{transform:scale(1.2) rotate(12deg)}}
+.nm-row{display:flex;align-items:center;gap:20px;margin-top:calc(2*var(--vh))}
+.nm-art{width:38%;flex:none}.nm-art svg{width:100%;display:block;animation:idle 2.4s ease-in-out infinite}
+.nm-info{flex:1}.nm-info h3{margin:0 0 calc(1.6*var(--vh));text-align:center;font:min(calc(7*var(--vh)),32px) "Lilita One",system-ui;font-weight:400;color:#fff}
+.nm-stats{border-radius:14px;background:#123076;box-shadow:inset 0 0 0 2px #0a1d4e;padding:calc(1.2*var(--vh)) 16px}
+.nm-stats div{display:flex;align-items:center;gap:10px;font:min(calc(5.6*var(--vh)),26px) Georgia,serif;color:#fff;padding:calc(.4*var(--vh)) 0}
+.nm-stats b{margin-left:auto;font-weight:400}.nm-stats span{width:1.2em;text-align:center;color:#ffa02a}.nm-stats span.h{color:#e0475b}.nm-stats span.m{font-size:.8em}
+
+.tlist,body.rot .tlist{display:flex!important;flex-direction:column;gap:10px;padding-bottom:16px!important}
+.tlist .task{width:100%;max-width:980px;margin:0 auto}
+.tlist .t-grid{grid-template-columns:minmax(150px,1fr) minmax(150px,1.2fr) auto!important}
+.zs-f.sil svg{filter:brightness(0)!important;opacity:.85}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -4448,9 +4468,9 @@ function zoneCompleteScreen(zi){
   return new Promise(res=>{
     const z=ZONES[zi];
     const sh=sheet(`<div class="tscreen zdone"><div class="tfield">${sceneBG()}<div class="zd-dim"></div>
-      <h2 class="zd-title">You completed ${esc(z.n)}!</h2>
+      <h2 class="zd-title">${zi===0?`You completed ${esc(z.n)}!`:'You Found a New Monster'}</h2>
       <div class="zd-lila">${lilaSVG()}</div>
-      <div class="zd-side"><p>${zi===0?'When you complete other zones you find new monsters!':'You found a new monster in this zone!'}</p><button class="zd-done" id="zdd">DONE</button></div></div></div>`,{cls:'full',locked:true,onClose:res});
+      <div class="zd-side"><p>${zi===0?'When you complete other zones you find new monsters!':"Hey! Looks like you found a new friend to join you on your adventure. Let's see who it is!"}</p><button class="zd-done ${zi?'go':''}" id="zdd">${zi===0?'DONE':"LET'S GO! <i>▶</i>"}</button></div></div></div>`,{cls:'full',locked:true,onClose:res});
     sh.body.querySelector('#zdd').onclick=sh.close;
   });
 }
@@ -4569,6 +4589,20 @@ buyItem=(function(prev){ return function(id){ const it=ITEMS[id]; if(!it||!it.mu
 drawShop=(function(prev){ return function(){ prev(); if(!SHOPSH||SHOPTAB!=='items') return; const b=SHOPSH.body;
   b.querySelectorAll('.s2item').forEach(el=>{ const id=el.dataset.si; if(ITEMS[id]&&ITEMS[id].mush){ const sp=el.querySelector('span'); if(sp) sp.innerHTML=priceHTML(id); } });
   const sel=b.querySelector('.s2item.sel'), c=b.querySelector('.s2c'); if(sel&&c&&ITEMS[sel.dataset.si].mush) c.innerHTML=priceHTML(sel.dataset.si); }; })(drawShop);
+
+// ---- NEW MONSTER! popup ----
+reveal2=function(m,title,done){
+  const sp=SPI[m.sp]; const st=monStats(m); const partner=/partner/i.test(title||'');
+  const w=document.createElement('div'); w.className='abox-wrap nm-wrap';
+  w.innerHTML=`<div class="nmpop"><button class="nm-x" aria-label="Close">✕</button><h2 class="nm-t">NEW MONSTER!</h2>
+    <i class="nm-s s1">★</i><i class="nm-s s2">★</i><i class="nm-s s3">★</i><i class="nm-s s4">★</i>
+    <div class="nm-row"><div class="nm-art">${monSVG(m.sp,m.lvl)}</div><div class="nm-info"><h3>${partner?`Your partner is ${esc(sp.n)}!`:`You found a ${esc(sp.n)}!`}</h3>
+      <div class="nm-stats"><div><span>★</span>Attack<b>${st.atk}</b></div><div><span class="h">♥</span>Life<b>${st.hp}</b></div><div><span class="m">💧</span>Mana<b>${st.mp}</b></div></div></div></div></div>`;
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add('on')); try{ sfx('level'); }catch(_){}
+  const close=()=>{ w.classList.remove('on'); setTimeout(()=>{ w.remove(); done&&done(); },200); };
+  w.querySelector('.nm-x').onclick=close; w.onclick=e=>{ if(e.target===w) close(); };
+  return {close};
+};
 
 </script>
 </body></html>

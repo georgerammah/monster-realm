@@ -274,9 +274,9 @@ function zoneCompleteScreen(zi){
   return new Promise(res=>{
     const z=ZONES[zi];
     const sh=sheet(`<div class="tscreen zdone"><div class="tfield">${sceneBG()}<div class="zd-dim"></div>
-      <h2 class="zd-title">You completed ${esc(z.n)}!</h2>
+      <h2 class="zd-title">${zi===0?`You completed ${esc(z.n)}!`:'You Found a New Monster'}</h2>
       <div class="zd-lila">${lilaSVG()}</div>
-      <div class="zd-side"><p>${zi===0?'When you complete other zones you find new monsters!':'You found a new monster in this zone!'}</p><button class="zd-done" id="zdd">DONE</button></div></div></div>`,{cls:'full',locked:true,onClose:res});
+      <div class="zd-side"><p>${zi===0?'When you complete other zones you find new monsters!':"Hey! Looks like you found a new friend to join you on your adventure. Let's see who it is!"}</p><button class="zd-done ${zi?'go':''}" id="zdd">${zi===0?'DONE':"LET'S GO! <i>▶</i>"}</button></div></div></div>`,{cls:'full',locked:true,onClose:res});
     sh.body.querySelector('#zdd').onclick=sh.close;
   });
 }
@@ -395,3 +395,17 @@ buyItem=(function(prev){ return function(id){ const it=ITEMS[id]; if(!it||!it.mu
 drawShop=(function(prev){ return function(){ prev(); if(!SHOPSH||SHOPTAB!=='items') return; const b=SHOPSH.body;
   b.querySelectorAll('.s2item').forEach(el=>{ const id=el.dataset.si; if(ITEMS[id]&&ITEMS[id].mush){ const sp=el.querySelector('span'); if(sp) sp.innerHTML=priceHTML(id); } });
   const sel=b.querySelector('.s2item.sel'), c=b.querySelector('.s2c'); if(sel&&c&&ITEMS[sel.dataset.si].mush) c.innerHTML=priceHTML(sel.dataset.si); }; })(drawShop);
+
+// ---- NEW MONSTER! popup ----
+reveal2=function(m,title,done){
+  const sp=SPI[m.sp]; const st=monStats(m); const partner=/partner/i.test(title||'');
+  const w=document.createElement('div'); w.className='abox-wrap nm-wrap';
+  w.innerHTML=`<div class="nmpop"><button class="nm-x" aria-label="Close">✕</button><h2 class="nm-t">NEW MONSTER!</h2>
+    <i class="nm-s s1">★</i><i class="nm-s s2">★</i><i class="nm-s s3">★</i><i class="nm-s s4">★</i>
+    <div class="nm-row"><div class="nm-art">${monSVG(m.sp,m.lvl)}</div><div class="nm-info"><h3>${partner?`Your partner is ${esc(sp.n)}!`:`You found a ${esc(sp.n)}!`}</h3>
+      <div class="nm-stats"><div><span>★</span>Attack<b>${st.atk}</b></div><div><span class="h">♥</span>Life<b>${st.hp}</b></div><div><span class="m">💧</span>Mana<b>${st.mp}</b></div></div></div></div></div>`;
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add('on')); try{ sfx('level'); }catch(_){}
+  const close=()=>{ w.classList.remove('on'); setTimeout(()=>{ w.remove(); done&&done(); },200); };
+  w.querySelector('.nm-x').onclick=close; w.onclick=e=>{ if(e.target===w) close(); };
+  return {close};
+};
