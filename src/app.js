@@ -212,7 +212,7 @@ function openMon(uid){
     <h2>${sp.n}</h2><p class="muted">${fam.n} · ${STAGE_N[stageOf(m.lvl)]} ${elChip(fam.el)}</p>
     <div class="lvrow"><b>Lv ${m.lvl}</b>${m.lvl<MAXLVL?bar(m.xp,xpNeed(m.lvl),'xp')+`<span class="muted">${m.xp}/${xpNeed(m.lvl)} XP</span>`:'<span class="muted">Max level</span>'}</div>
     ${evoAt?`<p class="muted small">Evolves at Lv ${evoAt}</p>`:''}
-    <div class="stats"><div><span>Life</span><b>${s.hp}</b></div><div><span>Attack</span><b>${s.atk}</b></div><div><span>Mana</span><b>${s.mp}</b></div><div><span>Speed</span><b>${s.spd}</b></div></div>
+    <div class="stats"><div><span>Life</span><b>${s.hp}</b></div><div><span>Attack</span><b>${s.atk}</b></div><div><span>Mana</span><b>${s.mp}</b></div></div>
     <h3>Skills</h3><div class="skills">${sp.sk.map((id,i)=>{ const k=SK[id]; const locked=i>=slots;
       return `<div class="skill ${locked?'locked':''}"><i style="background:${EL[k.el].c}"></i><div><b>${k.n}</b><span>${locked?`Unlocks at Lv ${unlock[i]}`:skillDesc(id)}</span></div><em>${k.mp}</em></div>`; }).join('')}</div>
     <div class="actions" id="tact"></div>`);

@@ -3,13 +3,13 @@ const ITEMS = {
   manawood:{n:'Mana Wood', cost:30, lv:1, b:{mp:7}},
   leaf:{n:'Hearty Leaf', cost:40, lv:1, b:{hp:10}},
   bone:{n:'Chew Bone', cost:40, lv:1, b:{atk:2}},
-  feather:{n:'Swift Feather', cost:90, lv:3, b:{spd:1}},
+  feather:{n:'Lucky Feather', cost:90, lv:3, b:{atk:3,hp:6}},
   crystal:{n:'Mana Crystal', cost:160, lv:6, b:{mp:22}},
   ironshell:{n:'Iron Shell', cost:170, lv:6, b:{hp:32}},
   fang:{n:'Sharp Fang', cost:190, lv:8, b:{atk:6}},
   collar:{n:'Spiked Collar', cost:420, lv:12, b:{atk:8,hp:20}},
   crown:{n:'Golden Crown', cost:700, lv:16, b:{atk:10,hp:45}},
-  orb:{n:'Storm Orb', cost:760, lv:18, b:{mp:45,spd:2}},
+  orb:{n:'Storm Orb', cost:760, lv:18, b:{mp:55}},
   manabowl:{n:'Mana Bowl', cost:220, lv:4, b:{mp:8}, fx:{rmp:16}},
   lifebowl:{n:'Life Bowl', cost:220, lv:4, b:{hp:16}, fx:{rhp:14}},
   blade:{n:'Brute Blade', cost:300, lv:8, b:{}, fx:{dflat:7,tflat:3}}
@@ -54,7 +54,7 @@ function monBonus(m){
 function monStats(m){ const s=statsOf(m.sp,m.lvl), b=monBonus(m); return {hp:s.hp+b.hp, atk:s.atk+b.atk, mp:s.mp+b.mp, spd:Math.round((s.spd+b.spd)*10)/10}; }
 function snapOf(m){ ensureMon(m); const skl={}; SPI[m.sp].sk.forEach(id=>skl[id]=m.skl[id]||1); return {sp:m.sp, lvl:m.lvl, uid:m.uid, bonus:monBonus(m), skl}; }
 function mySnap(){ return teamMons().map(snapOf); }
-function teamPower(){ return teamMons().reduce((t,m)=>{ const s=monStats(m); return t+Math.round(s.hp*0.4+s.atk*3+s.spd*2); },0); }
+function teamPower(){ return teamMons().reduce((t,m)=>{ const s=monStats(m); return t+Math.round(s.hp*0.4+s.atk*3); },0); }
 function sanitizeTeam(t){ return (Array.isArray(t)?t:[]).slice(0,3).filter(m=>m&&SPI[m.sp]&&SPI[m.sp].fam!=='dummy').map(m=>{ const lvl=Math.max(1,Math.min(MAXLVL,m.lvl|0)); const b=m.bonus||{};
   const cl=(v,mx)=>Math.max(0,Math.min(mx,v|0)); const skl={}; Object.keys(m.skl||{}).forEach(k=>{ if(SK[k]) skl[k]=Math.max(1,Math.min(MAXSKL,m.skl[k]|0)); });
   const sk2={}; SPI[m.sp].sk.forEach(id=>sk2[id]=skl[id]||1); return {sp:m.sp, lvl, bonus:{atk:cl(b.atk,lvl*10+40), hp:cl(b.hp,lvl*40+160), mp:cl(b.mp,lvl*40+160), spd:Math.max(0,Math.min(5,+b.spd||0)), rmp:cl(b.rmp,80), rhp:cl(b.rhp,70), dflat:cl(b.dflat,35), tflat:cl(b.tflat,35)}, skl:sk2}; }); }
@@ -120,7 +120,7 @@ function drawMon(){
       <div class="pinfo"><div class="pname"><span class="lvb">${m.lvl}</span>${sp.n}</div><span class="pstage">${STAGE_N[stageOf(m.lvl)].toLowerCase()} · ${fam.n} ${elChip(fam.el)}</span>
         <div class="pxp"><i style="width:${m.lvl>=MAXLVL?100:m.xp/xpNeed(m.lvl)*100}%"></i><em>${m.lvl>=MAXLVL?'MAX':`${m.xp} / ${xpNeed(m.lvl)} xp`}</em></div>
         ${m.free>0?`<div class="pfree">${m.free} points</div>`:''}
-        ${stat('atk','Attack',s.atk)}${stat('hp','Life',s.hp)}${stat('mp','Mana',s.mp)}${stat('spd','Speed',s.spd)}
+        ${stat('atk','Attack',s.atk)}${stat('hp','Life',s.hp)}${stat('mp','Mana',s.mp)}
       </div></div>
     ${m.lvl<20?`<p class="psmall">${m.lvl<10?'Evolves at Lv 10':'Evolves at Lv 20'} · each stat point: +2 attack, +8 life or +8 mana</p>`:''}
     <div class="eslots">${[0,1,2,3,4].map(i=>{ const id=m.eq[i]; if(i>=es) return `<div class="eslot lock"><span>🔒</span><em>Lv ${i===3?10:20}</em></div>`;

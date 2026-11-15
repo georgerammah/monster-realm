@@ -137,7 +137,7 @@ function statsOf(spId, lvl){
 }
 function autoBonus(lvl){ const p=(lvl-1)*5/3; return {atk:Math.round(p*PT.atk), hp:Math.round(p*PT.hp), mp:Math.round(p*PT.mp), spd:0}; }
 function autoSkl(spId,lvl){ const o={}; SPI[spId].sk.forEach(id=>o[id]=Math.max(1,Math.min(MAXSKL,Math.floor(lvl/3)+1))); return o; }
-function power(spId,lvl){ const s=statsOf(spId,lvl), b=autoBonus(lvl); return Math.round((s.hp+b.hp)*0.4+(s.atk+b.atk)*3+s.spd*2); }
+function power(spId,lvl){ const s=statsOf(spId,lvl), b=autoBonus(lvl); return Math.round((s.hp+b.hp)*0.4+(s.atk+b.atk)*3); }
 
 // ===== RNG =====
 function rnd(b){
@@ -173,10 +173,11 @@ function alive(b,s){ return b.sides[s].mons.filter(m=>m.hp>0); }
 function startRound(b){
   b.round++;
   const arr=[];
-  if(b.single) b.sides.forEach((sd,s)=>{ const m=sd.mons[sd.active]; if(m&&m.hp>0) arr.push([s,sd.active,m.spd+rnd(b)*0.05]); });
-  else b.sides.forEach((sd,s)=>sd.mons.forEach((m,i)=>{ if(m.hp>0) arr.push([s,i,m.spd+rnd(b)*0.05]); }));
-  arr.sort((x,y)=> y[2]-x[2] || x[0]-y[0] || x[1]-y[1]);
-  b.order = arr.map(a=>[a[0],a[1]]); b.turnIdx=0;
+  if(b.first==null) b.first=rnd(b)<.5?0:1;
+  const f=b.first;
+  if(b.single){ [f,1-f].forEach(s=>{ const sd=b.sides[s], m=sd.mons[sd.active]; if(m&&m.hp>0) arr.push([s,sd.active]); }); }
+  else { const L=[f,1-f].map(s=>b.sides[s].mons.map((m,i)=>m.hp>0?[s,i]:null).filter(Boolean)); for(let k=0;k<Math.max(L[0].length,L[1].length);k++){ if(L[0][k]) arr.push(L[0][k]); if(L[1][k]) arr.push(L[1][k]); } }
+  b.order = arr; b.turnIdx=0;
 }
 function actor(b){ if(b.single&&b.phase!=='fight') return null; const o=b.order[b.turnIdx]; if(!o) return null; const i=b.single?b.sides[o[0]].active:o[1]; return {s:o[0],i,m:b.sides[o[0]].mons[i]}; }
 function log(b,t){ b.log.push(t); if(b.log.length>40) b.log.shift(); }
