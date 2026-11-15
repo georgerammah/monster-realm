@@ -142,7 +142,7 @@ openZoneSelect=function(zi){
         <div class="zs-row">
           <button class="zs-card zs-zone" id="zpick"><div class="zs-h"><span class="lvb">${z.lv}</span><b>${z.n}</b><i class="zs-chg">⇄</i></div>${zoneArt(zi)}
             <div class="zs-foot">${zi===0?'<div class="zs-ft">Learn the basics with Lila</div>':`<div class="zs-ft">Monsters Found</div><div class="zs-found">${fam.map(s=>`<div class="zs-f ${owned.has(s.id)||found.has(s.id)?'':'sil'}">${monSVG(s.id,1)}</div>`).join('')}</div>`}</div></button>
-          <div class="zs-card zs-team">${tm.map(m=>{ const sp=SPI[m.sp]; const pct=m.lvl>=MAXLVL?100:(m.xp|0)/xpNeed(m.lvl)*100;
+          <div class="zs-card zs-team"><i class="zs-chg zs-tchg">⇄</i>${tm.map(m=>{ const sp=SPI[m.sp]; const pct=m.lvl>=MAXLVL?100:(m.xp|0)/xpNeed(m.lvl)*100;
             return `<button class="zs-m ${m.uid===S.zoneMon?'sel':''}" data-zm="${m.uid}"><div class="zs-mart">${monSVG(m.sp,m.lvl)}</div><div class="zs-minfo"><b>${esc(sp.n)}</b><div class="xpbar"><span class="lvb">${m.lvl}</span><div><i style="width:${pct}%"></i><em>${m.lvl>=MAXLVL?'MAX':`${m.xp|0} / ${xpNeed(m.lvl)}`}</em></div></div></div></button>`; }).join('')}</div>
         </div>
         <button class="letsgo" id="lg">LET'S GO! <i>▶</i></button>
@@ -150,7 +150,9 @@ openZoneSelect=function(zi){
     const q=s=>sh.body.querySelector(s);
     q('#zb').onclick=sh.close;
     q('#zpick').onclick=()=>pickZone(i=>{ zi=i; ZMUS='z_'+ZONES[zi].id; playMusic(ZMUS); persist(); draw(); });
-    sh.body.querySelectorAll('[data-zm]').forEach(b=>b.onclick=()=>{ S.zoneMon=b.dataset.zm; persist(); draw(); });
+    const toTeam=()=>{ openTeam(); const iv=setInterval(()=>{ if(TEAMSH) return; clearInterval(iv); if(!document.body.contains(sh.body)) return; draw(); },250); };
+    sh.body.querySelectorAll('[data-zm]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); if(S.zoneMon===b.dataset.zm) return toTeam(); S.zoneMon=b.dataset.zm; persist(); draw(); });
+    q('.zs-team').onclick=toTeam;
     q('#lg').onclick=()=>{ if(!S.zoneMon) return toast('You need a monster first'); persist(); sh.close(); openTasks(zi); };
   };
   draw();
