@@ -119,10 +119,10 @@ function drawTasks(){
       <div class="hrow"><div class="hbar cash"><span class="ico c">$</span><b>${S.cash|0}</b></div><div class="hbar shrooms"><span class="ico m">${mushroomSVG('#b04fd6')}</span><b>${S.mush}</b></div></div></div>
       <div class="thmon">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div></div>
     <div class="tlist">${tl.map((t,k)=>{
-      const done=pr[k]>=t.reps; const lockBoss=t.t==='boss'&&!nonBossDone; const lvOk=m.lvl>=t.lv, mpOk=!t.mp||st.mp>=t.mp, hpOk=!t.hp||st.hp>=t.hp;
+      const done=pr[k]>=t.reps; const prevDone=tl.slice(0,k).every((x,j)=>pr[j]>=x.reps); const lockBoss=!prevDone; const lvOk=m.lvl>=t.lv, mpOk=!t.mp||st.mp>=t.mp, hpOk=!t.hp||st.hp>=t.hp;
       const can=!lockBoss&&lvOk&&mpOk&&hpOk;
-      const why = lockBoss?'Finish the other activities first': !lvOk?`Needs Lv ${t.lv}`: !mpOk?`Needs ${t.mp} mana (has ${st.mp}) — try items or stat points`: !hpOk?`Needs ${t.hp} life (has ${st.hp}) — try items or stat points`:'';
-      return `<div class="task ${done?'done':''} ${t.t}">
+      const why = lockBoss?'Finish the activity above first': !lvOk?`Needs Lv ${t.lv}`: !mpOk?`Needs ${t.mp} mana (has ${st.mp}) — try items or stat points`: !hpOk?`Needs ${t.hp} life (has ${st.hp}) — try items or stat points`:'';
+      return `<div class="task ${done?'done':''} ${t.t} ${lockBoss?'lockedq':''}">
         <div class="t-h">${t.t!=='act'?`<span class="tkind">${t.t==='boss'?'BOSS':'BATTLE'}</span>`:''}${esc(t.n)}</div>
         <div class="t-grid">
           <div class="t-needs"><span>Needs:</span><span class="lvb ${lvOk?'':'bad'}">${t.lv}</span>${t.mp?`<span class="mdrop ${mpOk?'':'bad'}">${t.mp}</span>`:''}${t.hp?`<span class="hneed ${hpOk?'':'bad'}">${t.hp}</span>`:''}</div>
