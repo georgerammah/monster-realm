@@ -409,3 +409,5 @@ reveal2=function(m,title,done){
   w.querySelector('.nm-x').onclick=close; w.onclick=e=>{ if(e.target===w) close(); };
   return {close};
 };
+// battle missions finish after a single win
+Object.values(ZTASKS).forEach(list=>list.forEach(t=>{ if(t[0]==='fight'||t[0]==='boss') t[7]=1; }));

@@ -345,7 +345,7 @@ function rewardPopup({title, cash, xp, mush, mons, lose, extra, onClose}){
   const sh=sheet(`<div class="rw ${lose?'lose':''}"><div class="rw-t">${title}</div>
     ${cash?`<div class="rw-cash"><b>$ +${cash}</b><span>dollars</span></div>`:''}${mush?`<div class="rw-cash m"><b>🍄 +${mush}</b><span>mushrooms</span></div>`:''}
     <div class="rw-mons">${mons.map(({m,r})=>`<div class="rw-mon"><div class="runner">${monSVG(m.sp,m.lvl)}</div>${r&&r.evo?'<span class="tag evo">Evolved!</span>':r&&r.lv?`<span class="tag">Level up! Lv ${m.lvl}</span>`:''}</div>`).join('')}</div>
-    <div class="rw-xp">+${xp} <b>XP</b></div><button class="btn gbtn" id="rwok">Continue</button></div>`,{cls:'reward', onClose});
+    ${xp?`<div class="rw-xp">+${xp} <b>XP</b></div>`:''}<button class="btn gbtn" id="rwok">Continue</button></div>`,{cls:'reward', onClose});
   sh.body.querySelector('#rwok').onclick=sh.close;
   return sh;
 }

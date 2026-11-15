@@ -1071,6 +1071,10 @@ body.rot .shopscr .thud{padding-left:calc(var(--sa-left) + 10px)!important;paddi
 .tlist .task{width:100%;max-width:980px;margin:0 auto}
 .tlist .t-grid{grid-template-columns:minmax(150px,1fr) minmax(150px,1.2fr) auto!important}
 .zs-f.sil svg{filter:brightness(0)!important;opacity:.85}
+
+.sheet.reward .sheet-x{position:absolute!important;top:10px!important;right:10px!important;left:auto!important;float:none!important;margin:0!important}
+.runner{animation:none!important;transform:none!important}
+.runner svg{animation:none!important;transform:translateX(6%) rotate(-10deg) scaleX(1.06) scaleY(.94)!important;transform-origin:30% 90%}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -2974,7 +2978,7 @@ function rewardPopup({title, cash, xp, mush, mons, lose, extra, onClose}){
   const sh=sheet(`<div class="rw ${lose?'lose':''}"><div class="rw-t">${title}</div>
     ${cash?`<div class="rw-cash"><b>$ +${cash}</b><span>dollars</span></div>`:''}${mush?`<div class="rw-cash m"><b>🍄 +${mush}</b><span>mushrooms</span></div>`:''}
     <div class="rw-mons">${mons.map(({m,r})=>`<div class="rw-mon"><div class="runner">${monSVG(m.sp,m.lvl)}</div>${r&&r.evo?'<span class="tag evo">Evolved!</span>':r&&r.lv?`<span class="tag">Level up! Lv ${m.lvl}</span>`:''}</div>`).join('')}</div>
-    <div class="rw-xp">+${xp} <b>XP</b></div><button class="btn gbtn" id="rwok">Continue</button></div>`,{cls:'reward', onClose});
+    ${xp?`<div class="rw-xp">+${xp} <b>XP</b></div>`:''}<button class="btn gbtn" id="rwok">Continue</button></div>`,{cls:'reward', onClose});
   sh.body.querySelector('#rwok').onclick=sh.close;
   return sh;
 }
@@ -4603,6 +4607,8 @@ reveal2=function(m,title,done){
   w.querySelector('.nm-x').onclick=close; w.onclick=e=>{ if(e.target===w) close(); };
   return {close};
 };
+// battle missions finish after a single win
+Object.values(ZTASKS).forEach(list=>list.forEach(t=>{ if(t[0]==='fight'||t[0]==='boss') t[7]=1; }));
 
 </script>
 </body></html>
