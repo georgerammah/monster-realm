@@ -1,7 +1,18 @@
 // ===== V6: forced landscape by rotating the page when the phone is upright =====
 function isRot(){ return document.body.classList.contains('rot'); }
-function updRot(){ const r=matchMedia('(orientation:portrait)').matches && matchMedia('(pointer:coarse)').matches; document.body.classList.toggle('rot',r); }
-updRot(); addEventListener('resize',updRot); addEventListener('orientationchange',()=>setTimeout(updRot,120));
+let _probe=null;
+function insets(){ if(!_probe){ _probe=document.createElement('div'); _probe.style.cssText='position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)'; document.documentElement.appendChild(_probe); }
+  const c=getComputedStyle(_probe); return {t:parseFloat(c.paddingTop)||0,b:parseFloat(c.paddingBottom)||0}; }
+function updRot(){
+  const r=matchMedia('(orientation:portrait)').matches && matchMedia('(pointer:coarse)').matches;
+  const bs=document.body.style; document.body.classList.toggle('rot',r);
+  if(r){ const H=(window.visualViewport&&visualViewport.height)||innerHeight, W=(window.visualViewport&&visualViewport.width)||innerWidth, i=insets();
+    const gw=Math.round(H-i.t-i.b), gh=Math.round(W);
+    bs.width=gw+'px'; bs.height=gh+'px'; bs.top=i.t+'px';
+    document.documentElement.style.setProperty('--vw',(gw/100)+'px'); document.documentElement.style.setProperty('--vh',(gh/100)+'px');
+  } else { bs.width=''; bs.height=''; bs.top=''; document.documentElement.style.removeProperty('--vw'); document.documentElement.style.removeProperty('--vh'); }
+}
+updRot(); addEventListener('resize',updRot); if(window.visualViewport) visualViewport.addEventListener('resize',updRot); setTimeout(updRot,300); setTimeout(updRot,1200); addEventListener('orientationchange',()=>setTimeout(updRot,120));
 function localRect(el){
   const r=el.getBoundingClientRect(); if(!isRot()) return r;
   const R=document.body.getBoundingClientRect();

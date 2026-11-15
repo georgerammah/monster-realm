@@ -4,7 +4,7 @@
 <title>Monster Realm</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap">
 <style>:root{--vw:1vw;--vh:1vh}
-body.rot{--vw:1vh;--vh:1vw;position:fixed;top:env(safe-area-inset-top);left:0;width:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));height:100vw!important;transform-origin:top left;transform:rotate(90deg) translateY(-100%);overflow:hidden}
+body.rot{position:fixed;top:env(safe-area-inset-top);left:0;width:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));height:100vw;transform-origin:top left;transform:rotate(90deg) translateY(-100%);overflow:hidden}
 
 :root{--bg:#f2f2f7;--card:#fff;--tx:#1c1c1e;--mu:#8e8e93;--ln:rgba(60,60,67,.12);--ac:#007aff;--ok:#34c759;--bad:#ff3b30;--fill:rgba(118,118,128,.12)}
 @media (prefers-color-scheme:dark){:root{--bg:#000;--card:#1c1c1e;--tx:#f2f2f7;--mu:#98989f;--ln:rgba(84,84,88,.5);--ac:#0a84ff;--fill:rgba(118,118,128,.24)}}
@@ -652,6 +652,8 @@ body.rot .fname{font-size:min(calc(4.6*var(--vh)),26px)!important;margin-bottom:
 .bpor.tr svg,.iv-por svg{width:100%;height:100%}
 
 /* rotated portrait = forced landscape */
+body.rot #hud,body.rot #bar,body.rot .bhud,body.rot .dock{padding-left:8px!important;padding-right:8px!important}
+body.rot #hud{padding-top:6px!important}body.rot #bar{padding-bottom:6px!important}body.rot .tring{left:10px!important}
 body.rot .sheet.full{width:100%!important;max-width:none}
 body.rot /* splash */
   .sp-title span{font-size:min(calc(12*var(--vh)),64px)!important}
