@@ -267,3 +267,9 @@ function fxTackle(ac,tgt,left){ const art=ac.querySelector('.fart'); if(!art) re
   setTimeout(()=>{ tgt.classList.add('pose-hit'); setTimeout(()=>tgt.classList.remove('pose-hit'),280); const [tx,ty]=fCenter(tgt); fxFlash(tx-dir*w*.25,ty,'neutral',w*.9); fxBurst(tx-dir*w*.25,ty,'neutral',6,w*.45,340); },345);
   setTimeout(()=>ac.classList.remove('pose-atk'),470);
   an.onfinish=()=>ac.classList.remove('tackling'); setTimeout(()=>ac.classList.remove('tackling','pose-atk'),1000); }
+
+// ---------- monsters slide in when they enter the field (slower, survives re-renders) ----------
+renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.enT=B.enT||{}; const now=Date.now();
+  document.querySelectorAll('#battle .fighter').forEach(el=>{ const s=el.dataset.s, i=el.dataset.i, f=el.querySelector('.fart'); if(!f) return;
+    if(!B.enT[s]||B.enT[s].i!==i) B.enT[s]={i,t:now};
+    const e=(now-B.enT[s].t)/1000; if(e<1.5){ el.classList.add('enter2'); f.style.animationDelay=(-e)+'s'; } else { el.classList.remove('enter2'); f.style.animationDelay=''; } }); }; })(renderBattle);
