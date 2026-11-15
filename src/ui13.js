@@ -224,3 +224,8 @@ animateBattle=(function(prev){ return function(root,b,animating){
     } else { const tgt=(sk.t==='self'||!tg.length)?[ac]:tg; tgt.forEach(t=>{ const rr=localRect(t.querySelector('.fart')); fxAura(rr.left+rr.width/2,rr.top+rr.height/2,rr.height,el,size); }); }
   }catch(_){}
   return r; }; })(animateBattle);
+
+// ---------- finished missions reset to 0 so they can be replayed; completion is remembered ----------
+function taskDone(zi,k){ const id=ZONES[zi].id; return !!(S.tdone&&S.tdone[id]&&S.tdone[id][k]); }
+taskProg=(function(prev){ return function(zi){ const p=prev(zi); const id=ZONES[zi].id, tl=taskList(zi);
+  S.tdone=S.tdone||{}; const d=S.tdone[id]=S.tdone[id]||[]; tl.forEach((t,k)=>{ if(p[k]>=t.reps){ d[k]=1; p[k]=0; } }); return p; }; })(taskProg);

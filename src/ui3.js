@@ -9,7 +9,7 @@ const ZTASKS = {
 };
 function taskList(zi){ return ZTASKS[ZONES[zi].id].map(([t,n,lv,nd,cash,xp,en,reps,special])=>({t,n,lv,mp:(nd&&nd.mp)||0,hp:(nd&&nd.hp)||0,cash,xp,en,reps,special})); }
 function taskProg(zi){ const id=ZONES[zi].id; S.tasks=S.tasks||{}; if(!S.tasks[id]) S.tasks[id]=taskList(zi).map(()=>0); if((S.zones[id]||0)>=4 && S.tasks[id].every(x=>x===0)) S.tasks[id]=taskList(zi).map(t=>t.reps); return S.tasks[id]; }
-function zonePct(zi){ const tl=taskList(zi), p=taskProg(zi); const tot=tl.reduce((a,t)=>a+t.reps,0), got=tl.reduce((a,t,k)=>a+Math.min(p[k],t.reps),0); return Math.round(got/tot*100); }
+function zonePct(zi){ const tl=taskList(zi), p=taskProg(zi); const tot=tl.reduce((a,t)=>a+t.reps,0), got=tl.reduce((a,t,k)=>a+(taskDone(zi,k)?t.reps:Math.min(p[k],t.reps)),0); return Math.round(got/tot*100); }
 function zoneUnlocked(i){ return i===0 || (S.zones[ZONES[i-1].id]||0)>=4; }
 
 // ===== icons =====
@@ -112,7 +112,7 @@ function drawTasks(){
   if(!TASKSH) return; const {sh,zi}=TASKSH; const z=ZONES[zi];
   const m=monBy(S.zoneMon)||teamMons()[0]; if(!m){ sh.close(); return; }
   const st=monStats(m); const tl=taskList(zi), pr=taskProg(zi);
-  const nonBossDone=tl.every((t,k)=>t.t==='boss'||pr[k]>=t.reps);
+  const nonBossDone=tl.every((t,k)=>t.t==='boss'||pr[k]>=t.reps||taskDone(zi,k));
   tickEnergy();
   sh.body.querySelector('.tasks').innerHTML=`<div class="thud"><button class="backb" id="tb">Back</button>
       <div class="thcol"><div class="hbar energy"><span class="ico">⚡</span><div class="ebar"><i style="width:${S.energy/S.maxEnergy*100}%"></i><b>${S.energy<S.maxEnergy?`+1 in ${nextEnergyIn()} · `:''}${S.energy} / ${S.maxEnergy}</b></div></div>
