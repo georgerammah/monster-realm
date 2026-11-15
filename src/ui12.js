@@ -580,3 +580,23 @@ function startSearch(champSh){
 NET.showIncoming=(function(prev){ return function(d){ prev(d); if(SEARCH){ const a=[...document.querySelectorAll('#acc')].pop(); if(a) setTimeout(()=>a.click(),50); } }; })(NET.showIncoming);
 openBattle=(function(prev){ return function(){ if(SEARCH){ const c=SEARCH.champSh; stopSearch(); try{ c&&c.close(); }catch(_){} } return prev.apply(this,arguments); }; })(openBattle);
 openPanelRaw=(function(prev){ return function(name){ if(name==='battle') return openChampions(); return prev(name); }; })(openPanelRaw);
+
+// ---- passive/item tooltips: bigger touch target, smart placement, never left behind ----
+function hideTips(){ document.querySelectorAll('.tipb').forEach(x=>x.remove()); }
+bindTip=function(h){
+  if(h._tip) return; h._tip=1;
+  const show=e=>{ e.preventDefault(); hideTips(); const t=h.dataset.tip; if(!t) return;
+    const [title,body]=t.split('|'); const tip=document.createElement('div'); tip.className='tipb';
+    tip.innerHTML=`<b>${title}</b>${body?`<span>${body}</span>`:''}`; document.body.appendChild(tip);
+    const r=localRect(h), BR=document.body.getBoundingClientRect(); const W=isRot()?BR.height:innerWidth, H=isRot()?BR.width:innerHeight;
+    const right=!!h.closest('.bhp.r'); const w=tip.offsetWidth, th=tip.offsetHeight;
+    let left=right? r.left+r.width-w : r.left; left=Math.max(8,Math.min(W-w-8,left));
+    let top=r.top+r.height+8; if(top+th>H-8) top=Math.max(8,r.top-th-8);
+    tip.style.left=left+'px'; tip.style.top=top+'px'; };
+  h.addEventListener('pointerdown',show);
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=>h.addEventListener(ev,hideTips));
+  h.addEventListener('contextmenu',e=>e.preventDefault());
+};
+addEventListener('pointerup',hideTips,true); addEventListener('touchend',hideTips,true);
+closeBattle=(function(prev){ return function(){ hideTips(); return prev.apply(this,arguments); }; })(closeBattle);
+finishBattle=(function(prev){ return function(){ hideTips(); return prev.apply(this,arguments); }; })(finishBattle);

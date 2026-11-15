@@ -1146,6 +1146,15 @@ button,.pbtn{touch-action:manipulation}
 .sr-box p{margin:0;font:min(calc(6*var(--vh)),26px) Georgia,serif}
 .sr-est{margin:calc(1.2*var(--vh)) 0;font:min(calc(4.8*var(--vh)),20px) Georgia,serif;color:#333}
 .sr-btns{display:flex;gap:14px;justify-content:center}.tp-b.blue{background:linear-gradient(#4f8fe6,#1f4fa8);box-shadow:0 0 0 3px #fff,0 4px 0 #10306a}
+
+.hi{position:relative;display:inline-flex}
+.hi::after{content:"";position:absolute;inset:-12px -8px}
+.hicons{gap:12px!important}
+.tipb{max-width:min(300px,calc(60*var(--vw)))}
+
+.go-mon{justify-content:center!important;padding-right:0!important}
+.go-mon svg{animation:none!important;transform:rotate(-8deg) scaleX(1.05) scaleY(.95);transform-origin:40% 90%}
+.fighter.solo{top:86%!important}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
