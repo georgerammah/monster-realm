@@ -5,7 +5,7 @@ function TT_ELE(){ return `<svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2
 <path d="M110 120 q2 34 -6 50 q-6 12 8 16" fill="none" stroke-width="27"/>
 <path d="M110 120 q2 34 -6 50 q-6 12 8 16" fill="none" stroke="#8cc0f5" stroke-width="17"/>
 <ellipse cx="110" cy="92" rx="50" ry="48" fill="#8cc0f5"/>
-<path d="M90 124 q-4 16 -20 18 q12 -4 12 -20 z" fill="#fff" stroke-width="4"/><path d="M130 124 q4 16 20 18 q-12 -4 -12 -20 z" fill="#fff" stroke-width="4"/>
+<path d="M90 126 q-2 12 -12 14 M130 126 q2 12 12 14" fill="none" stroke-width="13"/><path d="M90 126 q-2 12 -12 14 M130 126 q2 12 12 14" fill="none" stroke="#fff" stroke-width="7"/>
 </g>
 <path d="M104 132 q6 4 12 0 l-1 8 q-5 3 -10 0 z" fill="#8cc0f5"/>
 <circle cx="93" cy="90" r="5.5" fill="#163457"/><circle cx="127" cy="90" r="5.5" fill="#163457"/>
@@ -138,7 +138,7 @@ openZoneSelect=function(zi){
       <div class="tfield">${sceneBG()}
         <div class="zs-row">
           <button class="zs-card zs-zone" id="zpick"><div class="zs-h"><span class="lvb">${z.lv}</span><b>${z.n}</b><i class="zs-chg">⇄</i></div>${zoneArt(zi)}
-            <div class="zs-foot"><div class="zs-ft">Monsters Found</div><div class="zs-found">${fam.map(s=>`<div class="zs-f ${owned.has(s.id)||found.has(s.id)?'':'sil'}">${monSVG(s.id,1)}</div>`).join('')}</div></div></button>
+            <div class="zs-foot">${zi===0?'<div class="zs-ft">Learn the basics with Lila</div>':`<div class="zs-ft">Monsters Found</div><div class="zs-found">${fam.map(s=>`<div class="zs-f ${owned.has(s.id)||found.has(s.id)?'':'sil'}">${monSVG(s.id,1)}</div>`).join('')}</div>`}</div></button>
           <div class="zs-card zs-team">${tm.map(m=>{ const sp=SPI[m.sp]; const pct=m.lvl>=MAXLVL?100:(m.xp|0)/xpNeed(m.lvl)*100;
             return `<button class="zs-m ${m.uid===S.zoneMon?'sel':''}" data-zm="${m.uid}"><div class="zs-mart">${monSVG(m.sp,m.lvl)}</div><div class="zs-minfo"><b>${esc(sp.n)}</b><div class="xpbar"><span class="lvb">${m.lvl}</span><div><i style="width:${pct}%"></i><em>${m.lvl>=MAXLVL?'MAX':`${m.xp|0} / ${xpNeed(m.lvl)}`}</em></div></div></div></button>`; }).join('')}</div>
         </div>
@@ -200,7 +200,7 @@ pickZone=function(cb){
   const sh=sheet(`<div class="tscreen zdest"><div class="tfield">${sceneBG()}<div class="zd-top"><button class="backb" id="zdb">Back</button><h2>Choose Your Destination</h2></div>
     <div class="zd-row">${ZONES.map((z,i)=>{ const open=zoneUnlocked(i), c=ZCOL[z.id]||['#eee','#ddd'];
       return `<button class="zd-card ${open?'':'locked'}" data-pz="${i}" style="--c1:${c[0]};--c2:${c[1]}"><div class="zd-h"><span class="lvb">${z.lv}</span><b>${z.n}</b></div><div class="zd-art">${zoneScene(z.id)}${open?'':'<div class="zd-lock">🔒</div>'}</div>
-        <div class="zd-foot"><div class="zs-ft">Monsters Found</div><div class="zs-found">${SP.filter(s=>s.fam===z.fam).map(s=>`<div class="zs-f ${owned.has(s.id)||found.has(s.id)?'':'sil'}">${monSVG(s.id,1)}</div>`).join('')}</div></div></button>`; }).join('')}</div></div></div>`,{cls:'full'});
+        <div class="zd-foot">${i===0?'<div class="zs-ft">Learn the basics with Lila</div>':!open?`<div class="zs-ft">Complete ${ZONES[i-1].n} to unlock!</div>`:`<div class="zs-ft">Monsters Found</div><div class="zs-found">${SP.filter(s=>s.fam===z.fam).map(s=>`<div class="zs-f ${owned.has(s.id)||found.has(s.id)?'':'sil'}">${monSVG(s.id,1)}</div>`).join('')}</div>`}</div></button>`; }).join('')}</div></div></div>`,{cls:'full'});
   sh.body.querySelector('#zdb').onclick=sh.close;
   sh.body.querySelectorAll('[data-pz]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.pz; if(!zoneUnlocked(i)) return toast(`Finish ${ZONES[i-1].n} first`); sh.close(); cb(i); });
   const cur=sh.body.querySelector(`[data-pz="${S.lastZone|0}"]`), row=sh.body.querySelector('.zd-row'); if(cur) setTimeout(()=>{ row.scrollLeft=cur.offsetLeft-(row.clientWidth-cur.offsetWidth)/2; },30);

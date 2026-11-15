@@ -352,10 +352,8 @@ function finishBattle(){
     let cash=0, xp=Math.round(t.xp*(win?1:0.3)), mush=0; const extra=[];
     if(win){ S.stats.wins++; const pr=taskProg(zi); pr[k]=Math.min(t.reps,pr[k]+1); cash=t.cash;
       if(t.t==='boss' && (S.zones[z.id]||0)<4){ S.zones[z.id]=4; mush=5;
-        let fam=z.fam; if(zi===0){ const others=Object.keys(FAM).filter(f=>f!=='bug'&&f!=='dummy'&&!S.mons.some(x=>SPI[x.sp].fam===f)); fam=others[Math.floor(Math.random()*others.length)]||'wing'; }
-        const owned=new Set(S.mons.map(x=>x.sp)); let pool=SP.filter(x=>x.fam===fam&&!owned.has(x.id)); if(!pool.length) pool=SP.filter(x=>x.fam===fam);
-        const nm=addMon(pool[Math.floor(Math.random()*pool.length)].id, Math.max(2,z.lv)); if(S.team.length<3) S.team.push(nm.uid); extra.push([`You befriended a new monster!`,nm]); }
-      if(zi===0 && k===1 && pr[k]===1 && !S.mons.some(x=>SPI[x.sp].fam==='bug')){ const sp=SP.filter(x=>x.fam==='bug')[Math.floor(Math.random()*4)]; const nm=addMon(sp.id,2); if(S.team.length<3) S.team.push(nm.uid); extra.push(['Lila gave you a buddy!',nm]); }
+        if(zi>0){ const pool=SP.filter(x=>x.fam===z.fam); // each of the zone's monsters has an equal chance
+          const nm=addMon(pool[Math.floor(Math.random()*pool.length)].id, Math.max(2,z.lv)); if(S.team.length<3) S.team.push(nm.uid); extra.push([`You found a new monster!`,nm]); } }
     }
     S.cash=(S.cash|0)+cash; S.mush+=mush;
     const r=m?giveXp(m,xp):null;
