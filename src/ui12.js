@@ -280,3 +280,72 @@ function zoneCompleteScreen(zi){
     sh.body.querySelector('#zdd').onclick=sh.close;
   });
 }
+
+// ---- story rivals: Jay and Bob ----
+SPI.rival_jay={id:'rival_jay',n:'Jay',fam:'hound',col:['#c0392b','#2b2b2b','#f3d9a8'],tw:{},sk:['furyfist','devour','pounce','emberspit'],rival:1};
+SPI.rival_bob={id:'rival_bob',n:'Bob',fam:'shell',col:['#5b4a8a','#c9a227','#efe6ff'],tw:{},sk:['hardened','splash','wave','grounded'],rival:1};
+const RIVALS={
+  'jay1':{sp:'rival_jay',name:'Jay',zone:'beach',title:'Teach Jay a lesson in manners!',
+    say:["Uh oh — that's Jay. He's been shoving the little monsters off this beach.","He fights dirty and his Fury Fist hits hard. Show him some manners!"]},
+  'bob1':{sp:'rival_bob',name:'Bob',zone:'desert',title:'Stop Bob from hogging the oasis',
+    say:["That big shell over there is Bob — Jay's buddy.","He's been hogging the only oasis in the desert. His shell is tough, so keep the pressure on!"]},
+  'jay2':{sp:'rival_jay',name:'Jay',zone:'hollow',title:'Jay wants a rematch!',
+    say:["Jay followed you into the woods. He's still sore about the beach.","He's gotten stronger — don't hold back!"]},
+  'bob2':{sp:'rival_bob',name:'Bob',zone:'volcano',title:'Bob is blocking the crater path',
+    say:["Bob again! He's parked himself right on the crater path.","Beat him and he'll have to move. Good luck!"]}
+};
+Object.entries(RIVALS).forEach(([key,r])=>{ const list=ZTASKS[r.zone]; if(!list||list.some(x=>x[8]==='rival:'+key)) return;
+  const prev=list[list.length-2]||list[0]; const lv=prev[2]; list.splice(list.length-1,0,['fight',r.title,lv,0,Math.round(prev[4]*1.2),Math.round(prev[5]*1.2),4,1,'rival:'+key]); });
+taskProg=(function(prev){ return function(zi){ const id=ZONES[zi].id; S.tasks=S.tasks||{}; const n=ZTASKS[id].length, a=S.tasks[id];
+  if(a&&a.length===n-1) a.splice(a.length-1,0,0); return prev(zi); }; })(taskProg);
+const _doTask12=doTask;
+doTask=function(zi,k){
+  const t=taskList(zi)[k]; const sp=t.special||'';
+  if(sp.startsWith('rival:')){
+    const key=sp.slice(6), r=RIVALS[key]; S.story=S.story||{};
+    const go=()=>{ if(!spend(t.en)){ drawTasks(); return; } const pr=taskProg(zi); if(pr[k]>=t.reps) pr[k]=0; persist();
+      const m=monBy(S.zoneMon)||teamMons()[0];
+      const b=newBattle({name:S.name, mons:[snapOf(m)]}, {name:r.name, mons:[{sp:r.sp, lvl:t.lv, hpMul:1}]}, {mode:'campaign'});
+      B={b, mode:'campaign', meta:{zi, task:k, uid:m.uid}, mySide:0, ctl:['human','ai'], tgt:{}};
+      openBattle(); NET.updatePresence(); drive(); };
+    if(!S.story[key]){ S.story[key]=1; persist(); lilaSay(r.say).then(go); return; }
+    return go();
+  }
+  return _doTask12(zi,k);
+};
+const _drawTasks12=drawTasks;
+drawTasks=function(){ _drawTasks12(); if(!TASKSH) return; const tl=taskList(TASKSH.zi);
+  TASKSH.sh.body.querySelectorAll('.tasks .task').forEach((el,k)=>{ const sp=(tl[k]&&tl[k].special)||''; if(!sp.startsWith('rival:')) return; const r=RIVALS[sp.slice(6)];
+    el.classList.add('rivalq'); const h=el.querySelector('.t-h'); if(h&&!h.querySelector('.t-rv')) h.insertAdjacentHTML('beforeend',`<span class="t-rv">${monSVG(r.sp,tl[k].lv|0)}</span>`); }); };
+// campaign battles: passive/item icons with hold-for-info, and the zone's own scenery
+hudPanel=(function(prev){ return function(b,side,right,ctx){ const h=prev(b,side,right,ctx); const m=b.sides[side].mons[focusMon(b,side)]; return h.slice(0,-6)+hudIcons(m)+'</div>'; }; })(hudPanel);
+renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b||B.b.single) return; const root=$('#battle');
+  root.querySelectorAll('.bhp .hi').forEach(bindTip);
+  if(B.mode==='campaign'&&B.meta&&B.meta.zi!=null){ const f=root.querySelector('.bfield'); if(f&&!f.dataset.z){ f.dataset.z=1; f.innerHTML=`<div class="bzscene">${zoneScene(ZONES[B.meta.zi].id)}</div>`; } } }; })(renderBattle);
+skillDesc=(function(prev){ return function(id,L){ if(id==='splash') return `Shoots a powerful bubble that deals ${Math.round(lv(SK.splash.dmg,L||1))} water damage.`; if(id==='devour'){ const p=Math.round(lv(SK.devour.m,L||1)*100); return `Attack the foe with ${p}% of your monster's attack and devour their life, stealing 50% of the damage dealt.`; } return prev(id,L); }; })(skillDesc);
+
+// ---- Breta: Lila's friend who scans new monsters ----
+function bretaSVG(){
+  return `<svg viewBox="0 0 120 140"><path d="M14 140 Q16 100 60 98 Q104 100 106 140Z" fill="#5fae8a"/><path d="M44 100 L60 116 L76 100Z" fill="#f4f1e8"/>
+    <rect x="52" y="82" width="16" height="20" rx="6" fill="#f0c8a4"/>
+    <path d="M26 66 Q22 28 60 24 Q98 28 94 66 L94 84 Q88 86 84 80 L84 56 Q60 48 36 56 L36 80 Q32 86 26 84Z" fill="#a0522d"/>
+    <ellipse cx="60" cy="62" rx="24" ry="27" fill="#f6d2b0"/>
+    <path d="M36 52 Q60 36 84 52 Q74 42 60 41 Q46 42 36 52Z" fill="#a0522d"/>
+    <circle cx="49" cy="63" r="9" fill="#e9fbff" stroke="#1f8f9a" stroke-width="3"/><circle cx="71" cy="63" r="9" fill="#e9fbff" stroke="#1f8f9a" stroke-width="3"/><path d="M58 63 h4" stroke="#1f8f9a" stroke-width="3"/>
+    <circle cx="50" cy="64" r="3" fill="#2a1a12"/><circle cx="72" cy="64" r="3" fill="#2a1a12"/><circle cx="51" cy="63" r="1" fill="#fff"/><circle cx="73" cy="63" r="1" fill="#fff"/>
+    <path d="M52 78 Q60 84 68 78" stroke="#7a3a2a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <circle cx="42" cy="73" r="3.5" fill="#f2a28a" opacity=".5"/><circle cx="78" cy="73" r="3.5" fill="#f2a28a" opacity=".5"/>
+    <rect x="70" y="112" width="30" height="22" rx="3" fill="#2f3a4a"/><rect x="73" y="115" width="24" height="16" rx="2" fill="#7fe0ff"/><path d="M76 124 l4 -4 l4 3 l5 -6 l5 5" stroke="#1f6f8a" stroke-width="1.6" fill="none"/></svg>`;
+}
+lilaSay=(function(prev){ return function(lines,opts={}){ if(opts.who!=='breta') return prev(lines,opts);
+  return new Promise(res=>{ prev(lines,opts).then(res); const w=[...document.querySelectorAll('.lila-wrap')].pop(); if(!w) return;
+    const fix=()=>{ const p=w.querySelector('.lila-por'); if(p&&!p.dataset.b){ p.dataset.b=1; p.innerHTML=`${bretaSVG()}<div class="lila-name">Breta</div>`; } };
+    fix(); new MutationObserver(fix).observe(w,{childList:true,subtree:true}); }); }; })(lilaSay);
+openBattle=(function(prev){ return function(){ const r=prev.apply(this,arguments);
+  try{ if(B&&B.mode==='campaign'&&B.b){ const foe=B.b.sides[1].mons[0]; const sp=SPI[foe.sp]; S.scanned=S.scanned||{};
+    if(sp&&sp.fam!=='dummy'&&!S.scanned[foe.sp]&&S.tut>=99){ S.scanned[foe.sp]=1; persist(); B.paused=true;
+      const ks=(sp.sk||[]).map(id=>SK[id]).filter(Boolean); const atk=ks.find(k=>k.k==='hit'&&k.el!=='neutral')||ks.find(k=>k.k==='hit')||ks.find(k=>k.k!=='passive');
+      setTimeout(()=>lilaSay([sp.rival?`That's ${sp.n}! Careful — he hits hard with ${atk?atk.n:'his attacks'}.`:`It's a ${sp.n}! Look out for its ${atk?atk.n:'attacks'}!`],{who:'breta'}).then(()=>{ if(B){ B.paused=false; drive(); } }),500); } } }catch(_){}
+  return r; }; })(openBattle);
+
+ST_ICON.absorb=['swirl','#2f8cff'];

@@ -1,7 +1,7 @@
 // ===== DATA =====
 const EL = {
   water:{n:'Water',c:'#2f8cff'}, fire:{n:'Fire',c:'#ff6a3d'}, bolt:{n:'Lightning',c:'#f2b600'},
-  nature:{n:'Nature',c:'#30c05a'}, earth:{n:'Earth',c:'#a2845e'}, wind:{n:'Wind',c:'#4fc3e8'}, neutral:{n:'Physical',c:'#8e8e93'}
+  nature:{n:'Nature',c:'#30c05a'}, earth:{n:'Earth',c:'#a2845e'}, wind:{n:'Wind',c:'#4fc3e8'}, neutral:{n:'Physical',c:'#ff7a2a'}
 };
 const STRONG = {water:['fire'], fire:['nature','wind'], nature:['water','earth'], bolt:['water','wind'], earth:['bolt','fire'], wind:['nature']};
 function elemMult(a, d){
@@ -27,6 +27,7 @@ const FAM = {
 // t: enemy | self | ally | allE | allA | passive.  mp:[base, per level]
 const SK = {
   basic:{n:'Attack', el:'neutral', t:'enemy', k:'hit', mp:[0,0], m:[1,0]},
+  devour:{n:'Devour', el:'neutral', t:'enemy', k:'hit', mp:[5,3], m:[1,.08], leech:.5},
   blast:{n:'Blast', el:'fire', t:'enemy', k:'hit', mp:[16,8], dmg:[22,13], pierce:1},
   furyfist:{n:'Fury Fist', el:'neutral', t:'passive', k:'passive', p:'fury', v:[.12,.03]},
   emberspit:{n:'Ember Spit', el:'fire', t:'enemy', k:'hit', mp:[12,6], dmg:[16,9], burn:[.4,.03], btick:[5,3]},
@@ -36,7 +37,7 @@ const SK = {
   bolt:{n:'Bolt', el:'bolt', t:'enemy', k:'hit', mp:[22,11], dmg:[26,15], drainFrac:.35},
   spark:{n:'Spark', el:'bolt', t:'enemy', k:'hit', mp:[12,6], dmg:[12,7], stun:[.35,.03]},
   stormcloud:{n:'Storm Cloud', el:'bolt', t:'enemy', k:'dot', mp:[16,8], dot:'storm', tick:[8,5], turns:3},
-  splash:{n:'Splash', el:'water', t:'enemy', k:'hit', mp:[12,7], dmg:[19,11], selfCleanse:1},
+  splash:{n:'Splash', el:'water', t:'enemy', k:'hit', mp:[15,8], dmg:[25,13], bubble:1},
   wave:{n:'Wave', el:'water', t:'enemy', k:'hit', mp:[18,8], dmg:[16,9], weaken:[.15,.02]},
   blizzard:{n:'Blizzard', el:'water', t:'enemy', k:'hit', mp:[18,9], dmg:[17,10], stun:[.25,.02]},
   moltencore:{n:'Molten Core', el:'fire', t:'enemy', k:'hit', mp:[24,13], dmg:[32,20], recoil:.3},
@@ -45,7 +46,7 @@ const SK = {
   burn:{n:'Burn', el:'fire', t:'enemy', k:'dot', mp:[20,9], dot:'burn', tick:[10,6], turns:3},
   poison:{n:'Poison', el:'nature', t:'enemy', k:'dot', mp:[16,8], dot:'poison', tick:[7,4], turns:4},
   leech:{n:'Leech', el:'nature', t:'enemy', k:'hit', mp:[14,7], dmg:[16,9], leech:.5},
-  absorb:{n:'Absorb', el:'water', t:'enemy', k:'hit', mp:[6,3], dmg:[14,8], mpgain:.5},
+  absorb:{n:'Absorb', el:'water', t:'self', k:'buff', mp:[11,6], buff:'absorb', v:[.26,.03], turns:4},
   feedback:{n:'Feedback', el:'neutral', t:'enemy', k:'hit', mp:[12,6], dmg:[13,7], burnmp:[12,6]},
   feed:{n:'Feed', el:'nature', t:'enemy', k:'drain', mp:[14,8], stealHp:[18,11]},
   naturespower:{n:"Nature's Power", el:'nature', t:'enemy', k:'hit', mp:[20,10], dmg:[16,9], missingBonus:1.4},
@@ -69,7 +70,7 @@ const SK = {
   hardened:{n:'Hardened', el:'earth', t:'passive', k:'passive', p:'hard', v:[.15,.02]},
   camelback:{n:'Camel Back', el:'water', t:'passive', k:'passive', p:'camel', v:[3,1]}
 };
-const BUFF_N = {pers:'Perseverance', bubble:'Bubble', lsh:'Spark shield', fsh:'Fire shield', nsh:'Leaf shield', mshield:'Mana Shield', focus:'Focus', charge:'Charged', evade:'Evasive', cripple:'Crippled', roots:'Roots', heal:'Heal'};
+const BUFF_N = {pers:'Perseverance', bubble:'Bubble', lsh:'Spark shield', fsh:'Fire shield', nsh:'Leaf shield', mshield:'Mana Shield', absorb:'Absorb', focus:'Focus', charge:'Charged', evade:'Evasive', cripple:'Crippled', roots:'Roots', heal:'Heal'};
 const lv = (arr,L)=> arr[0]+arr[1]*(L-1);
 function skDmg(id,L,m){ const s=SK[id]; return s.dmg? Math.round(lv(s.dmg,L)) : Math.round(m.atk*(s.m?lv(s.m,L):1)); }
 function skCost(id,L){ const s=SK[id]; if(!s||!s.mp) return 0; return Math.round(lv(s.mp,L||1)); }
@@ -90,7 +91,7 @@ function skillDesc(id, L){
       return t+'.'; }
     case 'dot': return `${s.dot==='burn'?'Sets a foe on fire':s.dot==='poison'?'Poisons a foe':'Summons a storm over a foe'}: ${Math.round(lv(s.tick,L))} damage each turn for ${s.turns} turns.`;
     case 'shield': return `Absorbs up to ${Math.round(lv(s.amt,L))} damage${s.sh==='bubble'?' from physical, fire and lightning attacks':s.sh==='fsh'?' from fire and physical attacks, and may burn attackers':s.sh==='lsh'?' and zaps attackers':' and heals a little each turn'} for ${s.turns} turns.`;
-    case 'buff': return s.buff==='mshield'?`Mana absorbs ${pct(lv(s.v,L))} of incoming damage for ${s.turns} turns (1 mana per 2 damage).`
+    case 'buff': return s.buff==='absorb'?`Your mana heals by ${pct(lv(s.v,L))} of any damage taken for the next ${s.turns} turns.` : s.buff==='mshield'?`Mana absorbs ${pct(lv(s.v,L))} of incoming damage for ${s.turns} turns (1 mana per 2 damage).`
       : s.buff==='pers'?`Deals ${pct(lv(s.v,L))} more damage for ${s.turns} turns, doubled while below 40% life.` : s.buff==='charge'?`The next attack deals ${pct(lv(s.v,L))} more damage.` : s.buff==='focus'?`Deals ${pct(lv(s.v,L))} more damage for ${s.turns} turns.` : `${pct(lv(s.v,L))} chance to dodge attacks for ${s.turns} turns.`;
     case 'debuff': return `The foe deals ${pct(lv(s.v,L))} less damage for ${s.turns} turns.`;
     case 'heal': return s.hot?`Regrows ${pct(lv(s.hot,L))} of max life each turn for ${s.turns} turns.`:`Heals ${pct(lv(s.heal,L))} of max life${s.cleanse?' and removes burn, poison, storm and cripple':''}.`;
@@ -202,7 +203,7 @@ function beginTurn(b){
     const a = actor(b); const m=a.m;
     if(m.hp<=0){ b.turnIdx++; continue; }
     const st=m.st;
-    ['bubble','lsh','fsh','nsh','mshield','focus','evade','cripple','pers'].forEach(k=>{ if(st[k]>0){ st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } });
+    ['bubble','lsh','fsh','nsh','mshield','absorb','focus','evade','cripple','pers'].forEach(k=>{ if(st[k]>0){ st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } });
     m.mp = Math.min(m.maxmp, m.mp+3+Math.round(m.maxmp*0.03)+Math.round(m.pas.camel||0));
     for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm']]){
       if(st[k]>0 && m.hp>0){ const d=Math.max(1,Math.round(st[k+'D'])); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el}); log(b,`${m.n} is hurt by ${nm}.`); }
@@ -260,6 +261,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   if(d.st.mshield>0 && d.mp>0 && dmg>0){ const ab=Math.min(Math.round(dmg*d.st.mshieldV), d.mp*2); d.mp-=Math.ceil(ab/2); dmg-=ab; blocked+=ab; }
   dmg=Math.max(0,dmg);
   d.hp = Math.max(0, d.hp-dmg);
+  if(d.st.absorb>0 && dmg>0 && d.hp>0){ const g=Math.min(d.maxmp-d.mp, Math.round(dmg*d.st.absorbV)); if(g>0){ d.mp+=g; } }
   b.ev.push({k:'hit',s:ds,i:di,v:dmg,crit,eff:elemMult(el,d.el)>1?'up':elemMult(el,d.el)<1?'down':'',el,blocked});
   if(d.st.lsh>0 && a.hp>0 && (dmg+blocked)>0){ const r=Math.max(1,Math.round((dmg+blocked)*0.25)); a.hp=Math.max(0,a.hp-r); b.ev.push({k:'hit',s:as.s,i:as.i,v:r,el:'bolt'}); }
   if(d.st.fsh>0 && a.hp>0 && rnd(b)<0.3 && !a.st.burn){ a.st.burn=2; a.st.burnD=6+d.lvl; log(b,`${a.n} got singed!`); }

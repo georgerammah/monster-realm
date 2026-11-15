@@ -1017,6 +1017,12 @@ body.rot .shopscr .thud{padding-left:calc(var(--sa-left) + 10px)!important;paddi
 .zd-lila{position:absolute;z-index:3;left:calc(var(--sa-left) + 16%);bottom:0;width:min(calc(30*var(--vw)),calc(62*var(--vh)))}.zd-lila svg{width:100%;display:block}
 .zd-side{position:absolute;z-index:3;right:calc(var(--sa-right) + 8%);top:calc(36*var(--vh));width:min(calc(36*var(--vw)),340px);text-align:center;color:#e8e8e8;font:min(calc(6*var(--vh)),26px)/1.3 Georgia,serif}
 .zd-done{margin-top:calc(7*var(--vh));padding:calc(1.6*var(--vh)) 44px;border-radius:10px;font:min(calc(7*var(--vh)),32px) "Lilita One",system-ui;color:#fff;background:linear-gradient(#ff6a3a,#d8401a);box-shadow:0 0 0 3px #fff,0 4px 0 #7a1e08}
+
+.task.rivalq{background:linear-gradient(#ffe9a8,#ffd773)!important}
+.task.rivalq .t-h{display:flex;align-items:center;gap:6px}
+.t-rv{margin-left:auto;width:min(calc(13*var(--vh)),62px);flex:none;margin-top:-6px;margin-bottom:-10px}.t-rv svg{width:100%;display:block;transform:scaleX(-1)}
+
+.bzscene{position:absolute;inset:0}.bzscene .zscene{width:100%;height:100%;display:block}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -1032,7 +1038,7 @@ body.rot .shopscr .thud{padding-left:calc(var(--sa-left) + 10px)!important;paddi
 // ===== DATA =====
 const EL = {
   water:{n:'Water',c:'#2f8cff'}, fire:{n:'Fire',c:'#ff6a3d'}, bolt:{n:'Lightning',c:'#f2b600'},
-  nature:{n:'Nature',c:'#30c05a'}, earth:{n:'Earth',c:'#a2845e'}, wind:{n:'Wind',c:'#4fc3e8'}, neutral:{n:'Physical',c:'#8e8e93'}
+  nature:{n:'Nature',c:'#30c05a'}, earth:{n:'Earth',c:'#a2845e'}, wind:{n:'Wind',c:'#4fc3e8'}, neutral:{n:'Physical',c:'#ff7a2a'}
 };
 const STRONG = {water:['fire'], fire:['nature','wind'], nature:['water','earth'], bolt:['water','wind'], earth:['bolt','fire'], wind:['nature']};
 function elemMult(a, d){
@@ -1058,6 +1064,7 @@ const FAM = {
 // t: enemy | self | ally | allE | allA | passive.  mp:[base, per level]
 const SK = {
   basic:{n:'Attack', el:'neutral', t:'enemy', k:'hit', mp:[0,0], m:[1,0]},
+  devour:{n:'Devour', el:'neutral', t:'enemy', k:'hit', mp:[5,3], m:[1,.08], leech:.5},
   blast:{n:'Blast', el:'fire', t:'enemy', k:'hit', mp:[16,8], dmg:[22,13], pierce:1},
   furyfist:{n:'Fury Fist', el:'neutral', t:'passive', k:'passive', p:'fury', v:[.12,.03]},
   emberspit:{n:'Ember Spit', el:'fire', t:'enemy', k:'hit', mp:[12,6], dmg:[16,9], burn:[.4,.03], btick:[5,3]},
@@ -1067,7 +1074,7 @@ const SK = {
   bolt:{n:'Bolt', el:'bolt', t:'enemy', k:'hit', mp:[22,11], dmg:[26,15], drainFrac:.35},
   spark:{n:'Spark', el:'bolt', t:'enemy', k:'hit', mp:[12,6], dmg:[12,7], stun:[.35,.03]},
   stormcloud:{n:'Storm Cloud', el:'bolt', t:'enemy', k:'dot', mp:[16,8], dot:'storm', tick:[8,5], turns:3},
-  splash:{n:'Splash', el:'water', t:'enemy', k:'hit', mp:[12,7], dmg:[19,11], selfCleanse:1},
+  splash:{n:'Splash', el:'water', t:'enemy', k:'hit', mp:[15,8], dmg:[25,13], bubble:1},
   wave:{n:'Wave', el:'water', t:'enemy', k:'hit', mp:[18,8], dmg:[16,9], weaken:[.15,.02]},
   blizzard:{n:'Blizzard', el:'water', t:'enemy', k:'hit', mp:[18,9], dmg:[17,10], stun:[.25,.02]},
   moltencore:{n:'Molten Core', el:'fire', t:'enemy', k:'hit', mp:[24,13], dmg:[32,20], recoil:.3},
@@ -1076,7 +1083,7 @@ const SK = {
   burn:{n:'Burn', el:'fire', t:'enemy', k:'dot', mp:[20,9], dot:'burn', tick:[10,6], turns:3},
   poison:{n:'Poison', el:'nature', t:'enemy', k:'dot', mp:[16,8], dot:'poison', tick:[7,4], turns:4},
   leech:{n:'Leech', el:'nature', t:'enemy', k:'hit', mp:[14,7], dmg:[16,9], leech:.5},
-  absorb:{n:'Absorb', el:'water', t:'enemy', k:'hit', mp:[6,3], dmg:[14,8], mpgain:.5},
+  absorb:{n:'Absorb', el:'water', t:'self', k:'buff', mp:[11,6], buff:'absorb', v:[.26,.03], turns:4},
   feedback:{n:'Feedback', el:'neutral', t:'enemy', k:'hit', mp:[12,6], dmg:[13,7], burnmp:[12,6]},
   feed:{n:'Feed', el:'nature', t:'enemy', k:'drain', mp:[14,8], stealHp:[18,11]},
   naturespower:{n:"Nature's Power", el:'nature', t:'enemy', k:'hit', mp:[20,10], dmg:[16,9], missingBonus:1.4},
@@ -1100,7 +1107,7 @@ const SK = {
   hardened:{n:'Hardened', el:'earth', t:'passive', k:'passive', p:'hard', v:[.15,.02]},
   camelback:{n:'Camel Back', el:'water', t:'passive', k:'passive', p:'camel', v:[3,1]}
 };
-const BUFF_N = {pers:'Perseverance', bubble:'Bubble', lsh:'Spark shield', fsh:'Fire shield', nsh:'Leaf shield', mshield:'Mana Shield', focus:'Focus', charge:'Charged', evade:'Evasive', cripple:'Crippled', roots:'Roots', heal:'Heal'};
+const BUFF_N = {pers:'Perseverance', bubble:'Bubble', lsh:'Spark shield', fsh:'Fire shield', nsh:'Leaf shield', mshield:'Mana Shield', absorb:'Absorb', focus:'Focus', charge:'Charged', evade:'Evasive', cripple:'Crippled', roots:'Roots', heal:'Heal'};
 const lv = (arr,L)=> arr[0]+arr[1]*(L-1);
 function skDmg(id,L,m){ const s=SK[id]; return s.dmg? Math.round(lv(s.dmg,L)) : Math.round(m.atk*(s.m?lv(s.m,L):1)); }
 function skCost(id,L){ const s=SK[id]; if(!s||!s.mp) return 0; return Math.round(lv(s.mp,L||1)); }
@@ -1121,7 +1128,7 @@ function skillDesc(id, L){
       return t+'.'; }
     case 'dot': return `${s.dot==='burn'?'Sets a foe on fire':s.dot==='poison'?'Poisons a foe':'Summons a storm over a foe'}: ${Math.round(lv(s.tick,L))} damage each turn for ${s.turns} turns.`;
     case 'shield': return `Absorbs up to ${Math.round(lv(s.amt,L))} damage${s.sh==='bubble'?' from physical, fire and lightning attacks':s.sh==='fsh'?' from fire and physical attacks, and may burn attackers':s.sh==='lsh'?' and zaps attackers':' and heals a little each turn'} for ${s.turns} turns.`;
-    case 'buff': return s.buff==='mshield'?`Mana absorbs ${pct(lv(s.v,L))} of incoming damage for ${s.turns} turns (1 mana per 2 damage).`
+    case 'buff': return s.buff==='absorb'?`Your mana heals by ${pct(lv(s.v,L))} of any damage taken for the next ${s.turns} turns.` : s.buff==='mshield'?`Mana absorbs ${pct(lv(s.v,L))} of incoming damage for ${s.turns} turns (1 mana per 2 damage).`
       : s.buff==='pers'?`Deals ${pct(lv(s.v,L))} more damage for ${s.turns} turns, doubled while below 40% life.` : s.buff==='charge'?`The next attack deals ${pct(lv(s.v,L))} more damage.` : s.buff==='focus'?`Deals ${pct(lv(s.v,L))} more damage for ${s.turns} turns.` : `${pct(lv(s.v,L))} chance to dodge attacks for ${s.turns} turns.`;
     case 'debuff': return `The foe deals ${pct(lv(s.v,L))} less damage for ${s.turns} turns.`;
     case 'heal': return s.hot?`Regrows ${pct(lv(s.hot,L))} of max life each turn for ${s.turns} turns.`:`Heals ${pct(lv(s.heal,L))} of max life${s.cleanse?' and removes burn, poison, storm and cripple':''}.`;
@@ -1233,7 +1240,7 @@ function beginTurn(b){
     const a = actor(b); const m=a.m;
     if(m.hp<=0){ b.turnIdx++; continue; }
     const st=m.st;
-    ['bubble','lsh','fsh','nsh','mshield','focus','evade','cripple','pers'].forEach(k=>{ if(st[k]>0){ st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } });
+    ['bubble','lsh','fsh','nsh','mshield','absorb','focus','evade','cripple','pers'].forEach(k=>{ if(st[k]>0){ st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } });
     m.mp = Math.min(m.maxmp, m.mp+3+Math.round(m.maxmp*0.03)+Math.round(m.pas.camel||0));
     for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm']]){
       if(st[k]>0 && m.hp>0){ const d=Math.max(1,Math.round(st[k+'D'])); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el}); log(b,`${m.n} is hurt by ${nm}.`); }
@@ -1291,6 +1298,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   if(d.st.mshield>0 && d.mp>0 && dmg>0){ const ab=Math.min(Math.round(dmg*d.st.mshieldV), d.mp*2); d.mp-=Math.ceil(ab/2); dmg-=ab; blocked+=ab; }
   dmg=Math.max(0,dmg);
   d.hp = Math.max(0, d.hp-dmg);
+  if(d.st.absorb>0 && dmg>0 && d.hp>0){ const g=Math.min(d.maxmp-d.mp, Math.round(dmg*d.st.absorbV)); if(g>0){ d.mp+=g; } }
   b.ev.push({k:'hit',s:ds,i:di,v:dmg,crit,eff:elemMult(el,d.el)>1?'up':elemMult(el,d.el)<1?'down':'',el,blocked});
   if(d.st.lsh>0 && a.hp>0 && (dmg+blocked)>0){ const r=Math.max(1,Math.round((dmg+blocked)*0.25)); a.hp=Math.max(0,a.hp-r); b.ev.push({k:'hit',s:as.s,i:as.i,v:r,el:'bolt'}); }
   if(d.st.fsh>0 && a.hp>0 && rnd(b)<0.3 && !a.st.burn){ a.st.burn=2; a.st.burnD=6+d.lvl; log(b,`${a.n} got singed!`); }
@@ -2605,7 +2613,7 @@ const ICON = {
 function skIconKey(id){
   const s=SK[id];
   if(id==='basic') return 'fist';
-  if(['pounce','double','furyfist'].includes(id)) return 'claw'; if(['feedback','feed','absorb'].includes(id)) return 'swirl';
+  if(['pounce','double','furyfist','devour'].includes(id)) return 'claw'; if(['feedback','feed','absorb'].includes(id)) return 'swirl';
   if(s.k==='passive') return 'star';
   if(s.sh==='bubble') return 'bubble'; if(s.k==='shield') return s.sh==='lsh'?'bolt':s.sh==='fsh'?'fire':'shield';
   if(s.buff==='mshield') return 'shield'; if(s.buff==='charge'||s.buff==='focus') return 'up'; if(s.buff==='evade') return 'wind'; if(s.buff==='cripple') return 'drop';
@@ -4416,6 +4424,75 @@ function zoneCompleteScreen(zi){
     sh.body.querySelector('#zdd').onclick=sh.close;
   });
 }
+
+// ---- story rivals: Jay and Bob ----
+SPI.rival_jay={id:'rival_jay',n:'Jay',fam:'hound',col:['#c0392b','#2b2b2b','#f3d9a8'],tw:{},sk:['furyfist','devour','pounce','emberspit'],rival:1};
+SPI.rival_bob={id:'rival_bob',n:'Bob',fam:'shell',col:['#5b4a8a','#c9a227','#efe6ff'],tw:{},sk:['hardened','splash','wave','grounded'],rival:1};
+const RIVALS={
+  'jay1':{sp:'rival_jay',name:'Jay',zone:'beach',title:'Teach Jay a lesson in manners!',
+    say:["Uh oh — that's Jay. He's been shoving the little monsters off this beach.","He fights dirty and his Fury Fist hits hard. Show him some manners!"]},
+  'bob1':{sp:'rival_bob',name:'Bob',zone:'desert',title:'Stop Bob from hogging the oasis',
+    say:["That big shell over there is Bob — Jay's buddy.","He's been hogging the only oasis in the desert. His shell is tough, so keep the pressure on!"]},
+  'jay2':{sp:'rival_jay',name:'Jay',zone:'hollow',title:'Jay wants a rematch!',
+    say:["Jay followed you into the woods. He's still sore about the beach.","He's gotten stronger — don't hold back!"]},
+  'bob2':{sp:'rival_bob',name:'Bob',zone:'volcano',title:'Bob is blocking the crater path',
+    say:["Bob again! He's parked himself right on the crater path.","Beat him and he'll have to move. Good luck!"]}
+};
+Object.entries(RIVALS).forEach(([key,r])=>{ const list=ZTASKS[r.zone]; if(!list||list.some(x=>x[8]==='rival:'+key)) return;
+  const prev=list[list.length-2]||list[0]; const lv=prev[2]; list.splice(list.length-1,0,['fight',r.title,lv,0,Math.round(prev[4]*1.2),Math.round(prev[5]*1.2),4,1,'rival:'+key]); });
+taskProg=(function(prev){ return function(zi){ const id=ZONES[zi].id; S.tasks=S.tasks||{}; const n=ZTASKS[id].length, a=S.tasks[id];
+  if(a&&a.length===n-1) a.splice(a.length-1,0,0); return prev(zi); }; })(taskProg);
+const _doTask12=doTask;
+doTask=function(zi,k){
+  const t=taskList(zi)[k]; const sp=t.special||'';
+  if(sp.startsWith('rival:')){
+    const key=sp.slice(6), r=RIVALS[key]; S.story=S.story||{};
+    const go=()=>{ if(!spend(t.en)){ drawTasks(); return; } const pr=taskProg(zi); if(pr[k]>=t.reps) pr[k]=0; persist();
+      const m=monBy(S.zoneMon)||teamMons()[0];
+      const b=newBattle({name:S.name, mons:[snapOf(m)]}, {name:r.name, mons:[{sp:r.sp, lvl:t.lv, hpMul:1}]}, {mode:'campaign'});
+      B={b, mode:'campaign', meta:{zi, task:k, uid:m.uid}, mySide:0, ctl:['human','ai'], tgt:{}};
+      openBattle(); NET.updatePresence(); drive(); };
+    if(!S.story[key]){ S.story[key]=1; persist(); lilaSay(r.say).then(go); return; }
+    return go();
+  }
+  return _doTask12(zi,k);
+};
+const _drawTasks12=drawTasks;
+drawTasks=function(){ _drawTasks12(); if(!TASKSH) return; const tl=taskList(TASKSH.zi);
+  TASKSH.sh.body.querySelectorAll('.tasks .task').forEach((el,k)=>{ const sp=(tl[k]&&tl[k].special)||''; if(!sp.startsWith('rival:')) return; const r=RIVALS[sp.slice(6)];
+    el.classList.add('rivalq'); const h=el.querySelector('.t-h'); if(h&&!h.querySelector('.t-rv')) h.insertAdjacentHTML('beforeend',`<span class="t-rv">${monSVG(r.sp,tl[k].lv|0)}</span>`); }); };
+// campaign battles: passive/item icons with hold-for-info, and the zone's own scenery
+hudPanel=(function(prev){ return function(b,side,right,ctx){ const h=prev(b,side,right,ctx); const m=b.sides[side].mons[focusMon(b,side)]; return h.slice(0,-6)+hudIcons(m)+'</div>'; }; })(hudPanel);
+renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b||B.b.single) return; const root=$('#battle');
+  root.querySelectorAll('.bhp .hi').forEach(bindTip);
+  if(B.mode==='campaign'&&B.meta&&B.meta.zi!=null){ const f=root.querySelector('.bfield'); if(f&&!f.dataset.z){ f.dataset.z=1; f.innerHTML=`<div class="bzscene">${zoneScene(ZONES[B.meta.zi].id)}</div>`; } } }; })(renderBattle);
+skillDesc=(function(prev){ return function(id,L){ if(id==='splash') return `Shoots a powerful bubble that deals ${Math.round(lv(SK.splash.dmg,L||1))} water damage.`; if(id==='devour'){ const p=Math.round(lv(SK.devour.m,L||1)*100); return `Attack the foe with ${p}% of your monster's attack and devour their life, stealing 50% of the damage dealt.`; } return prev(id,L); }; })(skillDesc);
+
+// ---- Breta: Lila's friend who scans new monsters ----
+function bretaSVG(){
+  return `<svg viewBox="0 0 120 140"><path d="M14 140 Q16 100 60 98 Q104 100 106 140Z" fill="#5fae8a"/><path d="M44 100 L60 116 L76 100Z" fill="#f4f1e8"/>
+    <rect x="52" y="82" width="16" height="20" rx="6" fill="#f0c8a4"/>
+    <path d="M26 66 Q22 28 60 24 Q98 28 94 66 L94 84 Q88 86 84 80 L84 56 Q60 48 36 56 L36 80 Q32 86 26 84Z" fill="#a0522d"/>
+    <ellipse cx="60" cy="62" rx="24" ry="27" fill="#f6d2b0"/>
+    <path d="M36 52 Q60 36 84 52 Q74 42 60 41 Q46 42 36 52Z" fill="#a0522d"/>
+    <circle cx="49" cy="63" r="9" fill="#e9fbff" stroke="#1f8f9a" stroke-width="3"/><circle cx="71" cy="63" r="9" fill="#e9fbff" stroke="#1f8f9a" stroke-width="3"/><path d="M58 63 h4" stroke="#1f8f9a" stroke-width="3"/>
+    <circle cx="50" cy="64" r="3" fill="#2a1a12"/><circle cx="72" cy="64" r="3" fill="#2a1a12"/><circle cx="51" cy="63" r="1" fill="#fff"/><circle cx="73" cy="63" r="1" fill="#fff"/>
+    <path d="M52 78 Q60 84 68 78" stroke="#7a3a2a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <circle cx="42" cy="73" r="3.5" fill="#f2a28a" opacity=".5"/><circle cx="78" cy="73" r="3.5" fill="#f2a28a" opacity=".5"/>
+    <rect x="70" y="112" width="30" height="22" rx="3" fill="#2f3a4a"/><rect x="73" y="115" width="24" height="16" rx="2" fill="#7fe0ff"/><path d="M76 124 l4 -4 l4 3 l5 -6 l5 5" stroke="#1f6f8a" stroke-width="1.6" fill="none"/></svg>`;
+}
+lilaSay=(function(prev){ return function(lines,opts={}){ if(opts.who!=='breta') return prev(lines,opts);
+  return new Promise(res=>{ prev(lines,opts).then(res); const w=[...document.querySelectorAll('.lila-wrap')].pop(); if(!w) return;
+    const fix=()=>{ const p=w.querySelector('.lila-por'); if(p&&!p.dataset.b){ p.dataset.b=1; p.innerHTML=`${bretaSVG()}<div class="lila-name">Breta</div>`; } };
+    fix(); new MutationObserver(fix).observe(w,{childList:true,subtree:true}); }); }; })(lilaSay);
+openBattle=(function(prev){ return function(){ const r=prev.apply(this,arguments);
+  try{ if(B&&B.mode==='campaign'&&B.b){ const foe=B.b.sides[1].mons[0]; const sp=SPI[foe.sp]; S.scanned=S.scanned||{};
+    if(sp&&sp.fam!=='dummy'&&!S.scanned[foe.sp]&&S.tut>=99){ S.scanned[foe.sp]=1; persist(); B.paused=true;
+      const ks=(sp.sk||[]).map(id=>SK[id]).filter(Boolean); const atk=ks.find(k=>k.k==='hit'&&k.el!=='neutral')||ks.find(k=>k.k==='hit')||ks.find(k=>k.k!=='passive');
+      setTimeout(()=>lilaSay([sp.rival?`That's ${sp.n}! Careful — he hits hard with ${atk?atk.n:'his attacks'}.`:`It's a ${sp.n}! Look out for its ${atk?atk.n:'attacks'}!`],{who:'breta'}).then(()=>{ if(B){ B.paused=false; drive(); } }),500); } } }catch(_){}
+  return r; }; })(openBattle);
+
+ST_ICON.absorb=['swirl','#2f8cff'];
 
 </script>
 </body></html>

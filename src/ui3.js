@@ -34,7 +34,7 @@ const ICON = {
 function skIconKey(id){
   const s=SK[id];
   if(id==='basic') return 'fist';
-  if(['pounce','double','furyfist'].includes(id)) return 'claw'; if(['feedback','feed','absorb'].includes(id)) return 'swirl';
+  if(['pounce','double','furyfist','devour'].includes(id)) return 'claw'; if(['feedback','feed','absorb'].includes(id)) return 'swirl';
   if(s.k==='passive') return 'star';
   if(s.sh==='bubble') return 'bubble'; if(s.k==='shield') return s.sh==='lsh'?'bolt':s.sh==='fsh'?'fire':'shield';
   if(s.buff==='mshield') return 'shield'; if(s.buff==='charge'||s.buff==='focus') return 'up'; if(s.buff==='evade') return 'wind'; if(s.buff==='cripple') return 'drop';
