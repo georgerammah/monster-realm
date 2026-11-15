@@ -659,6 +659,33 @@ body.rot .fname{font-size:min(calc(4.6*var(--vh)),26px)!important;margin-bottom:
 @keyframes walkbob{50%{transform:translateY(-6%) rotate(-2deg)}}
 .pet.roam .lvb{right:10%;top:4%}
 
+
+/* ===== home v7 ===== */
+#bar{gap:0;padding:0 max(6px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(6px,env(safe-area-inset-left));background:none;align-items:flex-end}
+.nb{flex:1;position:relative;height:54px;display:flex;align-items:center;justify-content:center;gap:4px;font:italic min(3.6vw,24px) "Lilita One",system-ui;color:#fff;letter-spacing:.5px;text-shadow:0 2px 0 rgba(0,0,0,.45);border-top:3px solid #fff;border-bottom:0;box-shadow:inset 0 -6px 0 rgba(0,0,0,.18),0 -2px 6px rgba(0,0,0,.25)}
+.nb.blue{background:linear-gradient(#6fa4ff,#2f62d8 50%,#1d43a8);border-left:2px solid rgba(255,255,255,.5)}
+.nb.red{background:linear-gradient(#ff6a5a,#d42a22 50%,#a8150f);height:62px;flex:1.15}
+.nb.red.l{clip-path:polygon(0 0,88% 0,100% 100%,0 100%);margin-right:-3%;padding-right:6%;border-radius:10px 0 0 0}
+.nb.red.r{clip-path:polygon(12% 0,100% 0,100% 100%,0 100%);margin-left:-3%;padding-left:6%;border-radius:0 10px 0 0}
+.nb i{width:min(5vw,34px);height:min(5vw,34px);flex:none;filter:drop-shadow(0 2px 1px rgba(0,0,0,.35))}.nb i svg{width:100%;height:100%}
+.nb:active{filter:brightness(1.15)}
+.nb em{position:absolute;top:2px;right:8px;font:12px -apple-system,system-ui;font-weight:700;font-style:normal;background:#ffd60a;color:#000;min-width:20px;height:20px;line-height:20px;border-radius:10px;padding:0 5px;box-shadow:0 0 0 2px #fff;text-shadow:none}
+.banner.top{top:calc(env(safe-area-inset-top) + 74px)!important;bottom:auto!important;font:italic min(4.4vw,30px) "Lilita One",system-ui;color:#c8ff4a;padding:6px 22px;border-radius:14px;background:linear-gradient(#d04ab8,#8a1f7a);box-shadow:0 0 0 3px #fff,0 6px 14px rgba(0,0,0,.3);-webkit-text-stroke:1.4px #2b4a00;letter-spacing:.5px}
+.mailb{position:absolute;right:max(16px,env(safe-area-inset-right));top:calc(env(safe-area-inset-top) + 96px);width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 40% 30%,#6fd0ff,#1d6fc4 70%);box-shadow:0 0 0 3px #fff,0 6px 12px rgba(0,0,0,.3);z-index:3;padding:0;display:flex;align-items:center;justify-content:center}
+.mailb svg{width:44px;height:44px;display:block}.mailb em{position:absolute;top:-4px;right:-4px;font:12px -apple-system,system-ui;font-weight:700;font-style:normal;background:#e0475b;color:#fff;min-width:22px;height:22px;line-height:22px;border-radius:11px;box-shadow:0 0 0 2px #fff}
+#hud .hbar.rank{flex:.9;min-width:0;box-shadow:inset 0 0 0 2px #7a1414}#hud .hbar .ico.r{background:#2a1a10;box-shadow:0 0 0 2px #c97a4a;padding:0}
+#hud .hbar.name{flex:1.6}#hud .hbar.cash{flex:.9}
+.gm2{position:absolute;right:6px;bottom:-12px;font:italic 12px "Lilita One",system-ui;color:#fff;background:#2a1430;padding:1px 9px;border-radius:9px;box-shadow:0 0 0 1.5px #c86ae0;white-space:nowrap}
+#hud .hbar.shrooms .gm{display:none}
+.soc-av{width:40px;height:40px;flex:none!important;border-radius:8px;overflow:hidden;box-shadow:0 0 0 2px #3a2a14}.soc-av svg{width:100%;height:100%}
+.invrow{display:flex;gap:6px;margin-top:6px}.invrow input{flex:1;min-width:0;font:13px -apple-system,system-ui;padding:8px 10px;border-radius:10px;border:0;background:#fff;box-shadow:inset 0 0 0 1.5px #c9b88a}
+.menugrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.mg{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;border-radius:14px;background:#fffaf0;box-shadow:0 0 0 2px #e0cfa4}.mg svg{width:54px;height:54px;border-radius:10px}.mg b{font:17px "Lilita One",system-ui;font-weight:400}
+.mg em{position:absolute;top:6px;right:8px;font:12px -apple-system,system-ui;font-weight:700;font-style:normal;background:#e0475b;color:#fff;min-width:20px;height:20px;line-height:20px;border-radius:10px}
+body.rot .nb{font-size:min(calc(3.6*var(--vw)),24px)}body.rot .nb i{width:min(calc(5*var(--vw)),34px);height:min(calc(5*var(--vw)),34px)}
+body.rot .banner.top{font-size:min(calc(4.4*var(--vw)),30px)}
+@media (orientation:landscape) and (max-height:560px){ .banner.top{top:calc(env(safe-area-inset-top) + 74px)!important} }
+
 /* rotated portrait = forced landscape */
 body.rot #hud,body.rot #bar,body.rot .bhud,body.rot .dock{padding-left:8px!important;padding-right:8px!important}
 body.rot #hud{padding-top:6px!important}body.rot #bar{padding-bottom:6px!important}body.rot .tring{left:10px!important}
@@ -767,5 +794,6 @@ body.rot .eslots{grid-template-columns:repeat(5,minmax(0,64px));justify-content:
 /*UI4*/
 /*UI5*/
 /*UI6*/
+/*UI7*/
 </script>
 </body></html>
