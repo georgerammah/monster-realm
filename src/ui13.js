@@ -159,3 +159,18 @@ async function pushMoves(o,done){
     applyMoveOverrides(o); try{ localStorage.setItem('mr-moves',JSON.stringify(o)); }catch(_){} done&&done();
   }catch(e){ alertBox(String(e.message||e)==='admin'||String(e.message||e)==='denied'?'The server rejected the admin key.':"Couldn't save. Check your connection and try again."); }
 }
+
+// ---------- picking a monster: stay on the same card, just strike a pose ----------
+openPick=(function(prev){ return function(side, swap){
+  prev(side, swap); const w=PICKEL; if(!w) return; const b=B.b; const sd=b.sides[side];
+  w.querySelectorAll('[data-pk]').forEach(btn=>btn.onclick=()=>{
+    if(w.classList.contains('picked')) return; const i=+btn.dataset.pk, m=sd.mons[i];
+    w.classList.add('picked'); btn.classList.add('sel'); B.going=true; sfx&&sfx('go');
+    const t=w.querySelector('.pk-t'); if(t) t.textContent=`Go ${m.n}!`;
+    const x=w.querySelector('#pkx'); if(x) x.style.visibility='hidden';
+    setTimeout(()=>{ w.classList.add('out'); setTimeout(()=>{ if(PICKEL===w) PICKEL=null; w.remove(); if(!B) return; B.going=false;
+      if(swap){ if(B.net&&B.net.role==='guest'){ NET.sendAction({swap:i}); renderBattle(); return; } act(b,{swap:i}); afterAct(); }
+      else { const s=b.pickSide; if(B.net&&B.net.role==='guest'){ NET.sendAction({pick:i}); renderBattle(); return; } pick(b,s,i); afterAct(); }
+    },220); },850);
+  });
+}; })(openPick);

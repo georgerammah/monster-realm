@@ -1233,6 +1233,11 @@ html,body{touch-action:manipulation}
 .rw #rwok{grid-area:b;margin:0!important;justify-self:center;width:auto!important;min-width:45%;padding-left:28px;padding-right:28px}
 
 #battle .ftag,#battle .freticle{display:none!important}
+
+.pk-wrap.picked .pk-m{pointer-events:none;transition:opacity .25s}
+.pk-wrap.picked .pk-m:not(.sel){opacity:.25}
+.pk-wrap.picked .pk-m.sel svg{animation:none!important;transform:rotate(-8deg) scaleX(1.05) scaleY(.95);transform-origin:40% 90%;transition:transform .18s cubic-bezier(.3,1.6,.5,1)}
+.pk-wrap.picked .pk-bar{visibility:hidden}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
