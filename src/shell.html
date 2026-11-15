@@ -1293,6 +1293,9 @@ html,body{touch-action:manipulation}
 .fighter.r.pose-atk .fart svg{animation:none!important;transform:scaleX(-1) rotate(14deg) scaleX(1.08) scaleY(.92)}
 .fighter.l.pose-hit .fart svg{animation:none!important;transform:translateX(-7%) rotate(-13deg) scaleY(.9);filter:brightness(1.7) saturate(.5)}
 .fighter.r.pose-hit .fart svg{animation:none!important;transform:scaleX(-1) translateX(-7%) rotate(-13deg) scaleY(.9);filter:brightness(1.7) saturate(.5)}
+
+.rw:not(:has(.rw-cash)):not(:has(.rw-xp)):not(:has(.rw-rank)){grid-template-columns:1fr;grid-template-areas:"t" "m" "b"}
+.rw:not(:has(.rw-cash)):not(:has(.rw-xp)) .rw-mons{justify-content:center}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
