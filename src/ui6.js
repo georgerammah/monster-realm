@@ -27,3 +27,13 @@ function bindAbility(btn,a){
     if(dy<-45){ hideInfo(); humanAct(id, castTarget(a,id)); } else if(!moved) showInfo(id,a); });
   btn.addEventListener('pointercancel',()=>{ p0=null; btn.style.transform=''; btn.classList.remove('press'); });
 }
+function renderHUD(){
+  const lead=teamMons()[0]; const pct=S.energy/S.maxEnergy*100;
+  $('#hud').innerHTML=`<div class="avatar">${lead?monSVG(lead.sp,lead.lvl):''}</div>
+    <div class="hcol">
+      <div class="hrow"><div class="hbar name"><span class="ico">♛</span><b>${esc(S.name||'Trainer')}</b></div><div class="hbar cash"><span class="ico c">$</span><b>${S.cash|0}</b></div></div>
+      <div class="hrow"><div class="hbar energy"><span class="ico">⚡</span><div class="ebar"><i style="width:${pct}%"></i><b>${S.energy<S.maxEnergy?`+1 in ${nextEnergyIn()} · `:''}${S.energy} / ${S.maxEnergy} energy</b></div></div>
+      <button class="hbar shrooms" id="getmore"><span class="ico m">${mushroomSVG('#b04fd6')}</span><b>${S.mush}</b><em class="gm">Get more</em></button></div>
+    </div>`;
+  $('#getmore').onclick=()=>openPanel('shop');
+}

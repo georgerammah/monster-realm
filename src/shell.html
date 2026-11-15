@@ -620,6 +620,15 @@ html,body{background:#1d1d22}
   .ptop{gap:10px}.ppor{width:28%}.eslots{grid-template-columns:repeat(5,minmax(0,64px));justify-content:start}
 }
 
+
+/* hud layout v6 */
+#hud .hcol{max-width:780px}
+#hud .hbar.name,#hud .hbar.energy{flex:1.5;min-width:0}
+#hud .hbar.cash,#hud .hbar.shrooms{flex:1;min-width:0}
+#hud .hbar.shrooms small{display:none}
+#hud .hbar.shrooms b{flex:1;text-align:left}
+.gm{font-style:normal;font-size:11px;font-weight:700;color:#fff;background:linear-gradient(#b0389a,#7b1f6b);padding:2px 8px;border-radius:9px;box-shadow:0 0 0 1px #e08ae8;white-space:nowrap}
+
 /* rotated portrait = forced landscape */
 body.rot .sheet.full{width:100%!important;max-width:none}
 body.rot /* splash */
