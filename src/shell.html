@@ -912,6 +912,34 @@ body.rot input,body.rot textarea{touch-action:manipulation}
 .zd-foot{padding:6px 8px 8px;text-align:center}.zd-foot .zs-ft{color:#111}
 
 .zfoot{position:relative!important;left:auto;right:auto;bottom:auto;background:none!important;padding:10px 12px calc(env(safe-area-inset-bottom) + 14px)!important}
+
+/* fixed full screens: never scroll */
+.sheet:has(.zsel),.sheet:has(.zdest),.sheet:has(.tscreen:not(.tasks)){overflow:hidden!important;padding:0!important}
+.zsel,.zdest{height:calc(100*var(--vh));display:flex;flex-direction:column;overflow:hidden}
+.zsel .plankbar{flex:none}
+.zsel .tfield{flex:1;min-height:0!important;height:auto!important;padding:2.5vh 12px!important;gap:3vh!important;justify-content:center}
+.zsel .zs-row{max-height:100%;min-height:0}
+.zs-h{font-size:min(calc(5*var(--vh)),22px);padding:calc(1.2*var(--vh)) 10px}
+.zs-zone .zart{height:calc(24*var(--vh))!important;max-height:170px}
+.zs-foot{padding:calc(1*var(--vh)) 8px calc(1.5*var(--vh))}.zs-ft{font-size:min(calc(4.2*var(--vh)),20px)}
+.zs-f{width:min(calc(9*var(--vh)),52px)}
+.zs-team{padding:calc(1*var(--vh)) 8px;gap:calc(.8*var(--vh))}
+.zs-m{padding:calc(.6*var(--vh)) 6px}.zs-mart{width:min(calc(12*var(--vh)),80px)}
+.zs-minfo b{font-size:min(calc(4.6*var(--vh)),22px)}
+.zsel .letsgo{flex:none;font-size:min(calc(7*var(--vh)),32px);padding:calc(1.2*var(--vh)) 26px}
+.zd-row{min-height:0}.zd-card{max-height:100%}
+.zd-art{height:calc(34*var(--vh))!important}
+
+.tscreen:not(.tasks):not(.zsel):not(.zdest){height:calc(100*var(--vh));display:flex;flex-direction:column;overflow:hidden}
+.tscreen:not(.tasks):not(.zsel):not(.zdest) .plankbar{flex:none}
+.tscreen:not(.tasks):not(.zsel):not(.zdest) .tfield{flex:1!important;height:auto!important;min-height:0!important}
+.tscreen:not(.tasks):not(.zsel):not(.zdest) .tslots{top:50%!important;transform:translateY(-50%)}
+.tscreen:not(.tasks):not(.zsel):not(.zdest) .tslots .tcard{width:calc(28*var(--vh))!important;max-width:150px}
+.tscreen:not(.tasks):not(.zsel):not(.zdest) .tcard.empty{height:calc(30*var(--vh))!important;max-height:160px}
+.tscreen:not(.tasks):not(.zsel):not(.zdest) .bench{flex:none;padding:calc(1.6*var(--vh)) 0}
+.tscreen:not(.tasks):not(.zsel):not(.zdest) .bench:has(.bench-row .tcard) .bench-h{display:none}
+.tscreen:not(.tasks):not(.zsel):not(.zdest) .bench-row{padding:2px 12px}
+.tscreen:not(.tasks):not(.zsel):not(.zdest) .bench-row .tcard{width:calc(22*var(--vh))!important;max-width:130px}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
