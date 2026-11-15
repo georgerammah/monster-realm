@@ -1192,6 +1192,10 @@ html,body{touch-action:manipulation}
 
 .castname,body.rot .castname{animation:cn2 1.3s ease-out both!important}
 @keyframes cn2{0%{opacity:0;transform:translateX(-50%) scale(.6)}15%{opacity:1;transform:translateX(-50%) scale(1.08)}25%{transform:translateX(-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-12px)}}
+
+.fighter .fname{opacity:0}
+.fighter .fname.fnon{opacity:1;animation:fnshow 2.8s ease-out both!important}
+@keyframes fnshow{0%{opacity:0;transform:translateX(-50%) scale(.6)}12%{opacity:1;transform:translateX(-50%) scale(1.08)}20%{opacity:1;transform:translateX(-50%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translateX(-50%)}}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
