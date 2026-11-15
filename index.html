@@ -639,6 +639,28 @@ html,body{background:#1d1d22}
 #hud .hbar.shrooms b{flex:1;text-align:left}
 .gm{font-style:normal;font-size:11px;font-weight:700;color:#fff;background:linear-gradient(#b0389a,#7b1f6b);padding:2px 8px;border-radius:9px;box-shadow:0 0 0 1px #e08ae8;white-space:nowrap}
 
+
+/* battle tidy v6 */
+.blog2{display:none!important}
+body.rot .dock{padding-bottom:2px!important}
+@media (orientation:landscape) and (max-height:560px){ .dock{padding-bottom:calc(env(safe-area-inset-bottom) + 2px)!important} }
+body.rot .arena.solo{top:96px!important;bottom:92px!important}
+body.rot .fighter.solo{width:min(calc(22*var(--vw)),calc(34*var(--vh)))!important}
+body.rot .fname{font-size:min(calc(4.6*var(--vh)),26px)!important;margin-bottom:0}
+@media (orientation:landscape) and (max-height:560px){ .arena.solo{top:96px!important;bottom:92px!important} .fighter.solo{width:min(22vw,34vh)!important} .fname{font-size:min(4.6vh,26px)!important;margin-bottom:0} }
+
+
+.tipb{position:fixed;z-index:200;max-width:260px;background:#fbf3dc;color:#2b2216;border-radius:12px;padding:8px 11px;box-shadow:0 0 0 2px #5a4a1a,0 8px 18px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:2px;pointer-events:none;animation:pop .18s ease-out}
+.tipb b{font:16px "Lilita One",system-ui;font-weight:400}.tipb span{font-size:13px;line-height:1.3}
+.hi{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;touch-action:none}
+
+
+.avatar{cursor:pointer}.avatar:active{transform:scale(.95)}
+.avgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;margin-top:4px}
+.avo{aspect-ratio:1;border-radius:12px;overflow:hidden;box-shadow:0 0 0 2px #3a2a14;background:linear-gradient(#e8d9b5,#b99a63)}.avo svg{width:100%;height:100%}
+.avo.sel{box-shadow:0 0 0 3px #ff9f0a,0 0 12px rgba(255,159,10,.7)}
+.bpor.tr svg,.iv-por svg{width:100%;height:100%}
+
 /* rotated portrait = forced landscape */
 body.rot .sheet.full{width:100%!important;max-width:none}
 body.rot /* splash */
@@ -764,7 +786,7 @@ const FAM = {
 const SK = {
   basic:{n:'Attack', el:'neutral', t:'enemy', k:'hit', mp:[0,0], m:[1,0]},
   blast:{n:'Blast', el:'fire', t:'enemy', k:'hit', mp:[16,3], m:[1.5,.1]},
-  furyfist:{n:'Fury Fist', el:'neutral', t:'enemy', k:'hit', mp:[14,3], m:[1.35,.1], stun:[.15,.015]},
+  furyfist:{n:'Fury Fist', el:'neutral', t:'passive', k:'passive', p:'fury', v:[.12,.03]},
   emberspit:{n:'Ember Spit', el:'fire', t:'enemy', k:'hit', mp:[12,3], m:[1.1,.08], burn:[.4,.03]},
   double:{n:'Double Attack', el:'neutral', t:'enemy', k:'hit', mp:[14,3], m:[.7,.05], hits:2},
   pounce:{n:'Pounce', el:'neutral', t:'enemy', k:'hit', mp:[18,3], m:[1.6,.1]},
@@ -826,7 +848,7 @@ function skillDesc(id, L){
     case 'drain': return `Steals ${Math.round(lv(s.steal,L))} mana from a foe.`;
     case 'passive': return ({pers:`Always on: deals ${pct(lv(s.v,L))} more damage while below 40% life.`, grounded:`Always on: takes ${pct(lv(s.v,L))} less lightning damage.`,
       sweaty:`Always on: takes ${pct(lv(s.v,L))} less fire and water damage and often shrugs off burns.`, thick:`Always on: takes ${pct(lv(s.v,L))} less damage from everything.`,
-      hard:`Always on: takes ${pct(lv(s.v,L))} less physical damage.`, roots:`Always on: recovers ${pct(lv(s.v,L))} of max life after each of its turns.`, camel:`Always on: regains ${Math.round(lv(s.v,L))} extra mana every turn.`})[s.p];
+      hard:`Always on: takes ${pct(lv(s.v,L))} less physical damage.`, fury:`Always on: physical attacks deal ${pct(lv(s.v,L))} more damage.`, roots:`Always on: recovers ${pct(lv(s.v,L))} of max life after each of its turns.`, camel:`Always on: regains ${Math.round(lv(s.v,L))} extra mana every turn.`})[s.p];
   }
   return '';
 }
@@ -975,6 +997,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods){
   if(d.pas.thick) dmg*=1-d.pas.thick;
   if(el==='bolt' && d.pas.grounded) dmg*=1-d.pas.grounded;
   if((el==='fire'||el==='water') && d.pas.sweaty) dmg*=1-d.pas.sweaty;
+  if(el==='neutral' && a.pas.fury) dmg*=1+a.pas.fury;
   if(a.st.pers>0) dmg*=1+a.st.persV*(a.hp/a.maxhp<0.4?2:1);
   dmg += (a.fx&&a.fx.dflat||0) + (d.fx&&d.fx.tflat||0);
   if(el==='neutral' && d.pas.hard) dmg*=1-d.pas.hard;
@@ -2983,7 +3006,7 @@ function isArena(mode){ return mode==='pvp'||mode==='rival'||mode==='local'; }
 function startBattle({mode, foe, meta, myName, oppRank}){
   const single=isArena(mode);
   const b=newBattle({name:myName||S.name, mons:mySnap()}, foe, {mode, single});
-  B={b, mode, meta:meta||{}, mySide:0, ctl:['human', mode==='local'?'human':'ai'], tgt:{}, oppRank:oppRank==null?myRank():oppRank, stamp:Date.now()};
+  B={b, mode, meta:meta||{}, mySide:0, ctl:['human', mode==='local'?'human':'ai'], tgt:{}, oppRank:oppRank==null?myRank():oppRank, oppAvatar: mode==='rival'?{t:'trainer',i:Math.floor(Math.random()*12)}:null, stamp:Date.now()};
   openBattle(); NET.updatePresence();
   if(single){ B.paused=true; renderBattle(); showIntro(()=>{ if(!B) return; B.paused=false; B.stamp=Date.now(); B.tkey=turnKey(B.b); drive(); }); }
   else drive();
@@ -2997,7 +3020,7 @@ function rivalTeam(){
 // ---- intro ----
 function showIntro(done){
   const b=B.b; const L=B.mySide, R=1-L;
-  const pr=s=>{ const m=b.sides[s].mons[0]; return `<div class="iv-por">${m?monSVG(m.sp,m.lvl):''}</div>`; };
+  const pr=s=>`<div class="iv-por">${avatarSVG(avatarFor(b,s))}</div>`;
   const myR=myRank(), opR=B.mode==='local'?myR:B.oppRank;
   const w=document.createElement('div'); w.className='intro';
   w.innerHTML=`<div class="iv-band top"><div class="iv-title">${B.mode==='pvp'?'<span class="g">LIVE</span> <span class="o">BATTLE!</span>':B.mode==='rival'?'<span class="g">RIVAL</span> <span class="o">BATTLE!</span>':'<span class="g">FRIENDLY</span> <span class="o">BATTLE!</span>'}</div></div>
@@ -3097,25 +3120,25 @@ const ARENA_BG=`<div class="abg"><svg viewBox="0 0 400 300" preserveAspectRatio=
   <path d="M0 178 C40 170 90 186 140 176 S240 168 300 178 S370 182 400 174 V300 H0Z" fill="#5f8a5c"/>
   <path d="M0 200 C80 188 160 206 240 196 S360 190 400 198 V300 H0Z" fill="#4f7d4a"/>
   ${Array.from({length:70},(_,k)=>{ const x=k*6+((k*37)%5), h=6+((k*13)%9); return `<path d="M${x} ${182+((k*7)%6)} l2 -${h} l2 ${h}" fill="#4a7a44" opacity=".8"/>`; }).join('')}</svg></div>`;
-const PAS_IC={sweaty:'drop',roots:'heart',thick:'shield',grounded:'earth',hard:'shield',camel:'drop'};
+const PAS_IC={fury:'fist',sweaty:'drop',roots:'heart',thick:'shield',grounded:'earth',hard:'shield',camel:'drop'};
 function hudIcons(m){
   if(!m) return '';
   const out=[];
-  Object.keys(m.pas||{}).forEach(p=>{ const id=Object.keys(SK).find(k=>SK[k].p===p); out.push(`<span class="hi" data-tip="${id?SK[id].n+': '+skillDesc(id,m.skl[id]||1):''}">${icon(p==='roots'?'plus':PAS_IC[p]||'star','#ff6a3d',30)}</span>`); });
+  Object.keys(m.pas||{}).forEach(p=>{ const id=Object.keys(SK).find(k=>SK[k].p===p); out.push(`<span class="hi" data-tip="${id?esc(SK[id].n+' (passive, Lv '+(m.skl[id]||1)+')|'+skillDesc(id,m.skl[id]||1)):''}">${icon(p==='roots'?'plus':PAS_IC[p]||'star','#ff6a3d',30)}</span>`); });
   const f=m.fx||{};
-  if(f.dflat) out.push(`<span class="hi" data-tip="Blades: +${f.dflat} damage dealt, +${f.tflat} damage taken">${icon('star','#ff6a3d',30)}</span>`);
-  if(f.rhp) out.push(`<span class="hi" data-tip="Life Bowl: +${f.rhp} life after each turn">${icon('plus','#e0475b',30)}</span>`);
-  if(f.rmp) out.push(`<span class="hi" data-tip="Mana Bowl: +${f.rmp} mana after each turn">${icon('plus','#4a9cf0',30)}</span>`);
-  Object.keys(ST_ICON).filter(k=>m.st[k]>0).forEach(k=>out.push(`<span class="hi st" data-tip="${BUFF_N[k]||k}">${icon(ST_ICON[k][0],ST_ICON[k][1],26)}</span>`));
+  if(f.dflat) out.push(`<span class="hi" data-tip="Brute Blades|+${f.dflat} damage on attacks, +${f.tflat} damage taken">${icon('star','#ff6a3d',30)}</span>`);
+  if(f.rhp) out.push(`<span class="hi" data-tip="Life Bowl|Recovers ${f.rhp} life after each turn">${icon('plus','#e0475b',30)}</span>`);
+  if(f.rmp) out.push(`<span class="hi" data-tip="Mana Bowl|Recovers ${f.rmp} mana after each turn">${icon('plus','#4a9cf0',30)}</span>`);
+  Object.keys(ST_ICON).filter(k=>m.st[k]>0).forEach(k=>out.push(`<span class="hi st" data-tip="${BUFF_N[k]||k}|Active for ${m.st[k]} more turn${m.st[k]>1?'s':''}">${icon(ST_ICON[k][0],ST_ICON[k][1],26)}</span>`));
   return `<div class="hicons">${out.join('')}</div>`;
 }
 function hudSingle(b, side, right, ctx){
   const sd=b.sides[side]; const m=sd.mons[sd.active];
-  const lead=sd.mons[0];
+  const av=avatarFor(b,side);
   const pv=m&&ctx.prev&&ctx.prev[side+'-'+sd.active]; const hp=m?(pv?pv.hp:m.hp):0, mp=m?(pv?pv.mp:m.mp):0;
   const canSwap = !right && m && myInput() && b.phase==='fight' && actor(b) && actor(b).s===side && benchOf(b,side).length;
   return `<div class="bhp ${right?'r':''}" data-hs="${side}" data-hi="${sd.active==null?0:sd.active}">
-    <button class="bpor tr ${canSwap?'swap':''}" ${canSwap?'id="swapb"':''}>${lead?monSVG(lead.sp,lead.lvl):''}${canSwap?'<span>SWAP!</span>':''}</button>
+    <button class="bpor tr ${canSwap?'swap':''}" ${canSwap?'id="swapb"':''}>${avatarSVG(av)}${canSwap?'<span>SWAP!</span>':''}</button>
     <div class="bbars"><div class="lb life"><i style="width:${m?hp/m.maxhp*100:0}%"></i><b>${hp} / ${m?m.maxhp:0} life</b></div>
     <div class="lb mana"><i style="width:${m?mp/m.maxmp*100:0}%"></i><b>${mp} / ${m?m.maxmp:0} mana</b></div></div>
     <div class="bdots">${sd.mons.map((x,i)=>`<i class="${x.hp<=0?'ko':i===sd.active?'on':''}"></i>`).join('')}</div>${hudIcons(m)}</div>`;
@@ -3158,7 +3181,7 @@ renderBattle = function(){
   $('#bmenu').onclick=battleMenu;
   const au=$('#bauto'); if(au) au.onclick=()=>{ B.auto=!B.auto; drive(); };
   const sw=$('#swapb'); if(sw) sw.onclick=()=>openPick(left,true);
-  root.querySelectorAll('.hi').forEach(h=>h.onclick=()=>{ const t=h.dataset.tip; if(t) toast(t); });
+  root.querySelectorAll('.hi').forEach(bindTip);
   root.querySelectorAll('.ab').forEach(btn=>bindAbility(btn,a));
   if(b.phase==='pick' && mine && !B.paused && !PICKEL && !B.going) setTimeout(()=>{ if(B&&B.b===b&&b.phase==='pick'&&myInput()&&!PICKEL&&!B.going) openPick(b.pickSide,false); },350);
   if(b.phase!=='pick' && PICKEL && !PICKEL.querySelector('#pkx')) closePick();
@@ -3205,7 +3228,7 @@ NET.challenge = function(cid){
   if(!S.team.length) return toast('Add a monster to your team');
   const matchId=uidGen()+uidGen();
   NET.pending={matchId,to:cid,t:setTimeout(()=>{ NET.pending=null; toast('No answer'); render(); },30000)};
-  NET.room.emit('challenge',{to:cid, from:NET.cid, name:S.name, rank:myRank(), matchId, team:teamMsg()});
+  NET.room.emit('challenge',{to:cid, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId, team:teamMsg()});
   toast('Challenge sent'); render();
 };
 NET.showIncoming = function(d){
@@ -3215,7 +3238,7 @@ NET.showIncoming = function(d){
   const t=setTimeout(()=>sh.close(),28000);
   sh.body.querySelector('#acc').onclick=()=>{ clearTimeout(t); NET.incoming=null; sh.close();
     if(!S.team.length){ toast('Add a monster to your team'); return; }
-    NET.room.emit('accept',{to:d.from, from:NET.cid, name:S.name, rank:myRank(), matchId:d.matchId, team:teamMsg()});
+    NET.room.emit('accept',{to:d.from, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId:d.matchId, team:teamMsg()});
     NET.startGuest(d); };
   sh.body.querySelector('#dec').onclick=()=>{ clearTimeout(t); sh.close(); };
 };
@@ -3223,7 +3246,7 @@ NET.startHost = async function(d){
   closeAllSheets(); PANEL=null;
   const mr=await joinMatch(d.matchId); NET.mr=mr;
   const b=newBattle({name:S.name, mons:mySnap()}, {name:d.name||'Opponent', mons:sanitizeTeam(d.team)}, {mode:'pvp', single:true});
-  B={b, mode:'pvp', meta:{}, mySide:0, ctl:['human','remote'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, stamp:Date.now(), paused:true,
+  B={b, mode:'pvp', meta:{}, mySide:0, ctl:['human','remote'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, oppAvatar:sanitizeAv(d.avatar), stamp:Date.now(), paused:true,
      net:{role:'host', matchId:d.matchId, last:Date.now(), lastSeq:b.seq}};
   mr.on('action', a=>{
     if(!B||!B.net||a.matchId!==B.net.matchId||B.b.over||B.paused&&false) return;
@@ -3247,7 +3270,7 @@ NET.startHost = async function(d){
 NET.broadcast = function(){ if(!NET.mr||!B||!B.b||!B.net) return; const b=Object.assign({},B.b,{log:B.b.log.slice(-6)}); try{ NET.mr.emit('state',{matchId:B.net.matchId, b, intro:!!B.paused, rank:myRank()}); }catch(e){} const k=turnKey(B.b); if(B.net.lastKey!==k){ B.net.last=Date.now(); B.net.lastKey=k; } };
 NET.startGuest = async function(d){
   closeAllSheets(); PANEL=null;
-  B={b:null, mode:'pvp', meta:{}, mySide:1, myUids:teamMons().map(m=>m.uid), ctl:['remote','human'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, stamp:Date.now(), paused:true,
+  B={b:null, mode:'pvp', meta:{}, mySide:1, myUids:teamMons().map(m=>m.uid), ctl:['remote','human'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, oppAvatar:sanitizeAv(d.avatar), stamp:Date.now(), paused:true,
      net:{role:'guest', matchId:d.matchId, heard:Date.now()}};
   openBattle(); renderBattle();
   const mr=await joinMatch(d.matchId); NET.mr=mr;
@@ -3264,6 +3287,18 @@ NET.startGuest = async function(d){
   },2000);
   NET.updatePresence();
 };
+
+function bindTip(h){
+  let tip=null;
+  const show=e=>{ e.preventDefault(); const t=h.dataset.tip; if(!t) return; hide();
+    const [title,body]=t.split('|'); tip=document.createElement('div'); tip.className='tipb';
+    tip.innerHTML=`<b>${title}</b>${body?`<span>${body}</span>`:''}`; document.body.appendChild(tip);
+    const r=localRect(h); const W=isRot()?document.body.getBoundingClientRect().height:innerWidth;
+    tip.style.top=(r.top+r.height+8)+'px'; tip.style.left=Math.max(8,Math.min(W-tip.offsetWidth-8, r.left+r.width/2-tip.offsetWidth/2))+'px'; };
+  const hide=()=>{ if(tip){ tip.remove(); tip=null; } document.querySelectorAll('.tipb').forEach(x=>x.remove()); };
+  h.addEventListener('pointerdown',show); h.addEventListener('pointerup',hide); h.addEventListener('pointerleave',hide); h.addEventListener('pointercancel',hide);
+  h.addEventListener('contextmenu',e=>e.preventDefault());
+}
 
 // ===== V6: forced landscape by rotating the page when the phone is upright =====
 function isRot(){ return document.body.classList.contains('rot'); }
@@ -3304,6 +3339,65 @@ function renderHUD(){
     </div>`;
   $('#getmore').onclick=()=>openPanel('shop');
 }
+
+// ===== avatars =====
+const SKINS=['#f6d7c3','#eec19f','#d9a074','#b97a4f','#8d5a36','#5e3b22'];
+const HAIRC=['#2a1a12','#5a3a1e','#1a1a1a','#a0622a','#d8b25a','#3a2418'];
+const SHIRTS=['#2f62d8','#e0475b','#30a05a','#f2a91a','#7a5ad8','#1f9e8f'];
+const TRAINERS=[]; SKINS.forEach((s,k)=>{ TRAINERS.push({sex:'m',skin:s,hair:HAIRC[k],shirt:SHIRTS[k],style:k%3}); TRAINERS.push({sex:'f',skin:s,hair:HAIRC[(k+2)%6],shirt:SHIRTS[(k+3)%6],style:k%3}); });
+function trainerSVG(i){
+  const t=TRAINERS[i]||TRAINERS[0]; const ol='#2a1d16', sk=t.skin, h=t.hair, dk=shade(sk,-18);
+  let back='', front='';
+  if(t.sex==='f'){
+    back = t.style===0?`<path d="M18 46 Q16 18 40 16 Q64 18 62 46 L64 74 Q52 68 50 56 L30 56 Q28 68 16 74Z" fill="${h}" stroke="${ol}" stroke-width="2"/>`
+         : t.style===1?`<circle cx="40" cy="14" r="9" fill="${h}" stroke="${ol}" stroke-width="2"/><path d="M20 44 Q18 20 40 18 Q62 20 60 44Z" fill="${h}" stroke="${ol}" stroke-width="2"/>`
+         : `<path d="M16 44 Q12 16 40 14 Q68 16 64 44 Q70 60 60 70 Q60 52 56 44 L24 44 Q20 52 20 70 Q10 60 16 44Z" fill="${h}" stroke="${ol}" stroke-width="2"/>`;
+    front = t.style===1?`<path d="M23 36 Q26 22 40 22 Q54 22 57 36 Q48 28 40 30 Q32 28 23 36Z" fill="${h}"/>`:`<path d="M22 38 Q24 20 40 20 Q56 20 58 38 Q52 26 42 27 Q34 26 22 38Z" fill="${h}"/>`;
+  } else {
+    front = t.style===0?`<path d="M21 38 Q20 18 40 17 Q60 18 59 38 Q56 27 48 26 Q40 30 30 26 Q24 28 21 38Z" fill="${h}" stroke="${ol}" stroke-width="2"/>`
+          : t.style===1?`<path d="M21 36 Q22 16 42 16 Q58 17 59 34 L56 30 Q50 22 40 24 Q30 23 24 32Z" fill="${h}" stroke="${ol}" stroke-width="2"/><path d="M40 16 Q46 10 52 14" stroke="${ol}" stroke-width="2" fill="${h}"/>`
+          : `<path d="M22 34 Q24 20 40 20 Q56 20 58 34 Q50 27 40 28 Q30 27 22 34Z" fill="${h}" stroke="${ol}" stroke-width="2"/>`;
+  }
+  const beard = t.sex==='m'&&t.style===2?`<path d="M26 48 Q28 64 40 65 Q52 64 54 48 Q50 56 40 57 Q30 56 26 48Z" fill="${h}" opacity=".85"/>`:'';
+  return `<svg viewBox="0 0 80 80"><defs><linearGradient id="avbg${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe14a"/><stop offset="1" stop-color="#f2a91a"/></linearGradient></defs>
+    <rect width="80" height="80" fill="url(#avbg${i})"/>${back}
+    <path d="M10 82 Q12 64 40 62 Q68 64 70 82Z" fill="${t.shirt}" stroke="${ol}" stroke-width="2"/><path d="M33 62 L40 70 L47 62" fill="none" stroke="#fff" stroke-width="2"/>
+    <rect x="34" y="52" width="12" height="12" rx="4" fill="${dk}" stroke="${ol}" stroke-width="1.6"/>
+    <ellipse cx="22" cy="42" rx="4" ry="5" fill="${sk}" stroke="${ol}" stroke-width="1.6"/><ellipse cx="58" cy="42" rx="4" ry="5" fill="${sk}" stroke="${ol}" stroke-width="1.6"/>
+    <ellipse cx="40" cy="40" rx="17" ry="19" fill="${sk}" stroke="${ol}" stroke-width="2"/>${beard}
+    <ellipse cx="33.5" cy="40" rx="2.4" ry="2.8" fill="#1c1410"/><ellipse cx="46.5" cy="40" rx="2.4" ry="2.8" fill="#1c1410"/><circle cx="34.3" cy="39" r=".8" fill="#fff"/><circle cx="47.3" cy="39" r=".8" fill="#fff"/>
+    <path d="M30 34.5 Q33.5 32.5 37 34 M43 34 Q46.5 32.5 50 34.5" stroke="${shade(h,-10)}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M40 41 Q38.5 46 41 46.5" stroke="${shade(sk,-35)}" stroke-width="1.3" fill="none"/>
+    <path d="M34 50 Q40 55 46 50" stroke="${ol}" stroke-width="1.8" fill="${t.sex==='f'?'#c8505a':'none'}" stroke-linecap="round"/>
+    ${front}</svg>`;
+}
+function sanitizeAv(a){ if(a&&a.t==='trainer') return {t:'trainer',i:Math.max(0,Math.min(TRAINERS.length-1,a.i|0))}; if(a&&a.t==='mon'&&SPI[a.sp]&&SPI[a.sp].fam!=='dummy') return {t:'mon',sp:a.sp,lvl:Math.max(1,Math.min(MAXLVL,a.lvl|0))}; return null; }
+function myAvatar(){ const a=sanitizeAv(S.avatar); if(a) return a; const l=teamMons()[0]; return l?{t:'mon',sp:l.sp,lvl:l.lvl}:{t:'trainer',i:0}; }
+function avatarSVG(a){ a=sanitizeAv(a)||{t:'trainer',i:0}; return a.t==='trainer'?trainerSVG(a.i):monSVG(a.sp,a.lvl); }
+function avatarFor(b,side){
+  if(B && side===B.mySide) return myAvatar();
+  if(B && B.mode==='local'){ const m=b.sides[side].mons[0]; return {t:'mon',sp:m.sp,lvl:m.lvl}; }
+  if(B && B.oppAvatar) return B.oppAvatar;
+  const m=b.sides[side].mons[0]; return m?{t:'mon',sp:m.sp,lvl:m.lvl}:{t:'trainer',i:0};
+}
+function openAvatar(){
+  let tab=(S.avatar&&S.avatar.t==='mon')?'mon':'trainer';
+  const sh=sheet(`<div class="avpick"></div>`);
+  const draw=()=>{
+    const cur=myAvatar(); const seen=new Set();
+    const mons=S.mons.slice().sort((a,b)=>b.lvl-a.lvl).filter(m=>{ const k=m.sp+':'+stageOf(m.lvl); if(seen.has(k)) return false; seen.add(k); return true; });
+    sh.body.querySelector('.avpick').innerHTML=`<h2 class="game-h">Profile Picture</h2>
+      <div class="stabs"><button class="stab ${tab==='trainer'?'on':''}" data-at="trainer">Trainers</button><button class="stab ${tab==='mon'?'on':''}" data-at="mon">Monsters</button></div>
+      <div class="avgrid">${tab==='trainer'
+        ? TRAINERS.map((t,i)=>`<button class="avo ${cur.t==='trainer'&&cur.i===i?'sel':''}" data-av='${JSON.stringify({t:'trainer',i})}'>${trainerSVG(i)}</button>`).join('')
+        : mons.map(m=>`<button class="avo mon ${cur.t==='mon'&&cur.sp===m.sp&&stageOf(cur.lvl)===stageOf(m.lvl)?'sel':''}" data-av='${JSON.stringify({t:'mon',sp:m.sp,lvl:m.lvl})}'>${monSVG(m.sp,m.lvl)}</button>`).join('')}</div>`;
+    sh.body.querySelectorAll('[data-at]').forEach(b=>b.onclick=()=>{ tab=b.dataset.at; draw(); });
+    sh.body.querySelectorAll('[data-av]').forEach(b=>b.onclick=()=>{ S.avatar=JSON.parse(b.dataset.av); persist(); renderHUD(); NET.updatePresence&&NET.updatePresence(); draw(); });
+  };
+  draw();
+}
+const _renderHUD6=renderHUD;
+renderHUD=function(){ _renderHUD6(); const av=document.querySelector('#hud .avatar'); if(av){ av.innerHTML=avatarSVG(myAvatar()); av.onclick=openAvatar; } };
 
 </script>
 </body></html>

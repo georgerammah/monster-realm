@@ -629,6 +629,28 @@ html,body{background:#1d1d22}
 #hud .hbar.shrooms b{flex:1;text-align:left}
 .gm{font-style:normal;font-size:11px;font-weight:700;color:#fff;background:linear-gradient(#b0389a,#7b1f6b);padding:2px 8px;border-radius:9px;box-shadow:0 0 0 1px #e08ae8;white-space:nowrap}
 
+
+/* battle tidy v6 */
+.blog2{display:none!important}
+body.rot .dock{padding-bottom:2px!important}
+@media (orientation:landscape) and (max-height:560px){ .dock{padding-bottom:calc(env(safe-area-inset-bottom) + 2px)!important} }
+body.rot .arena.solo{top:96px!important;bottom:92px!important}
+body.rot .fighter.solo{width:min(calc(22*var(--vw)),calc(34*var(--vh)))!important}
+body.rot .fname{font-size:min(calc(4.6*var(--vh)),26px)!important;margin-bottom:0}
+@media (orientation:landscape) and (max-height:560px){ .arena.solo{top:96px!important;bottom:92px!important} .fighter.solo{width:min(22vw,34vh)!important} .fname{font-size:min(4.6vh,26px)!important;margin-bottom:0} }
+
+
+.tipb{position:fixed;z-index:200;max-width:260px;background:#fbf3dc;color:#2b2216;border-radius:12px;padding:8px 11px;box-shadow:0 0 0 2px #5a4a1a,0 8px 18px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:2px;pointer-events:none;animation:pop .18s ease-out}
+.tipb b{font:16px "Lilita One",system-ui;font-weight:400}.tipb span{font-size:13px;line-height:1.3}
+.hi{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;touch-action:none}
+
+
+.avatar{cursor:pointer}.avatar:active{transform:scale(.95)}
+.avgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;margin-top:4px}
+.avo{aspect-ratio:1;border-radius:12px;overflow:hidden;box-shadow:0 0 0 2px #3a2a14;background:linear-gradient(#e8d9b5,#b99a63)}.avo svg{width:100%;height:100%}
+.avo.sel{box-shadow:0 0 0 3px #ff9f0a,0 0 12px rgba(255,159,10,.7)}
+.bpor.tr svg,.iv-por svg{width:100%;height:100%}
+
 /* rotated portrait = forced landscape */
 body.rot .sheet.full{width:100%!important;max-width:none}
 body.rot /* splash */

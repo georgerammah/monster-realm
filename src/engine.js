@@ -27,7 +27,7 @@ const FAM = {
 const SK = {
   basic:{n:'Attack', el:'neutral', t:'enemy', k:'hit', mp:[0,0], m:[1,0]},
   blast:{n:'Blast', el:'fire', t:'enemy', k:'hit', mp:[16,3], m:[1.5,.1]},
-  furyfist:{n:'Fury Fist', el:'neutral', t:'enemy', k:'hit', mp:[14,3], m:[1.35,.1], stun:[.15,.015]},
+  furyfist:{n:'Fury Fist', el:'neutral', t:'passive', k:'passive', p:'fury', v:[.12,.03]},
   emberspit:{n:'Ember Spit', el:'fire', t:'enemy', k:'hit', mp:[12,3], m:[1.1,.08], burn:[.4,.03]},
   double:{n:'Double Attack', el:'neutral', t:'enemy', k:'hit', mp:[14,3], m:[.7,.05], hits:2},
   pounce:{n:'Pounce', el:'neutral', t:'enemy', k:'hit', mp:[18,3], m:[1.6,.1]},
@@ -89,7 +89,7 @@ function skillDesc(id, L){
     case 'drain': return `Steals ${Math.round(lv(s.steal,L))} mana from a foe.`;
     case 'passive': return ({pers:`Always on: deals ${pct(lv(s.v,L))} more damage while below 40% life.`, grounded:`Always on: takes ${pct(lv(s.v,L))} less lightning damage.`,
       sweaty:`Always on: takes ${pct(lv(s.v,L))} less fire and water damage and often shrugs off burns.`, thick:`Always on: takes ${pct(lv(s.v,L))} less damage from everything.`,
-      hard:`Always on: takes ${pct(lv(s.v,L))} less physical damage.`, roots:`Always on: recovers ${pct(lv(s.v,L))} of max life after each of its turns.`, camel:`Always on: regains ${Math.round(lv(s.v,L))} extra mana every turn.`})[s.p];
+      hard:`Always on: takes ${pct(lv(s.v,L))} less physical damage.`, fury:`Always on: physical attacks deal ${pct(lv(s.v,L))} more damage.`, roots:`Always on: recovers ${pct(lv(s.v,L))} of max life after each of its turns.`, camel:`Always on: regains ${Math.round(lv(s.v,L))} extra mana every turn.`})[s.p];
   }
   return '';
 }
@@ -238,6 +238,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods){
   if(d.pas.thick) dmg*=1-d.pas.thick;
   if(el==='bolt' && d.pas.grounded) dmg*=1-d.pas.grounded;
   if((el==='fire'||el==='water') && d.pas.sweaty) dmg*=1-d.pas.sweaty;
+  if(el==='neutral' && a.pas.fury) dmg*=1+a.pas.fury;
   if(a.st.pers>0) dmg*=1+a.st.persV*(a.hp/a.maxhp<0.4?2:1);
   dmg += (a.fx&&a.fx.dflat||0) + (d.fx&&d.fx.tflat||0);
   if(el==='neutral' && d.pas.hard) dmg*=1-d.pas.hard;

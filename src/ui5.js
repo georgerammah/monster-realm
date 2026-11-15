@@ -14,7 +14,7 @@ function isArena(mode){ return mode==='pvp'||mode==='rival'||mode==='local'; }
 function startBattle({mode, foe, meta, myName, oppRank}){
   const single=isArena(mode);
   const b=newBattle({name:myName||S.name, mons:mySnap()}, foe, {mode, single});
-  B={b, mode, meta:meta||{}, mySide:0, ctl:['human', mode==='local'?'human':'ai'], tgt:{}, oppRank:oppRank==null?myRank():oppRank, stamp:Date.now()};
+  B={b, mode, meta:meta||{}, mySide:0, ctl:['human', mode==='local'?'human':'ai'], tgt:{}, oppRank:oppRank==null?myRank():oppRank, oppAvatar: mode==='rival'?{t:'trainer',i:Math.floor(Math.random()*12)}:null, stamp:Date.now()};
   openBattle(); NET.updatePresence();
   if(single){ B.paused=true; renderBattle(); showIntro(()=>{ if(!B) return; B.paused=false; B.stamp=Date.now(); B.tkey=turnKey(B.b); drive(); }); }
   else drive();
@@ -28,7 +28,7 @@ function rivalTeam(){
 // ---- intro ----
 function showIntro(done){
   const b=B.b; const L=B.mySide, R=1-L;
-  const pr=s=>{ const m=b.sides[s].mons[0]; return `<div class="iv-por">${m?monSVG(m.sp,m.lvl):''}</div>`; };
+  const pr=s=>`<div class="iv-por">${avatarSVG(avatarFor(b,s))}</div>`;
   const myR=myRank(), opR=B.mode==='local'?myR:B.oppRank;
   const w=document.createElement('div'); w.className='intro';
   w.innerHTML=`<div class="iv-band top"><div class="iv-title">${B.mode==='pvp'?'<span class="g">LIVE</span> <span class="o">BATTLE!</span>':B.mode==='rival'?'<span class="g">RIVAL</span> <span class="o">BATTLE!</span>':'<span class="g">FRIENDLY</span> <span class="o">BATTLE!</span>'}</div></div>
@@ -128,25 +128,25 @@ const ARENA_BG=`<div class="abg"><svg viewBox="0 0 400 300" preserveAspectRatio=
   <path d="M0 178 C40 170 90 186 140 176 S240 168 300 178 S370 182 400 174 V300 H0Z" fill="#5f8a5c"/>
   <path d="M0 200 C80 188 160 206 240 196 S360 190 400 198 V300 H0Z" fill="#4f7d4a"/>
   ${Array.from({length:70},(_,k)=>{ const x=k*6+((k*37)%5), h=6+((k*13)%9); return `<path d="M${x} ${182+((k*7)%6)} l2 -${h} l2 ${h}" fill="#4a7a44" opacity=".8"/>`; }).join('')}</svg></div>`;
-const PAS_IC={sweaty:'drop',roots:'heart',thick:'shield',grounded:'earth',hard:'shield',camel:'drop'};
+const PAS_IC={fury:'fist',sweaty:'drop',roots:'heart',thick:'shield',grounded:'earth',hard:'shield',camel:'drop'};
 function hudIcons(m){
   if(!m) return '';
   const out=[];
-  Object.keys(m.pas||{}).forEach(p=>{ const id=Object.keys(SK).find(k=>SK[k].p===p); out.push(`<span class="hi" data-tip="${id?SK[id].n+': '+skillDesc(id,m.skl[id]||1):''}">${icon(p==='roots'?'plus':PAS_IC[p]||'star','#ff6a3d',30)}</span>`); });
+  Object.keys(m.pas||{}).forEach(p=>{ const id=Object.keys(SK).find(k=>SK[k].p===p); out.push(`<span class="hi" data-tip="${id?esc(SK[id].n+' (passive, Lv '+(m.skl[id]||1)+')|'+skillDesc(id,m.skl[id]||1)):''}">${icon(p==='roots'?'plus':PAS_IC[p]||'star','#ff6a3d',30)}</span>`); });
   const f=m.fx||{};
-  if(f.dflat) out.push(`<span class="hi" data-tip="Blades: +${f.dflat} damage dealt, +${f.tflat} damage taken">${icon('star','#ff6a3d',30)}</span>`);
-  if(f.rhp) out.push(`<span class="hi" data-tip="Life Bowl: +${f.rhp} life after each turn">${icon('plus','#e0475b',30)}</span>`);
-  if(f.rmp) out.push(`<span class="hi" data-tip="Mana Bowl: +${f.rmp} mana after each turn">${icon('plus','#4a9cf0',30)}</span>`);
-  Object.keys(ST_ICON).filter(k=>m.st[k]>0).forEach(k=>out.push(`<span class="hi st" data-tip="${BUFF_N[k]||k}">${icon(ST_ICON[k][0],ST_ICON[k][1],26)}</span>`));
+  if(f.dflat) out.push(`<span class="hi" data-tip="Brute Blades|+${f.dflat} damage on attacks, +${f.tflat} damage taken">${icon('star','#ff6a3d',30)}</span>`);
+  if(f.rhp) out.push(`<span class="hi" data-tip="Life Bowl|Recovers ${f.rhp} life after each turn">${icon('plus','#e0475b',30)}</span>`);
+  if(f.rmp) out.push(`<span class="hi" data-tip="Mana Bowl|Recovers ${f.rmp} mana after each turn">${icon('plus','#4a9cf0',30)}</span>`);
+  Object.keys(ST_ICON).filter(k=>m.st[k]>0).forEach(k=>out.push(`<span class="hi st" data-tip="${BUFF_N[k]||k}|Active for ${m.st[k]} more turn${m.st[k]>1?'s':''}">${icon(ST_ICON[k][0],ST_ICON[k][1],26)}</span>`));
   return `<div class="hicons">${out.join('')}</div>`;
 }
 function hudSingle(b, side, right, ctx){
   const sd=b.sides[side]; const m=sd.mons[sd.active];
-  const lead=sd.mons[0];
+  const av=avatarFor(b,side);
   const pv=m&&ctx.prev&&ctx.prev[side+'-'+sd.active]; const hp=m?(pv?pv.hp:m.hp):0, mp=m?(pv?pv.mp:m.mp):0;
   const canSwap = !right && m && myInput() && b.phase==='fight' && actor(b) && actor(b).s===side && benchOf(b,side).length;
   return `<div class="bhp ${right?'r':''}" data-hs="${side}" data-hi="${sd.active==null?0:sd.active}">
-    <button class="bpor tr ${canSwap?'swap':''}" ${canSwap?'id="swapb"':''}>${lead?monSVG(lead.sp,lead.lvl):''}${canSwap?'<span>SWAP!</span>':''}</button>
+    <button class="bpor tr ${canSwap?'swap':''}" ${canSwap?'id="swapb"':''}>${avatarSVG(av)}${canSwap?'<span>SWAP!</span>':''}</button>
     <div class="bbars"><div class="lb life"><i style="width:${m?hp/m.maxhp*100:0}%"></i><b>${hp} / ${m?m.maxhp:0} life</b></div>
     <div class="lb mana"><i style="width:${m?mp/m.maxmp*100:0}%"></i><b>${mp} / ${m?m.maxmp:0} mana</b></div></div>
     <div class="bdots">${sd.mons.map((x,i)=>`<i class="${x.hp<=0?'ko':i===sd.active?'on':''}"></i>`).join('')}</div>${hudIcons(m)}</div>`;
@@ -189,7 +189,7 @@ renderBattle = function(){
   $('#bmenu').onclick=battleMenu;
   const au=$('#bauto'); if(au) au.onclick=()=>{ B.auto=!B.auto; drive(); };
   const sw=$('#swapb'); if(sw) sw.onclick=()=>openPick(left,true);
-  root.querySelectorAll('.hi').forEach(h=>h.onclick=()=>{ const t=h.dataset.tip; if(t) toast(t); });
+  root.querySelectorAll('.hi').forEach(bindTip);
   root.querySelectorAll('.ab').forEach(btn=>bindAbility(btn,a));
   if(b.phase==='pick' && mine && !B.paused && !PICKEL && !B.going) setTimeout(()=>{ if(B&&B.b===b&&b.phase==='pick'&&myInput()&&!PICKEL&&!B.going) openPick(b.pickSide,false); },350);
   if(b.phase!=='pick' && PICKEL && !PICKEL.querySelector('#pkx')) closePick();
@@ -236,7 +236,7 @@ NET.challenge = function(cid){
   if(!S.team.length) return toast('Add a monster to your team');
   const matchId=uidGen()+uidGen();
   NET.pending={matchId,to:cid,t:setTimeout(()=>{ NET.pending=null; toast('No answer'); render(); },30000)};
-  NET.room.emit('challenge',{to:cid, from:NET.cid, name:S.name, rank:myRank(), matchId, team:teamMsg()});
+  NET.room.emit('challenge',{to:cid, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId, team:teamMsg()});
   toast('Challenge sent'); render();
 };
 NET.showIncoming = function(d){
@@ -246,7 +246,7 @@ NET.showIncoming = function(d){
   const t=setTimeout(()=>sh.close(),28000);
   sh.body.querySelector('#acc').onclick=()=>{ clearTimeout(t); NET.incoming=null; sh.close();
     if(!S.team.length){ toast('Add a monster to your team'); return; }
-    NET.room.emit('accept',{to:d.from, from:NET.cid, name:S.name, rank:myRank(), matchId:d.matchId, team:teamMsg()});
+    NET.room.emit('accept',{to:d.from, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId:d.matchId, team:teamMsg()});
     NET.startGuest(d); };
   sh.body.querySelector('#dec').onclick=()=>{ clearTimeout(t); sh.close(); };
 };
@@ -254,7 +254,7 @@ NET.startHost = async function(d){
   closeAllSheets(); PANEL=null;
   const mr=await joinMatch(d.matchId); NET.mr=mr;
   const b=newBattle({name:S.name, mons:mySnap()}, {name:d.name||'Opponent', mons:sanitizeTeam(d.team)}, {mode:'pvp', single:true});
-  B={b, mode:'pvp', meta:{}, mySide:0, ctl:['human','remote'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, stamp:Date.now(), paused:true,
+  B={b, mode:'pvp', meta:{}, mySide:0, ctl:['human','remote'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, oppAvatar:sanitizeAv(d.avatar), stamp:Date.now(), paused:true,
      net:{role:'host', matchId:d.matchId, last:Date.now(), lastSeq:b.seq}};
   mr.on('action', a=>{
     if(!B||!B.net||a.matchId!==B.net.matchId||B.b.over||B.paused&&false) return;
@@ -278,7 +278,7 @@ NET.startHost = async function(d){
 NET.broadcast = function(){ if(!NET.mr||!B||!B.b||!B.net) return; const b=Object.assign({},B.b,{log:B.b.log.slice(-6)}); try{ NET.mr.emit('state',{matchId:B.net.matchId, b, intro:!!B.paused, rank:myRank()}); }catch(e){} const k=turnKey(B.b); if(B.net.lastKey!==k){ B.net.last=Date.now(); B.net.lastKey=k; } };
 NET.startGuest = async function(d){
   closeAllSheets(); PANEL=null;
-  B={b:null, mode:'pvp', meta:{}, mySide:1, myUids:teamMons().map(m=>m.uid), ctl:['remote','human'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, stamp:Date.now(), paused:true,
+  B={b:null, mode:'pvp', meta:{}, mySide:1, myUids:teamMons().map(m=>m.uid), ctl:['remote','human'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, oppAvatar:sanitizeAv(d.avatar), stamp:Date.now(), paused:true,
      net:{role:'guest', matchId:d.matchId, heard:Date.now()}};
   openBattle(); renderBattle();
   const mr=await joinMatch(d.matchId); NET.mr=mr;
@@ -295,3 +295,15 @@ NET.startGuest = async function(d){
   },2000);
   NET.updatePresence();
 };
+
+function bindTip(h){
+  let tip=null;
+  const show=e=>{ e.preventDefault(); const t=h.dataset.tip; if(!t) return; hide();
+    const [title,body]=t.split('|'); tip=document.createElement('div'); tip.className='tipb';
+    tip.innerHTML=`<b>${title}</b>${body?`<span>${body}</span>`:''}`; document.body.appendChild(tip);
+    const r=localRect(h); const W=isRot()?document.body.getBoundingClientRect().height:innerWidth;
+    tip.style.top=(r.top+r.height+8)+'px'; tip.style.left=Math.max(8,Math.min(W-tip.offsetWidth-8, r.left+r.width/2-tip.offsetWidth/2))+'px'; };
+  const hide=()=>{ if(tip){ tip.remove(); tip=null; } document.querySelectorAll('.tipb').forEach(x=>x.remove()); };
+  h.addEventListener('pointerdown',show); h.addEventListener('pointerup',hide); h.addEventListener('pointerleave',hide); h.addEventListener('pointercancel',hide);
+  h.addEventListener('contextmenu',e=>e.preventDefault());
+}
