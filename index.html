@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Monster Realm</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -1164,6 +1164,18 @@ button,.pbtn{touch-action:manipulation}
 .go-mon{justify-content:center!important;padding-right:0!important}
 .go-mon svg{animation:none!important;transform:rotate(-8deg) scaleX(1.05) scaleY(.95);transform-origin:40% 90%}
 .fighter.solo{top:86%!important}
+
+.rsm-c{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:2px 10px;border-radius:14px;background:rgba(0,0,0,.25);font-size:.85em}.rsm-c svg{width:22px;height:18px}
+.pbtn.minus:disabled{opacity:.25}
+
+.ab.poor{opacity:.5;filter:grayscale(.6)}
+
+*,*::before,*::after{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
+input,textarea{-webkit-user-select:text!important;user-select:text!important}
+html,body{touch-action:manipulation}
+.tipb.big{max-width:min(340px,calc(44*var(--vw)));padding:10px 14px;gap:4px;pointer-events:none}
+.tipb.big b{font-size:min(calc(6*var(--vh)),24px)}.tipb.big span{font:600 min(calc(4.8*var(--vh)),19px)/1.25 -apple-system,system-ui}
+.thmon{cursor:pointer}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -4891,6 +4903,64 @@ bindTip=function(h){
 addEventListener('pointerup',hideTips,true); addEventListener('touchend',hideTips,true);
 closeBattle=(function(prev){ return function(){ hideTips(); return prev.apply(this,arguments); }; })(closeBattle);
 finishBattle=(function(prev){ return function(){ hideTips(); return prev.apply(this,arguments); }; })(finishBattle);
+
+// ---- stat points lock in once the profile is closed; Reset Monster costs mushrooms ----
+const RESET_COST=15;
+openMon=(function(prev){ return function(uid){ const r=prev(uid); const m=monBy(uid); if(MONSH&&m){ ensureMon(m); MONSH.base=Object.assign({atk:0,hp:0,mp:0},m.pts); drawMon(); } return r; }; })(openMon);
+drawMon=(function(prev){ return function(){ prev(); if(!MONSH) return; const m=monBy(MONSH.uid); if(!m) return; const base=MONSH.base||m.pts, b=MONSH.sh.body;
+  b.querySelectorAll('[data-pm]').forEach(x=>{ const k=x.dataset.pm; const can=m.pts[k]>(base[k]|0); x.disabled=!can;
+    x.onclick=()=>{ if(!(m.pts[k]>(base[k]|0))) return; m.pts[k]--; m.free++; persist(); drawMon(); if(TASKSH) drawTasks(); }; });
+  const rb=b.querySelector('#rsm'); if(rb&&!rb.dataset.c){ rb.dataset.c=1; rb.innerHTML=`RESET MONSTER <span class="rsm-c">${mushroomSVG('#b04fd6')} ${RESET_COST}</span>`;
+    rb.onclick=()=>{ const sp=SPI[m.sp]; if((S.mush|0)<RESET_COST) return alertBox(`Resetting costs ${RESET_COST} mushrooms. You have ${S.mush|0}.`);
+      confirmBox(`Reset ${esc(sp.n)} for ${RESET_COST} mushrooms? All stat points come back to spend again, and every ability goes back to level 1.`,'RESET',()=>{
+        S.mush-=RESET_COST; const p=m.pts||{atk:0,hp:0,mp:0}; m.free=(m.free|0)+(p.atk|0)+(p.hp|0)+(p.mp|0); m.pts={atk:0,hp:0,mp:0}; MONSH.base={atk:0,hp:0,mp:0};
+        Object.keys(m.skl||{}).forEach(k=>m.skl[k]=1); persist(); drawMon(); renderHUD(); toast(`${sp.n} was reset`); }); }; } }; })(drawMon);
+
+// ---- abilities you can't afford: still tappable for info, but won't swipe up ----
+bindAbility=function(btn,a){
+  const id=btn.dataset.sk; const poor=btn.disabled; btn.disabled=false; if(poor) btn.classList.add('poor');
+  let p0=null, moved=false; const dyOf=e=> isRot() ? -(e.clientX-p0.x) : (e.clientY-p0.y);
+  btn.addEventListener('pointerdown',e=>{ p0={x:e.clientX,y:e.clientY}; moved=false; btn.classList.add('press'); try{btn.setPointerCapture(e.pointerId);}catch(_){} });
+  btn.addEventListener('pointermove',e=>{ if(!p0) return; const dy=dyOf(e); if(dy<-6){ moved=true; if(!poor) btn.style.transform=`translateY(${Math.max(-90,dy)}px)`; } });
+  btn.addEventListener('pointerup',e=>{ if(!p0) return; const dy=dyOf(e); p0=null; btn.classList.remove('press'); btn.style.transform='';
+    if(dy<-45 && !poor){ hideInfo(); humanAct(id, castTarget(a,id)); } else if(dy<-45 && poor){ toast('Not enough mana'); } else if(!moved) showInfo(id,a); });
+  btn.addEventListener('pointercancel',()=>{ p0=null; btn.style.transform=''; btn.classList.remove('press'); });
+};
+
+// ---- tooltips v2: short text, beside the icon (clear of the thumb), drag across icons to scan ----
+function tipText(h){ const t=h.dataset.tip||''; let [title,body]=t.split('|'); title=(title||'').replace(/\s*\(.*?\)\s*$/,'');
+  body=(body||'').replace(/^always on:\s*/i,'').replace(/^passively\s+/i,''); if(body) body=body.charAt(0).toUpperCase()+body.slice(1); return [title,body]; }
+let TIPH=null;
+function placeTip(h){
+  if(TIPH===h&&document.querySelector('.tipb')) return; TIPH=h; hideTips(); if(!h||!h.dataset.tip) return;
+  const [title,body]=tipText(h); const tip=document.createElement('div'); tip.className='tipb big';
+  tip.innerHTML=`<b>${title}</b>${body?`<span>${body}</span>`:''}`; document.body.appendChild(tip);
+  const r=localRect(h), BR=document.body.getBoundingClientRect(); const W=isRot()?BR.height:innerWidth, H=isRot()?BR.width:innerHeight;
+  const right=!!h.closest('.bhp.r'); const w=tip.offsetWidth, th=tip.offsetHeight;
+  let left=right? r.left-w-16 : r.left+r.width+16; if(left<8||left+w>W-8) left=Math.max(8,Math.min(W-w-8,left));
+  let top=r.top-4; top=Math.max(8,Math.min(H-th-8,top));
+  tip.style.left=left+'px'; tip.style.top=top+'px';
+}
+bindTip=function(h){ if(h._tip2) return; h._tip2=1; h._tip=1;
+  h.addEventListener('pointerdown',e=>{ e.preventDefault(); TIPH=null; placeTip(h); TIPDRAG=true; try{ h.releasePointerCapture(e.pointerId); }catch(_){} });
+  h.addEventListener('contextmenu',e=>e.preventDefault()); };
+let TIPDRAG=false;
+addEventListener('pointermove',e=>{ if(!TIPDRAG) return; const el=document.elementFromPoint(e.clientX,e.clientY); const h=el&&el.closest&&el.closest('.hi'); if(h) placeTip(h); },true);
+addEventListener('touchmove',e=>{ if(!TIPDRAG) return; const t=e.touches[0]; const el=document.elementFromPoint(t.clientX,t.clientY); const h=el&&el.closest&&el.closest('.hi'); if(h) placeTip(h); e.preventDefault(); },{capture:true,passive:false});
+const endTip=()=>{ if(TIPDRAG){ TIPDRAG=false; TIPH=null; hideTips(); } };
+addEventListener('pointerup',endTip,true); addEventListener('touchend',endTip,true); addEventListener('pointercancel',endTip,true); addEventListener('touchcancel',endTip,true);
+
+// ---- no iOS magnifier/loupe anywhere: swallow every quick second tap and long-press selection ----
+(function(){ let last=0;
+  addEventListener('touchend',e=>{ const now=Date.now(); const t=e.target; const field=t&&/INPUT|TEXTAREA/.test(t.tagName);
+    if(!field && now-last<400){ const already=e.defaultPrevented; e.preventDefault(); if(already){ last=now; return; } const b=t.closest&&t.closest('button,[data-pp],[data-pm],a'); if(b&&!b._dt){ b.click(); } }
+    last=now; },{capture:true,passive:false});
+  addEventListener('touchstart',e=>{ if(e.touches.length>1) e.preventDefault(); },{capture:true,passive:false});
+  ['gesturestart','gesturechange','dblclick','contextmenu'].forEach(ev=>addEventListener(ev,e=>{ if(!/INPUT|TEXTAREA/.test((e.target&&e.target.tagName)||'')) e.preventDefault(); },{capture:true,passive:false}));
+})();
+
+// ---- zone activities: tap your monster (top right) to open My Monsters ----
+drawTasks=(function(prev){ return function(){ prev(); if(!TASKSH) return; const t=TASKSH.sh.body.querySelector('.thmon'); if(t){ t.style.cursor='pointer'; t.onclick=()=>openTeam(); } }; })(drawTasks);
 
 </script>
 </body></html>
