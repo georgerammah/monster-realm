@@ -114,3 +114,95 @@ const _ot12=openTasks; openTasks=function(zi){ ZMUS='z_'+ZONES[zi].id; playMusic
 const _cb12=closeBattle; closeBattle=function(){ _cb12(); playMusic(bgTrack()); };
 const _rw12=rewardPopup; rewardPopup=function(o){ const r=_rw12(o); if(o.title==='SUCCESS!') playMusic(bgTrack()); return r; };
 const _pm12=playMusic; playMusic=function(n){ if(n==='home'&&ZMUS&&!B) n=ZMUS; return _pm12(n); };
+
+// ---- bigger roamers + "!" when a monster has unspent points ----
+const _scene12=sceneHTML;
+sceneHTML=function(){
+  return _scene12().replace(/<button class="pet roam" data-pet="([^"]+)"([^>]*)>/g,(a,uid,rest)=>{ const m=monBy(uid); return m&&m.free>0?`<button class="pet roam" data-pet="${uid}"${rest}><b class="roam-alert">!</b>`:a; });
+};
+
+// ---- Zone and Monster Select (ZONES opens straight here) ----
+const _nb12=newBattle; newBattle=function(a,b,o){ try{ if(o&&o.mode==='campaign'&&b&&b.mons){ S.found=S.found||[]; b.mons.forEach(x=>{ if(x.sp&&!S.found.includes(x.sp)) S.found.push(x.sp); }); } }catch(_){} return _nb12(a,b,o); };
+function curZone(){ if(S.lastZone!=null&&zoneUnlocked(S.lastZone)) return S.lastZone; let z=0; ZONES.forEach((_,i)=>{ if(zoneUnlocked(i)) z=i; }); return z; }
+openPanel=(function(prev){ return function(name){ if(name==='zones'){ if(PANEL) PANEL.sh.close(); return openZoneSelect(curZone()); } return prev(name); }; })(openPanel);
+openZoneSelect=function(zi){
+  ZMUS='z_'+ZONES[zi].id; playMusic(ZMUS);
+  const sh=sheet(`<div class="tscreen zsel"></div>`,{cls:'full'});
+  const team=()=>{ let t=teamMons(); if(!t.length) t=S.mons.slice().sort((a,b)=>b.lvl-a.lvl).slice(0,3); return t; };
+  const draw=()=>{
+    const z=ZONES[zi]; S.lastZone=zi;
+    let tm=team(); if(!tm.some(m=>m.uid===S.zoneMon)) S.zoneMon=tm[0]&&tm[0].uid;
+    const owned=new Set(S.mons.map(m=>m.sp)), found=new Set(S.found||[]);
+    const fam=SP.filter(s=>s.fam===z.fam);
+    sh.body.querySelector('.zsel').innerHTML=`<div class="plankbar"><button class="backb" id="zb">Back</button><div class="plank">Zone and Monster Select</div></div>
+      <div class="tfield">${sceneBG()}
+        <div class="zs-row">
+          <button class="zs-card zs-zone" id="zpick"><div class="zs-h"><span class="lvb">${z.lv}</span><b>${z.n}</b><i class="zs-chg">⇄</i></div>${zoneArt(zi)}
+            <div class="zs-foot"><div class="zs-ft">Monsters Found</div><div class="zs-found">${fam.map(s=>`<div class="zs-f ${owned.has(s.id)||found.has(s.id)?'':'sil'}">${monSVG(s.id,1)}</div>`).join('')}</div></div></button>
+          <div class="zs-card zs-team">${tm.map(m=>{ const sp=SPI[m.sp]; const pct=m.lvl>=MAXLVL?100:(m.xp|0)/xpNeed(m.lvl)*100;
+            return `<button class="zs-m ${m.uid===S.zoneMon?'sel':''}" data-zm="${m.uid}"><div class="zs-mart">${monSVG(m.sp,m.lvl)}</div><div class="zs-minfo"><b>${esc(sp.n)}</b><div class="xpbar"><span class="lvb">${m.lvl}</span><div><i style="width:${pct}%"></i><em>${m.lvl>=MAXLVL?'MAX':`${m.xp|0} / ${xpNeed(m.lvl)}`}</em></div></div></div></button>`; }).join('')}</div>
+        </div>
+        <button class="letsgo" id="lg">LET'S GO! <i>▶</i></button>
+      </div>`;
+    const q=s=>sh.body.querySelector(s);
+    q('#zb').onclick=sh.close;
+    q('#zpick').onclick=()=>pickZone(i=>{ zi=i; ZMUS='z_'+ZONES[zi].id; playMusic(ZMUS); persist(); draw(); });
+    sh.body.querySelectorAll('[data-zm]').forEach(b=>b.onclick=()=>{ S.zoneMon=b.dataset.zm; persist(); draw(); });
+    q('#lg').onclick=()=>{ if(!S.zoneMon) return toast('You need a monster first'); persist(); sh.close(); openTasks(zi); };
+  };
+  draw();
+  if(S.tut===1){ S.tut=2; persist(); setTimeout(async()=>{ await lilaSay(["Zones are where you train to earn dollars and XP for your monster. Let's start at Training Camp!"]); pointAt('#lg'); },350); }
+};
+function pickZone(cb){
+  const sh=sheet(`<div class="zpl"><h2>Choose a Zone</h2>${ZONES.map((z,i)=>{ const open=zoneUnlocked(i), pct=zonePct(i), rep=SP.filter(s=>s.fam===z.fam)[0];
+    return `<button class="zone ${open?'':'locked'}" data-pz="${i}" style="--zc:${z.c}"><div class="zone-art">${monSVG(rep.id,pct>=100?20:1)}</div>
+      <div class="zone-info"><b><span class="lvb sm">${z.lv}</span> ${z.n}</b><div class="zbar"><i style="width:${pct}%"></i><em>${pct}% complete</em></div></div><div class="zone-go">${open?'›':'🔒'}</div></button>`; }).join('')}</div>`,{cls:'panel'});
+  sh.body.querySelectorAll('[data-pz]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.pz; if(!zoneUnlocked(i)) return toast(`Finish ${ZONES[i-1].n} first`); sh.close(); cb(i); });
+}
+
+// ---- team cards: "!" for unspent points, no type stripe ----
+tcard=function(m,inTeam){
+  const sp=SPI[m.sp];
+  return `<div class="tcard ${inTeam?'on':''}" data-t="${m.uid}"><button class="info" data-info="${m.uid}">i</button>${m.free>0?'<b class="roam-alert tc-alert">!</b>':''}${monSVG(m.sp,m.lvl)}<div class="tname"><span class="lvb">${m.lvl}</span><b>${sp.n}</b></div></div>`;
+};
+// ---- mastered star: level-30 badges become a gold star ----
+const STAR_SVG='<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6L2.5 9.3l6.6-.8z" fill="#fff" stroke="#8a5a00" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+function starify(root){ (root.querySelectorAll?root:document).querySelectorAll('.lvb:not(.mast)').forEach(b=>{ if(b.textContent.trim()===String(MAXLVL)&&!b.closest('.zs-h,.zone-info,.zd-h')){ b.classList.add('mast'); b.innerHTML=STAR_SVG; } }); }
+new MutationObserver(ms=>{ for(const m of ms) m.addedNodes.forEach(n=>{ if(n.nodeType===1) starify(n.parentNode||n); }); }).observe(document.documentElement,{childList:true,subtree:true});
+
+// ---- zone scenery ----
+const ZSCENE={
+  meadow:{sky:['#8fd3ff','#d8f1ff'],orb:'#fffbe0',ox:70,oy:30,hills:['#7cc463','#4f9a3c'],x:'tents'},
+  beach:{sky:['#5ec8ff','#c9f0ff'],orb:'#fff6c8',ox:25,oy:28,hills:['#f2dc9a','#e7c877'],x:'palm',sea:'#2fa6d8'},
+  desert:{sky:['#ffb86b','#ffe2a8'],orb:'#fff1c4',ox:75,oy:26,hills:['#e9b45a','#cf8f3a'],x:'cactus'},
+  hollow:{sky:['#3c3550','#8a6a5a'],orb:'#f3e7d0',ox:30,oy:26,hills:['#5a4a3e','#3a2f28'],x:'deadtrees'},
+  volcano:{sky:['#5a1e1e','#ff8a4a'],orb:'#ffd0a0',ox:80,oy:22,hills:['#4a2a26','#2e1a18'],x:'volcano'},
+  peaks:{sky:['#7fb8ff','#e6f3ff'],orb:'#ffffff',ox:22,oy:24,hills:['#b9c9e6','#8fa4c8'],x:'peaks'}
+};
+function zoneScene(id){
+  const z=ZSCENE[id]||ZSCENE.meadow, g='zg'+id;
+  const extra={
+    tents:'<path d="M40 74 l12 -16 l12 16z" fill="#e8743b"/><path d="M52 58 v16" stroke="#8a3a12" stroke-width="1.5"/><path d="M140 76 l10 -13 l10 13z" fill="#f2c14e"/>',
+    palm:`<rect x="0" y="66" width="200" height="12" fill="${z.sea}"/><path d="M150 92 q4 -20 2 -36" stroke="#8a5a2e" stroke-width="4" fill="none"/><path d="M152 56 q-14 -6 -24 4 M152 56 q14 -8 24 2 M152 56 q-6 -12 -18 -12 M152 56 q8 -12 20 -10" stroke="#3f9a3a" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+    cactus:'<path d="M60 92 v-30 m0 10 h-8 v-8 m8 12 h8 v-10" stroke="#3f8a3a" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M150 90 v-20 m0 8 h6 v-6" stroke="#3f8a3a" stroke-width="5" fill="none" stroke-linecap="round"/>',
+    deadtrees:'<path d="M50 92 v-34 m0 12 l-10 -8 m10 0 l9 -10 m-9 22 l8 -4" stroke="#241a14" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M150 92 v-28 m0 8 l-8 -8 m8 2 l8 -9" stroke="#241a14" stroke-width="3" fill="none" stroke-linecap="round"/>',
+    volcano:'<path d="M70 80 l30 -40 h12 l30 40z" fill="#3a201c"/><path d="M100 40 q6 -14 0 -26 q14 8 10 26z" fill="#ff7a2a" opacity=".85"/><path d="M106 40 l-6 18 l10 -6 l-2 14" stroke="#ff6a2a" stroke-width="3" fill="none"/>',
+    peaks:'<path d="M20 78 l40 -50 l40 50z M90 78 l45 -58 l45 58z" fill="#8fa4c8"/><path d="M60 28 l-11 14 l7 -3 l4 5 l4 -5 l7 3z M135 20 l-12 16 l7 -3 l5 6 l5 -6 l7 3z" fill="#fff"/>'
+  }[z.x]||'';
+  return `<svg class="zscene" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${z.sky[0]}"/><stop offset="1" stop-color="${z.sky[1]}"/></linearGradient></defs>
+    <rect width="200" height="100" fill="url(#${g})"/><circle cx="${z.ox*2}" cy="${z.oy}" r="13" fill="${z.orb}" opacity=".95"/><circle cx="${z.ox*2}" cy="${z.oy}" r="22" fill="${z.orb}" opacity=".25"/>
+    ${z.x==='palm'||z.x==='volcano'||z.x==='peaks'?extra:''}<path d="M0 74 Q50 62 100 72 T200 68 V100 H0z" fill="${z.hills[0]}"/><path d="M0 84 Q60 76 120 84 T200 82 V100 H0z" fill="${z.hills[1]}"/>${z.x==='palm'||z.x==='volcano'||z.x==='peaks'?'':extra}</svg>`;
+}
+zoneArt=function(zi){ return `<div class="zart scn">${zoneScene(ZONES[zi].id)}</div>`; };
+const ZCOL={meadow:['#d9f2c6','#b5e09c'],beach:['#cfeeff','#9fd8f6'],desert:['#ffeab0','#f6d27a'],hollow:['#e6d6cc','#c7ae9e'],volcano:['#ffd2c2','#f4a68c'],peaks:['#e4ecff','#c3d3f4']};
+pickZone=function(cb){
+  const owned=new Set(S.mons.map(m=>m.sp)), found=new Set(S.found||[]);
+  const sh=sheet(`<div class="tscreen zdest"><div class="tfield">${sceneBG()}<div class="zd-top"><button class="backb" id="zdb">Back</button><h2>Choose Your Destination</h2></div>
+    <div class="zd-row">${ZONES.map((z,i)=>{ const open=zoneUnlocked(i), c=ZCOL[z.id]||['#eee','#ddd'];
+      return `<button class="zd-card ${open?'':'locked'}" data-pz="${i}" style="--c1:${c[0]};--c2:${c[1]}"><div class="zd-h"><span class="lvb">${z.lv}</span><b>${z.n}</b></div><div class="zd-art">${zoneScene(z.id)}${open?'':'<div class="zd-lock">🔒</div>'}</div>
+        <div class="zd-foot"><div class="zs-ft">Monsters Found</div><div class="zs-found">${SP.filter(s=>s.fam===z.fam).map(s=>`<div class="zs-f ${owned.has(s.id)||found.has(s.id)?'':'sil'}">${monSVG(s.id,1)}</div>`).join('')}</div></div></button>`; }).join('')}</div></div></div>`,{cls:'full'});
+  sh.body.querySelector('#zdb').onclick=sh.close;
+  sh.body.querySelectorAll('[data-pz]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.pz; if(!zoneUnlocked(i)) return toast(`Finish ${ZONES[i-1].n} first`); sh.close(); cb(i); });
+  const cur=sh.body.querySelector(`[data-pz="${S.lastZone|0}"]`), row=sh.body.querySelector('.zd-row'); if(cur) setTimeout(()=>{ row.scrollLeft=cur.offsetLeft-(row.clientWidth-cur.offsetWidth)/2; },30);
+};
+const _dt12=drawTeam; drawTeam=function(){ _dt12(); const f=TEAMSH&&TEAMSH.body.querySelector('.tfield .scene'); if(f) f.outerHTML=sceneBG(); };
