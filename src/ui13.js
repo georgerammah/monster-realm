@@ -61,21 +61,30 @@ skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; if(!s)
   if(MOVE_OVR[id] && (!DEFAULT_SK[id] || DEFAULT_SK[id].k!==s.k)) return skillDescBase(id,L);
   return prev(id,L); }; })(skillDesc);
 
-// ---------- admin unlock ----------
-const isAdmin=()=>{ try{ return localStorage.getItem('mr-admin')==='1'; }catch(_){ return false; } };
-SUBMENUS.menu=SUBMENUS.menu.filter(x=>x[0]!=='Move Studio');
-if(isAdmin()) SUBMENUS.menu.push(['Move Studio',()=>openStudio()]);
-let ADM_TAPS=0, ADM_T=0;
-document.addEventListener('click',e=>{ const h=e.target.closest&&e.target.closest('.sheet h2'); if(!h||!/settings|menu/i.test(h.textContent)) return;
-  const now=Date.now(); ADM_TAPS=now-ADM_T<700?ADM_TAPS+1:1; ADM_T=now; if(ADM_TAPS>=7){ ADM_TAPS=0; adminUnlock(); } },true);
-function adminUnlock(){
+// ---------- unique usernames + server-decided admins ----------
+let ADMIN=false; try{ ADMIN=localStorage.getItem('mr-admin')==='1'; }catch(_){}
+function setAdmin(v){ ADMIN=!!v; try{ localStorage.setItem('mr-admin',ADMIN?'1':'0'); localStorage.removeItem('mr-admin-key'); }catch(_){}
+  SUBMENUS.menu=SUBMENUS.menu.filter(x=>x[0]!=='Move Studio'); if(ADMIN) SUBMENUS.menu.push(['Move Studio',()=>openStudio()]); }
+setAdmin(ADMIN);
+function nameError(err){ return err==='taken'?'That name is already taken. Try another one!':err==='invalid'?'Names can be 2–16 letters, numbers, spaces, - _ or .':"Couldn't check that name right now. Try again."; }
+async function claimName(name){ if(!window.MR_ACCT) return {ok:1}; try{ const r=await MR_ACCT.claim(name); if(r&&r.ok) setAdmin(r.admin); return r||{ok:0}; }catch(_){ return {ok:0,err:'net'}; } }
+function askNewName(msg){ return new Promise(res=>{
   const w=document.createElement('div'); w.className='abox-wrap on';
-  w.innerHTML=`<div class="abox"><p>Admin key</p><input id="akey" type="password" autocomplete="off" style="width:100%;padding:10px;border-radius:8px;border:0;font:16px system-ui;margin-bottom:12px"><div class="abox-row"><button class="abox-ok" id="an">Cancel</button><button class="abox-ok red" id="ay">Unlock</button></div></div>`;
-  document.body.appendChild(w); setTimeout(()=>w.querySelector('#akey').focus(),50);
-  w.querySelector('#an').onclick=()=>w.remove();
-  w.querySelector('#ay').onclick=()=>{ const k=w.querySelector('#akey').value.trim(); if(!k) return; try{ localStorage.setItem('mr-admin','1'); localStorage.setItem('mr-admin-key',k); }catch(_){}
-    if(!SUBMENUS.menu.some(x=>x[0]==='Move Studio')) SUBMENUS.menu.push(['Move Studio',()=>openStudio()]); w.remove(); toast('Admin unlocked — Menu → Move Studio'); };
-}
+  w.innerHTML=`<div class="abox"><p>${msg}</p><input id="nn" maxlength="16" autocomplete="off" value="${esc(S.name||'')}" style="width:100%;padding:10px;border-radius:8px;border:0;font:17px system-ui;margin-bottom:10px;box-sizing:border-box"><p class="nn-err" style="min-height:1.2em;font-size:14px;color:#ffd0c8;margin:0 0 8px"></p><button class="abox-ok" id="nok">Save name</button></div>`;
+  document.body.appendChild(w); const inp=w.querySelector('#nn'), er=w.querySelector('.nn-err'); setTimeout(()=>inp.focus(),60);
+  w.querySelector('#nok').onclick=async()=>{ const v=inp.value.trim(); if(!v) return; er.textContent='Checking…'; const r=await claimName(v); if(!r.ok){ er.textContent=nameError(r.err); return; }
+    S.name=v.slice(0,16); persist(); renderHUD&&renderHUD(); NET.updatePresence(); w.remove(); res(v); }; }); }
+// on launch: make sure this player's name is claimed, and learn admin status
+(async()=>{ if(!window.MR_ACCT) return; await new Promise(r=>setTimeout(r,2500)); try{
+  const me=await MR_ACCT.whoami(); if(!me||!me.ok) return;
+  setAdmin(!!me.admin); if(me.name) return;
+  if(S&&S.name&&S.tut>=0){ const r=await claimName(S.name); if(!r.ok&&r.err==='taken') await askNewName(`Someone already has the name "${esc(S.name)}". Pick a new trainer name:`); }
+}catch(_){} })();
+// onboarding: the name must be free before you can start
+document.addEventListener('click',async e=>{ const go=e.target.closest&&e.target.closest('#go'); if(!go||!window.MR_ACCT||go.dataset.ok) return; const nm=document.querySelector('#nm'); if(!nm) return;
+  e.stopImmediatePropagation(); e.preventDefault(); const v=nm.value.trim(); if(!v) return;
+  go.disabled=true; const old=go.textContent; go.textContent='Checking name…'; const r=await claimName(v); go.textContent=old; go.disabled=false;
+  if(!r.ok){ alertBox(nameError(r.err)); return; } go.dataset.ok=1; go.click(); },true);
 
 // ---------- the studio ----------
 let STUDIO=null;
