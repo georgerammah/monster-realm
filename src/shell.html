@@ -1238,6 +1238,39 @@ html,body{touch-action:manipulation}
 .pk-wrap.picked .pk-m:not(.sel){opacity:.25}
 .pk-wrap.picked .pk-m.sel svg{animation:none!important;transform:rotate(-8deg) scaleX(1.05) scaleY(.95);transform-origin:40% 90%;transition:transform .18s cubic-bezier(.3,1.6,.5,1)}
 .pk-wrap.picked .pk-bar{visibility:hidden}
+
+/* monsters stand on the ground, just above the ability buttons */
+#battle .arena:has(.fighter.n1),#battle .arena.solo{top:0!important;bottom:0!important}
+#battle .fighter.n1,#battle .fighter.solo{top:73%!important}
+
+/* ability animations */
+.proj{display:none!important}
+.fx{position:fixed;z-index:31;pointer-events:none;will-change:transform,opacity}
+.pt{width:12px;height:12px;border-radius:50%}
+.pt.fire{background:radial-gradient(circle,#fff6b0 0 25%,#ffb02e 45%,#e3262d 80%,transparent 82%);box-shadow:0 0 8px #ff7a1a}
+.pt.water{width:10px;height:13px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 35% 35%,#fff 0 18%,#7fdcff 40%,#22a6e3 80%);box-shadow:0 0 4px rgba(120,210,255,.8)}
+.pt.bolt{width:5px;height:16px;border-radius:2px;background:linear-gradient(#fff,#ffe14a 50%,#f7b500);box-shadow:0 0 8px #ffd60a}
+.pt.nature{width:13px;height:8px;border-radius:0 100% 0 100%;background:linear-gradient(135deg,#8fe36a,#1fa03a)}
+.pt.neutral{width:11px;height:11px;border-radius:2px;background:#fff;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);box-shadow:0 0 6px #ffb37a}
+.flash{border-radius:50%;width:80px;height:80px}
+.flash.fire{background:radial-gradient(circle,#fff 0 15%,#ffd34a 35%,rgba(255,110,30,.7) 55%,transparent 72%)}
+.flash.water{background:radial-gradient(circle,rgba(255,255,255,.9) 0 15%,rgba(110,210,255,.7) 40%,rgba(34,166,227,.3) 60%,transparent 72%)}
+.flash.bolt{background:radial-gradient(circle,#fff 0 18%,rgba(255,236,120,.85) 38%,rgba(247,181,0,.35) 58%,transparent 72%)}
+.flash.nature{background:radial-gradient(circle,rgba(240,255,220,.9) 0 15%,rgba(120,220,100,.6) 40%,transparent 70%)}
+.flash.neutral{background:radial-gradient(circle,#fff 0 15%,rgba(255,180,120,.75) 38%,rgba(240,90,34,.3) 58%,transparent 72%)}
+.proj2{width:var(--s);height:calc(var(--s)*.62)}
+.proj2.fire{border-radius:50%;background:radial-gradient(ellipse at 72% 50%,#fff 0 14%,#fff2a0 24%,#ffb02e 42%,#f0551e 60%,transparent 72%);filter:drop-shadow(0 0 10px rgba(255,120,30,.9))}
+.proj2.fire::before{content:"";position:absolute;right:52%;top:16%;width:115%;height:68%;border-radius:50%;background:linear-gradient(to left,rgba(255,170,40,.95),rgba(240,70,30,.55) 55%,rgba(227,38,45,0));filter:blur(1px)}
+.proj2.water{width:calc(var(--s)*.62);border-radius:50%;background:radial-gradient(circle at 34% 32%,#fff 0 12%,rgba(255,255,255,.35) 20%,#7fdcff 44%,#22a6e3 74%,#1678b0 100%);box-shadow:0 0 0 2px rgba(255,255,255,.7),0 0 14px rgba(90,200,255,.9)}
+.proj2.water::before{content:"";position:absolute;right:70%;top:22%;width:90%;height:56%;border-radius:50%;background:linear-gradient(to left,rgba(150,225,255,.7),rgba(34,166,227,0))}
+.boltsvg{left:0!important;top:0!important}
+.boltsvg polyline{fill:none;stroke-linejoin:round;stroke-linecap:round}
+.boltsvg .b1{stroke:#fff;stroke-width:4;filter:drop-shadow(0 0 6px #ffd60a) drop-shadow(0 0 14px #f7b500)}
+.boltsvg .b2{stroke:#ffe14a;stroke-width:2;opacity:.8;filter:drop-shadow(0 0 6px #f7b500)}
+.leaf{width:var(--s);height:calc(var(--s)*.55);border-radius:0 100% 0 100%;background:linear-gradient(135deg,#a8f080,#3fbf4a 45%,#1a8a2e);box-shadow:inset 0 0 0 1px rgba(0,60,10,.25);filter:drop-shadow(0 2px 2px rgba(0,0,0,.2))}
+.slash{width:var(--s);height:6px;border-radius:6px;background:linear-gradient(90deg,transparent,#fff 30%,#fff 70%,transparent);box-shadow:0 0 10px #ff9a5a;transform-origin:center}
+.auraring{width:var(--s);height:calc(var(--s)*.32);border-radius:50%;border:3px solid currentColor}
+.auraring.fire{color:#ff7a1a}.auraring.water{color:#5fd0ff}.auraring.bolt{color:#ffd60a}.auraring.nature{color:#4fd35a}.auraring.neutral{color:#ff9a5a}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
