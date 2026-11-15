@@ -1305,6 +1305,8 @@ html,body{touch-action:manipulation}
 
 .rw:not(:has(.rw-cash)):not(:has(.rw-xp)):not(:has(.rw-rank)){grid-template-columns:1fr;grid-template-areas:"t" "m" "b"}
 .rw:not(:has(.rw-cash)):not(:has(.rw-xp)) .rw-mons{justify-content:center}
+
+.backb::after,.backb::before{content:none!important;display:none!important}.backb{padding:7px 14px!important}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
