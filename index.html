@@ -661,6 +661,14 @@ body.rot .fname{font-size:min(calc(4.6*var(--vh)),26px)!important;margin-bottom:
 .avo.sel{box-shadow:0 0 0 3px #ff9f0a,0 0 12px rgba(255,159,10,.7)}
 .bpor.tr svg,.iv-por svg{width:100%;height:100%}
 
+
+/* roaming pets */
+.pet.roam{width:min(calc(15*var(--vw)),calc(26*var(--vh)));transform:translate(-50%,-100%) scale(var(--s,1));transform-origin:50% 100%}
+.pet.roam .flip{transition:transform .25s}.pet.roam .flip.l{transform:scaleX(-1)}
+.pet.roam.walk svg{animation:walkbob .38s ease-in-out infinite}
+@keyframes walkbob{50%{transform:translateY(-6%) rotate(-2deg)}}
+.pet.roam .lvb{right:10%;top:4%}
+
 /* rotated portrait = forced landscape */
 body.rot #hud,body.rot #bar,body.rot .bhud,body.rot .dock{padding-left:8px!important;padding-right:8px!important}
 body.rot #hud{padding-top:6px!important}body.rot #bar{padding-bottom:6px!important}body.rot .tring{left:10px!important}
@@ -3411,6 +3419,47 @@ function openAvatar(){
 }
 const _renderHUD6=renderHUD;
 renderHUD=function(){ _renderHUD6(); const av=document.querySelector('#hud .avatar'); if(av){ av.innerHTML=avatarSVG(myAvatar()); av.onclick=openAvatar; } };
+
+// ===== roaming monsters on the home screen =====
+let ROAM=null;
+function pickRoamers(){
+  const pool=S.mons.slice(); for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  ROAM=pool.slice(0,5).map(m=>({uid:m.uid, x:12+Math.random()*76, y:66+Math.random()*20, dir:Math.random()<.5?1:-1, tx:null, ty:null, wait:Math.random()*2500, walking:false}));
+}
+function syncRoamers(){
+  if(!ROAM) pickRoamers();
+  const have=new Set(S.mons.map(m=>m.uid));
+  ROAM=ROAM.filter(r=>have.has(r.uid));
+  if(ROAM.length<Math.min(5,S.mons.length)){ const used=new Set(ROAM.map(r=>r.uid)); S.mons.filter(m=>!used.has(m.uid)).slice(0,5-ROAM.length).forEach(m=>ROAM.push({uid:m.uid,x:12+Math.random()*76,y:66+Math.random()*20,dir:1,tx:null,ty:null,wait:800,walking:false})); }
+}
+const _sceneHTML6=sceneHTML;
+sceneHTML=function(){
+  const base=_sceneHTML6().replace(/<button class="pet"[\s\S]*?<\/button>/g,'');
+  syncRoamers();
+  const pets=ROAM.map(r=>{ const m=monBy(r.uid); if(!m) return ''; const sc=0.75+(r.y-66)/20*0.35;
+    return `<button class="pet roam" data-pet="${m.uid}" style="left:${r.x}%;top:${r.y}%;z-index:${Math.round(r.y)};--s:${sc.toFixed(2)}"><i class="shadow"></i><div class="flip ${r.dir<0?'l':''}">${monSVG(m.sp,m.lvl)}</div><span class="lvb">${m.lvl}</span></button>`; }).join('');
+  return base.replace('<button class="banner"', pets+'<button class="banner"');
+};
+let _roamT=0;
+function roamTick(t){
+  requestAnimationFrame(roamTick);
+  const dt=Math.min(60,t-(_roamT||t)); _roamT=t;
+  if(!ROAM||B) return;
+  const els=document.querySelectorAll('#view .pet.roam'); if(!els.length) return;
+  ROAM.forEach(r=>{
+    const el=document.querySelector(`#view .pet.roam[data-pet="${r.uid}"]`); if(!el) return;
+    if(r.wait>0){ r.wait-=dt; if(r.walking){ r.walking=false; el.classList.remove('walk'); } if(r.wait<=0){ r.tx=8+Math.random()*84; r.ty=64+Math.random()*24; } return; }
+    if(r.tx==null){ r.wait=1000+Math.random()*3000; return; }
+    const dx=r.tx-r.x, dy=r.ty-r.y, d=Math.hypot(dx,dy*1.6);
+    if(d<0.6){ r.tx=null; r.wait=1200+Math.random()*3500; return; }
+    const sp=0.0045*dt; r.x+=dx/d*sp; r.y+=dy/d*sp*0.6;
+    const nd=dx<0?-1:1; if(nd!==r.dir){ r.dir=nd; el.querySelector('.flip').classList.toggle('l',nd<0); }
+    if(!r.walking){ r.walking=true; el.classList.add('walk'); }
+    el.style.left=r.x+'%'; el.style.top=r.y+'%'; el.style.zIndex=Math.round(r.y); el.style.setProperty('--s',(0.75+(r.y-66)/20*0.35).toFixed(2));
+  });
+}
+requestAnimationFrame(roamTick);
+if(typeof S!=='undefined'&&S) render();
 
 </script>
 </body></html>

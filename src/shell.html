@@ -651,6 +651,14 @@ body.rot .fname{font-size:min(calc(4.6*var(--vh)),26px)!important;margin-bottom:
 .avo.sel{box-shadow:0 0 0 3px #ff9f0a,0 0 12px rgba(255,159,10,.7)}
 .bpor.tr svg,.iv-por svg{width:100%;height:100%}
 
+
+/* roaming pets */
+.pet.roam{width:min(calc(15*var(--vw)),calc(26*var(--vh)));transform:translate(-50%,-100%) scale(var(--s,1));transform-origin:50% 100%}
+.pet.roam .flip{transition:transform .25s}.pet.roam .flip.l{transform:scaleX(-1)}
+.pet.roam.walk svg{animation:walkbob .38s ease-in-out infinite}
+@keyframes walkbob{50%{transform:translateY(-6%) rotate(-2deg)}}
+.pet.roam .lvb{right:10%;top:4%}
+
 /* rotated portrait = forced landscape */
 body.rot #hud,body.rot #bar,body.rot .bhud,body.rot .dock{padding-left:8px!important;padding-right:8px!important}
 body.rot #hud{padding-top:6px!important}body.rot #bar{padding-bottom:6px!important}body.rot .tring{left:10px!important}
