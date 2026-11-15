@@ -45,7 +45,7 @@ const DEFAULT_SK=JSON.parse(JSON.stringify(SK));
 let MOVE_OVR={};
 function applyMoveOverrides(o){ MOVE_OVR=o&&typeof o==='object'?o:{}; Object.keys(SK).forEach(id=>{ if(!(id in DEFAULT_SK)) delete SK[id]; });
   Object.keys(DEFAULT_SK).forEach(id=>{ SK[id]=JSON.parse(JSON.stringify(DEFAULT_SK[id])); });
-  Object.entries(MOVE_OVR).forEach(([id,v])=>{ if(v===null){ delete SK[id]; return; } SK[id]=JSON.parse(JSON.stringify(v)); }); }
+  Object.entries(MOVE_OVR).forEach(([id,v])=>{ if(v===null){ delete SK[id]; return; } SK[id]=JSON.parse(JSON.stringify(v)); if(!EL[SK[id].el]) SK[id].el='neutral'; }); }
 try{ applyMoveOverrides(JSON.parse(localStorage.getItem('mr-moves')||'{}')); }catch(_){}
 (async()=>{ try{ const db=window.claude&&await window.claude.use('db'); if(!db) return; const v=await db.collection('config').doc('moves').get();
   if(v&&v.moves){ applyMoveOverrides(v.moves); try{ localStorage.setItem('mr-moves',JSON.stringify(v.moves)); }catch(_){} if(!B) try{ render(); }catch(_){} } }catch(_){} })();

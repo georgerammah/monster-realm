@@ -1,9 +1,9 @@
 // ===== DATA =====
 const EL = {
   water:{n:'Water',c:'#22a6e3'}, fire:{n:'Fire',c:'#e3262d'}, bolt:{n:'Lightning',c:'#f7b500'},
-  nature:{n:'Nature',c:'#1fa03a'}, earth:{n:'Earth',c:'#a2845e'}, wind:{n:'Wind',c:'#4fc3e8'}, neutral:{n:'Physical',c:'#f05a22'}
+  nature:{n:'Nature',c:'#1fa03a'}, neutral:{n:'Physical',c:'#f05a22'}
 };
-const STRONG = {water:['fire'], fire:['nature','wind'], nature:['water','earth'], bolt:['water','wind'], earth:['bolt','fire'], wind:['nature']};
+const STRONG = {water:['fire'], fire:['nature'], nature:['water'], bolt:['water']};
 function elemMult(a, d){
   return 1; // monsters have no types
   if(!STRONG[a]) return 1;
@@ -17,7 +17,7 @@ const FAM = {
   volt:{n:'Feline', el:'bolt', shape:'cat', base:{hp:71,atk:17,mp:45,spd:14}},
   hound:{n:'Cerberus', el:'fire', shape:'hound', base:{hp:80,atk:15,mp:44,spd:11}},
   drake:{n:'Dragon', el:'fire', shape:'dragon', base:{hp:76,atk:16,mp:44,spd:10}},
-  wing:{n:'Avian', el:'wind', shape:'bird', base:{hp:72,atk:16,mp:46,spd:15}},
+  wing:{n:'Avian', el:'neutral', shape:'bird', base:{hp:72,atk:16,mp:46,spd:15}},
   bug:{n:'Insect', el:'nature', shape:'bug', base:{hp:74,atk:15,mp:48,spd:12}},
   dummy:{n:'Training Dummy', el:'neutral', shape:'dummy', base:{hp:50,atk:5,mp:10,spd:4}}
 };
@@ -52,7 +52,7 @@ const SK = {
   feedback:{n:'Feedback', el:'neutral', t:'enemy', k:'hit', mp:[12,6], dmg:[13,7], burnmp:[12,6]},
   feed:{n:'Feed', el:'nature', t:'enemy', k:'drain', mp:[14,8], stealHp:[18,11]},
   naturespower:{n:"Nature's Power", el:'nature', t:'enemy', k:'hit', mp:[20,10], dmg:[16,9], missingBonus:1.4},
-  aircurrent:{n:'Air Current', el:'wind', t:'enemy', k:'hit', mp:[14,7], dmg:[16,9], selfevade:[.2,.02]},
+  aircurrent:{n:'Air Current', el:'neutral', t:'enemy', k:'hit', mp:[14,7], dmg:[16,9], selfevade:[.2,.02]},
   bubble:{n:'Bubble Shield', el:'water', t:'self', k:'shield', mp:[14,7], sh:'bubble', amt:[35,22.5], turns:3},
   lshield:{n:'Lightning Shield', el:'bolt', t:'self', k:'shield', mp:[12,6], sh:'lsh', amt:[22,14], turns:3},
   fshield:{n:'Fire Shield', el:'fire', t:'self', k:'shield', mp:[12,6], sh:'fsh', amt:[45,25], turns:3},
@@ -66,10 +66,10 @@ const SK = {
   roots:{n:'Roots', el:'nature', t:'passive', k:'passive', p:'roots', v:[.03,.005]},
   purge:{n:'Purge', el:'water', t:'self', k:'heal', mp:[12,6], heal:[.1,.02], cleanse:1},
   perseverance:{n:'Perseverance', el:'neutral', t:'self', k:'buff', mp:[12,6], buff:'pers', v:[.15,.04], turns:3},
-  grounded:{n:'Grounded', el:'earth', t:'passive', k:'passive', p:'grounded', v:[.3,.03]},
+  grounded:{n:'Grounded', el:'neutral', t:'passive', k:'passive', p:'grounded', v:[.3,.03]},
   sweaty:{n:'Sweaty', el:'water', t:'passive', k:'passive', p:'sweaty', v:[.25,.03]},
   thickskin:{n:'Thick Skin', el:'neutral', t:'passive', k:'passive', p:'thick', v:[.08,.015]},
-  hardened:{n:'Hardened', el:'earth', t:'passive', k:'passive', p:'hard', v:[.15,.02]},
+  hardened:{n:'Hardened', el:'neutral', t:'passive', k:'passive', p:'hard', v:[.15,.02]},
   zap:{n:'Zap', el:'bolt', t:'enemy', k:'hit', mp:[8,5], dmg:[14,8]},
   thunder:{n:'Thunder', el:'bolt', t:'enemy', k:'hit', mp:[24,12], dmg:[30,16], stun:[.15,.02]},
   arclightning:{n:'Arc Lightning', el:'bolt', t:'enemy', k:'hit', mp:[18,9], dmg:[12,7], hits:2},

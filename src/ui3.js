@@ -39,7 +39,7 @@ function skIconKey(id){
   if(s.sh==='bubble') return 'bubble'; if(s.k==='shield') return s.sh==='lsh'?'bolt':s.sh==='fsh'?'fire':'shield';
   if(s.buff==='mshield') return 'shield'; if(s.buff==='charge'||s.buff==='focus') return 'up'; if(s.buff==='evade') return 'wind'; if(s.buff==='cripple') return 'drop';
   if(s.k==='heal') return 'heart';
-  return {fire:'fire',water:'water',bolt:'bolt',nature:'nature',earth:'earth',wind:'wind',neutral:'fist'}[s.el]||'fist';
+  return {fire:'fire',water:'water',bolt:'bolt',nature:'nature',neutral:'fist'}[s.el]||'fist';
 }
 function icon(key,bg,size){ return `<span class="ic" style="background:${bg};width:${size}px;height:${size}px"><svg viewBox="0 0 24 24">${ICON[key]}</svg></span>`; }
 const ST_ICON={pers:['up','#1fa03a'],burn:['fire','#e3262d'],poison:['drop','#1fa03a'],storm:['bolt','#7a6ad8'],stun:['star','#f7b500'],bubble:['bubble','#22a6e3'],lsh:['bolt','#f7b500'],fsh:['fire','#e0475b'],nsh:['nature','#1fa03a'],mshield:['shield','#5e8bff'],focus:['up','#ff9f0a'],charge:['up','#e0475b'],evade:['wind','#4fc3e8'],cripple:['drop','#8a5ad8'],roots:['heart','#1fa03a']};
