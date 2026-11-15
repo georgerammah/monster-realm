@@ -658,3 +658,10 @@ addEventListener('pointerup',endTip,true); addEventListener('touchend',endTip,tr
 
 // ---- zone activities: tap your monster (top right) to open My Monsters ----
 drawTasks=(function(prev){ return function(){ prev(); if(!TASKSH) return; const t=TASKSH.sh.body.querySelector('.thmon'); if(t){ t.style.cursor='pointer'; t.onclick=()=>openTeam(); } }; })(drawTasks);
+// hide +/- unless there's something to allocate or undo (space stays reserved so nothing shifts)
+drawMon=(function(prev){ return function(){ prev(); if(!MONSH) return; const m=monBy(MONSH.uid); if(!m) return; const base=MONSH.base||m.pts;
+  const any=(m.free|0)>0 || ['atk','hp','mp'].some(k=>m.pts[k]>(base[k]|0));
+  MONSH.sh.body.querySelectorAll('.pbtns').forEach(x=>x.style.visibility=any?'':'hidden'); }; })(drawMon);
+// keep every energy timer ticking (hub, shop, zones, champions)
+setInterval(()=>{ if(!S) return; tickEnergy(); const pct=S.energy/S.maxEnergy*100, txt=`${S.energy<S.maxEnergy?`+1 in ${nextEnergyIn()} · `:''}${S.energy} / ${S.maxEnergy}`;
+  document.querySelectorAll('.thud .ebar').forEach(e=>{ const i=e.querySelector('i'), b=e.querySelector('b'); if(i) i.style.width=pct+'%'; if(b) b.textContent=txt; }); },1000);
