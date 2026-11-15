@@ -49,3 +49,8 @@ drawMon=function(){
 };
 const _ensure11=ensureMon; ensureMon=function(m){ _ensure11(m); m.xp=m.xp|0; return m; };
 if(typeof S!=='undefined'&&S&&S.mons) S.mons.forEach(ensureMon);
+document.addEventListener('pointerdown',e=>{
+  const a=e.target.closest&&e.target.closest('#bauto,.autob'); if(!a||!B) return;
+  e.preventDefault(); e.stopPropagation(); B.auto=!B.auto; drive();
+},true);
+document.addEventListener('click',e=>{ if(e.target.closest&&e.target.closest('#bauto,.autob')){ e.preventDefault(); e.stopPropagation(); } },true);
