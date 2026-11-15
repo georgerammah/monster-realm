@@ -97,3 +97,6 @@ bindView=function(v){
     row.onclick=e=>{ if(e.target.closest('button')) return; const peer=NET.peers.find(p=>p.cid===ch.dataset.ch); if(peer) openProfile(cleanProfile(peer)); }; });
 };
 sceneBG=function(){ return sceneHTML().replace(/<button[\s\S]*?<\/button>/g,''); };
+
+// monsters have no types: hide type tags
+elChip=function(){ return ''; };

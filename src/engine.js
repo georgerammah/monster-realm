@@ -5,6 +5,7 @@ const EL = {
 };
 const STRONG = {water:['fire'], fire:['nature','wind'], nature:['water','earth'], bolt:['water','wind'], earth:['bolt','fire'], wind:['nature']};
 function elemMult(a, d){
+  return 1; // monsters have no types
   if(!STRONG[a]) return 1;
   if(STRONG[a].includes(d)) return 1.35;
   if(STRONG[d] && STRONG[d].includes(a)) return 0.75;
