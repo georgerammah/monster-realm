@@ -31,6 +31,9 @@ function splash(){
   });
 }
 
+function snapRow(el){ if(!el.classList||!el.classList.contains('zd-row')) return; const mid=el.scrollLeft+el.clientWidth/2; let best=null,bd=1e9;
+  el.querySelectorAll('.zd-card').forEach(c=>{ const d=Math.abs(c.offsetLeft+c.offsetWidth/2-mid); if(d<bd){bd=d;best=c;} });
+  if(best) el.scrollTo({left:best.offsetLeft+best.offsetWidth/2-el.clientWidth/2,behavior:'smooth'}); }
 // ---- rotated-mode scrolling: map finger movement into the rotated frame ----
 (function(){
   let st=null, moved=false, raf=0;
@@ -55,7 +58,7 @@ function splash(){
   },{passive:false,capture:true});
   addEventListener('touchend',()=>{
     if(!st||!st.el){ st=null; return; } const el=st.el, ax=st.ax; let v=st.v*16; st=null;
-    if(performance.now()-0>0){ const step=()=>{ if(Math.abs(v)<.4) return; if(ax==='y') el.scrollTop+=v; else el.scrollLeft+=v; v*=.95; raf=requestAnimationFrame(step); }; raf=requestAnimationFrame(step); }
+    if(performance.now()-0>0){ const step=()=>{ if(Math.abs(v)<.4){ snapRow(el); return; } if(ax==='y') el.scrollTop+=v; else el.scrollLeft+=v; v*=.95; raf=requestAnimationFrame(step); }; raf=requestAnimationFrame(step); }
   },{passive:true,capture:true});
   addEventListener('click',e=>{ if(moved){ moved=false; e.stopPropagation(); e.preventDefault(); } },true);
 })();

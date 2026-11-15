@@ -8,9 +8,10 @@ function updRot(){
   const bs=document.body.style; document.body.classList.toggle('rot',r);
   if(r){ const H=(window.visualViewport&&visualViewport.height)||innerHeight, W=(window.visualViewport&&visualViewport.width)||innerWidth, i=insets();
     const gw=Math.round(H-i.t-i.b), gh=Math.round(W);
-    bs.width=gw+'px'; bs.height=gh+'px'; bs.top=i.t+'px';
+    bs.width=Math.round(H)+'px'; bs.height=gh+'px'; bs.top='0px';
+    bs.setProperty('--sa-top','0px'); bs.setProperty('--sa-bottom','4px'); bs.setProperty('--sa-left',i.t+'px'); bs.setProperty('--sa-right',i.b+'px');
     document.documentElement.style.setProperty('--vw',(gw/100)+'px'); document.documentElement.style.setProperty('--vh',(gh/100)+'px');
-  } else { bs.width=''; bs.height=''; bs.top=''; document.documentElement.style.removeProperty('--vw'); document.documentElement.style.removeProperty('--vh'); }
+  } else { bs.width=''; bs.height=''; bs.top=''; ['--sa-top','--sa-bottom','--sa-left','--sa-right'].forEach(k=>bs.removeProperty(k)); document.documentElement.style.removeProperty('--vw'); document.documentElement.style.removeProperty('--vh'); }
 }
 updRot(); addEventListener('resize',updRot); if(window.visualViewport) visualViewport.addEventListener('resize',updRot); setTimeout(updRot,300); setTimeout(updRot,1200); addEventListener('orientationchange',()=>setTimeout(updRot,120));
 function localRect(el){
