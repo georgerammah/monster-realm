@@ -603,6 +603,24 @@ html,body{background:#1d1d22}
   .sheet.reward{max-height:94vh;overflow-y:auto;width:min(calc(100% - 20px),520px);padding:10px 14px}
   .rw-t,.lvup-t{font-size:min(10vh,48px)}.rw-mons{max-height:22vh}.runner svg{max-height:20vh;width:auto}
 }
+
+/* ===== centered game popups ===== */
+.sheet:not(.full){top:50%;left:50%;right:auto;bottom:auto;width:min(94vw,720px);max-height:92vh;height:auto;margin:0;border-radius:18px;
+  transform:translate(-50%,-46%) scale(.86);opacity:0;transition:transform .28s cubic-bezier(.2,1.3,.4,1),opacity .2s;
+  background:#f6efd8;color:#2b2216;box-shadow:0 0 0 4px #fff,0 0 0 6px rgba(40,30,10,.5),0 18px 40px rgba(0,0,0,.45);padding:18px 18px 16px}
+.sheet-wrap.open .sheet:not(.full){transform:translate(-50%,-50%) scale(1);opacity:1}
+.sheet.reward{top:50%!important;bottom:auto!important;margin:0!important;width:min(94vw,560px)!important;background:linear-gradient(#4fbf3a,#1f7a1f)!important;color:#fff}
+.sheet.reward.lvl{background:linear-gradient(#6a6ad8,#3a3a9a)!important}
+.sheet.reward:has(.rw.lose){background:linear-gradient(#8a8a8e,#4a4a4e)!important}
+.sheet.full{transform:none;opacity:0;transition:opacity .22s}.sheet-wrap.open .sheet.full{opacity:1}
+.sheet:not(.full) .sheet-x{position:sticky;top:-6px;float:right;margin:-8px -8px 0 0;width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ff7a6a,#c4231c);color:#fff;font:700 18px/1 -apple-system,system-ui;box-shadow:0 0 0 3px #fff,0 2px 6px rgba(0,0,0,.35)}
+.sheet:not(.full) .muted{color:#7a6a50}
+.sheet .onb h2{font-family:"Lilita One",system-ui;font-weight:400}
+@media (orientation:landscape) and (max-height:560px){
+  .sheet:not(.full){width:min(92vw,760px)!important;max-height:94vh;padding:12px 16px}
+  .onb>p{display:none}.onb .fams{margin:6px 0 10px}.onb .fam svg{width:64px;height:64px}.onb input{margin:2px 0 6px;padding:9px}.onb .btn{padding:10px}
+  .ptop{gap:10px}.ppor{width:28%}.eslots{grid-template-columns:repeat(5,minmax(0,64px));justify-content:start}
+}
 </style></head>
 <body>
 <div id="hud"></div><main id="view"></main>

@@ -116,6 +116,8 @@ function sheet(html, opts={}){
   if(!opts.locked){
     wrap.querySelector('.sheet-bg').onclick=close;
     wrap.querySelector('.sheet-x').onclick=close;
+  }
+  if(!opts.locked && opts.drag){
     let x0=null,y0=0,dx=0,drag=false;
     panel.addEventListener('pointerdown',e=>{ if(e.target.closest('input,textarea')) return; x0=e.clientX; y0=e.clientY; dx=0; drag=false; });
     panel.addEventListener('pointermove',e=>{
