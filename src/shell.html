@@ -860,6 +860,9 @@ img,svg{-webkit-user-drag:none}
 .ld-bar{height:min(calc(5*var(--vh)),26px);border-radius:8px;border:2px solid #e8e8e8;background:#3a3a3e;overflow:hidden}
 .ld-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c8241a,#e0661e 45%,#f2c21e);transition:width .18s linear}
 .ld-ver{position:absolute;right:calc(max(env(safe-area-inset-right),12px) + 6px);bottom:calc(env(safe-area-inset-bottom) + 8px);font:15px Georgia,serif;color:#e6e6e6;text-shadow:0 1px 2px #000}
+
+body.rot .sheet,body.rot .sheet *,body.rot [class*="row"],body.rot .scroll{touch-action:none}
+body.rot input,body.rot textarea{touch-action:manipulation}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
