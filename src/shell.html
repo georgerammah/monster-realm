@@ -1285,6 +1285,14 @@ html,body{touch-action:manipulation}
 .mi2-it{flex:none;width:34px;height:34px;display:flex}.mi2-it svg{width:100%;height:100%}
 
 #battle .arena{pointer-events:none}#battle .arena .fighter{pointer-events:auto}
+
+/* poses: regular (idle), attacking (lean in), attacked (recoil) */
+.fighter.tackling{z-index:200!important}
+.fighter .fart svg{transition:transform .1s ease-out}
+.fighter.l.pose-atk .fart svg{animation:none!important;transform:rotate(14deg) scaleX(1.08) scaleY(.92)}
+.fighter.r.pose-atk .fart svg{animation:none!important;transform:scaleX(-1) rotate(14deg) scaleX(1.08) scaleY(.92)}
+.fighter.l.pose-hit .fart svg{animation:none!important;transform:translateX(-7%) rotate(-13deg) scaleY(.9);filter:brightness(1.7) saturate(.5)}
+.fighter.r.pose-hit .fart svg{animation:none!important;transform:scaleX(-1) translateX(-7%) rotate(-13deg) scaleY(.9);filter:brightness(1.7) saturate(.5)}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

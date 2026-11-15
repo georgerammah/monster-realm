@@ -1294,6 +1294,14 @@ html,body{touch-action:manipulation}
 .mi2-it{flex:none;width:34px;height:34px;display:flex}.mi2-it svg{width:100%;height:100%}
 
 #battle .arena{pointer-events:none}#battle .arena .fighter{pointer-events:auto}
+
+/* poses: regular (idle), attacking (lean in), attacked (recoil) */
+.fighter.tackling{z-index:200!important}
+.fighter .fart svg{transition:transform .1s ease-out}
+.fighter.l.pose-atk .fart svg{animation:none!important;transform:rotate(14deg) scaleX(1.08) scaleY(.92)}
+.fighter.r.pose-atk .fart svg{animation:none!important;transform:scaleX(-1) rotate(14deg) scaleX(1.08) scaleY(.92)}
+.fighter.l.pose-hit .fart svg{animation:none!important;transform:translateX(-7%) rotate(-13deg) scaleY(.9);filter:brightness(1.7) saturate(.5)}
+.fighter.r.pose-hit .fart svg{animation:none!important;transform:scaleX(-1) translateX(-7%) rotate(-13deg) scaleY(.9);filter:brightness(1.7) saturate(.5)}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -5324,7 +5332,8 @@ animateBattle=(function(prev){ return function(root,b,animating){
     const el=EL[sk.el]?sk.el:'neutral'; const hits=evs.filter(e=>(e.k==='hit'||e.k==='dot'||e.k==='stun'||e.k==='miss')&&e.s!==a.s);
     const tg=[...new Set(hits.map(h=>h.s+'-'+h.i))].map(k=>fEl(+k.split('-')[0],+k.split('-')[1])).filter(Boolean);
     if(sk.t==='enemy'||sk.t==='allE'){
-      if(el==='neutral'){ const left=a.s===B.mySide; ac.classList.remove('lunge-r','lunge-l'); void ac.offsetWidth; ac.classList.add(left?'lunge-r':'lunge-l'); setTimeout(()=>ac.classList.remove('lunge-r','lunge-l'),500);
+      if(a.sk==='basic'&&tg.length){ fxTackle(ac,tg[0],a.s===B.mySide); }
+      else if(el==='neutral'){ const left=a.s===B.mySide; ac.classList.remove('lunge-r','lunge-l'); void ac.offsetWidth; ac.classList.add(left?'lunge-r':'lunge-l'); setTimeout(()=>ac.classList.remove('lunge-r','lunge-l'),500);
         tg.forEach(t=>{ const [x1,y1]=fCenter(t); fxSlash(x1,y1,size,250); }); }
       else tg.forEach(t=>{ const [x1,y1]=fCenter(t);
         if(el==='bolt') fxBolt(x1,y1,260,size);
@@ -5367,6 +5376,14 @@ monInfo=function(b,s,i){
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; const b=B.b;
   document.querySelectorAll('#battle .bhp .bpor').forEach(p=>{ if(p.id==='swapb') return; const hp=p.closest('.bhp'); if(!hp) return; const s=+hp.dataset.hs; if(s===B.mySide&&p.classList.contains('swapper')) return;
     p.style.cursor='pointer'; p.onclick=e=>{ e.stopPropagation(); const sd=b.sides[s]; monInfo(b,s,sd.active!=null?sd.active:+hp.dataset.hi||0); }; }); }; })(renderBattle);
+
+// ---------- basic Attack: leap across in attack pose, foe flinches, hop back in regular pose ----------
+function fxTackle(ac,tgt,left){ const art=ac.querySelector('.fart'); if(!art) return; const [x0,y0]=fCenter(ac), [x1]=fCenter(tgt); const w=localRect(art).width;
+  const dir=x1>x0?1:-1, dx=(x1-x0)-dir*w*.6, h=w*.35; ac.classList.remove('lunge-r','lunge-l','cast','dash-r','dash-l'); ac.classList.add('pose-atk','tackling');
+  const an=art.animate([{transform:'translate(0,0)'},{transform:`translate(${dx*.5}px,${-h}px)`,offset:.22},{transform:`translate(${dx}px,0)`,offset:.42},{transform:`translate(${dx-dir*w*.04}px,0)`,offset:.56},{transform:`translate(${dx*.5}px,${-h*.8}px)`,offset:.78},{transform:'translate(0,0)'}],{duration:820,easing:'ease-in-out'});
+  setTimeout(()=>{ tgt.classList.add('pose-hit'); setTimeout(()=>tgt.classList.remove('pose-hit'),280); const [tx,ty]=fCenter(tgt); fxFlash(tx-dir*w*.25,ty,'neutral',w*.9); fxBurst(tx-dir*w*.25,ty,'neutral',6,w*.45,340); },345);
+  setTimeout(()=>ac.classList.remove('pose-atk'),470);
+  an.onfinish=()=>ac.classList.remove('tackling'); setTimeout(()=>ac.classList.remove('tackling','pose-atk'),1000); }
 
 </script>
 </body></html>
