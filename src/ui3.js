@@ -358,7 +358,7 @@ function finishBattle(){
     const zi=meta.zi, k=meta.task; const t=taskList(zi)[k]; const m=monBy(meta.uid); const z=ZONES[zi];
     let cash=0, xp=0, mush=0; const extra=[]; let partial=false, zoneJust=false;
     if(win){ S.stats.wins++; const pr=taskProg(zi); pr[k]=Math.min(t.reps,pr[k]+1); if(pr[k]>=t.reps){ cash=t.cash; xp=t.xp; } else partial=`${pr[k]} / ${t.reps}`;
-      if(t.t==='boss' && (S.zones[z.id]||0)<4){ S.zones[z.id]=4; mush=5; zoneJust=true;
+      if(t.t==='boss' && (S.zones[z.id]||0)<4){ S.zones[z.id]=4; zoneJust=true;
         if(zi>0){ const pool=SP.filter(x=>x.fam===z.fam); // each of the zone's monsters has an equal chance
           const nm=addMon(pool[Math.floor(Math.random()*pool.length)].id, Math.max(2,z.lv)); if(S.team.length<3) S.team.push(nm.uid); extra.push([`You found a new monster!`,nm]); } }
     }
@@ -377,7 +377,7 @@ function finishBattle(){
   }
   const foeSide=1-B.mySide; const avg=b.sides[foeSide].mons.reduce((t,m)=>t+m.lvl,0)/b.sides[foeSide].mons.length;
   let xp=Math.round((15+avg*7)*(win?1:0.3)), cash=0, mush=0;
-  if(win){ S.stats.wins++; S.stats.arenaWins++; if(mode==='rival'){ cash=Math.round(20+avg*6); } else if(mode==='pvp'){ cash=Math.round(40+avg*8); mush=2; S.stats.pvpWins++; xp=Math.round(xp*1.3); } }
+  if(win){ S.stats.wins++; S.stats.arenaWins++; if(mode==='rival'){ cash=Math.round(20+avg*6); } else if(mode==='pvp'){ cash=Math.round(40+avg*8); S.stats.pvpWins++; xp=Math.round(xp*1.3); } }
   S.cash=(S.cash|0)+cash; S.mush+=mush;
   const res=b.sides[B.mySide].mons.map((bm,i)=>{ const m=monBy(bm.uid||(B.myUids&&B.myUids[i])); if(!m) return null; return {m, r:giveXp(m,xp)}; }).filter(Boolean);
   persist(); closeBattle();
