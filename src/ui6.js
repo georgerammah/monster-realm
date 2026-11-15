@@ -125,7 +125,7 @@ sceneHTML=function(){
   const base=_sceneHTML6().replace(/<button class="pet"[\s\S]*?<\/button>/g,'');
   syncRoamers();
   const pets=ROAM.map(r=>{ const m=monBy(r.uid); if(!m) return ''; const sc=0.75+(r.y-66)/20*0.35;
-    return `<button class="pet roam" data-pet="${m.uid}" style="left:${r.x}%;top:${r.y}%;z-index:${Math.round(r.y)};--s:${sc.toFixed(2)}"><i class="shadow"></i><div class="flip ${r.dir<0?'l':''}">${monSVG(m.sp,m.lvl)}</div><span class="lvb">${m.lvl}</span></button>`; }).join('');
+    return `<button class="pet roam" data-pet="${m.uid}" style="left:${r.x}%;top:${r.y}%;z-index:${Math.round(r.y)};--s:${sc.toFixed(2)}"><i class="shadow"></i><div class="flip ${r.dir<0?'l':''}">${monSVG(m.sp,m.lvl)}</div></button>`; }).join('');
   return base.replace('<button class="banner"', pets+'<button class="banner"');
 };
 let _roamT=0;
