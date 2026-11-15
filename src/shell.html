@@ -1069,6 +1069,12 @@ body.rot .shopscr .thud{padding-left:calc(var(--sa-left) + 10px)!important;paddi
 
 html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 button,.pbtn{touch-action:manipulation}
+
+.fledpop{position:relative;display:flex;align-items:flex-end;width:min(calc(60*var(--vw)),560px);height:min(calc(62*var(--vh)),300px);border-radius:16px;background:linear-gradient(#fbf7d8,#f2ecb8);box-shadow:0 0 0 5px #fff,0 0 0 7px #6a6a6a,0 14px 30px rgba(0,0,0,.45);overflow:visible;transform:scale(.85);opacity:0;transition:.2s}
+.abox-wrap.on .fledpop{transform:none;opacity:1}
+.fp-lila{width:42%;align-self:flex-end;overflow:hidden;border-bottom-left-radius:16px}.fp-lila svg{width:100%;display:block}
+.fp-side{flex:1;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(6*var(--vh))}
+.fp-side p{margin:0;font:min(calc(7*var(--vh)),30px) "Lilita One",system-ui;color:#222}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

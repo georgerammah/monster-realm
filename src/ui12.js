@@ -420,3 +420,12 @@ Object.values(ZTASKS).forEach(list=>list.forEach(t=>{ if(t[0]==='fight'||t[0]===
   addEventListener('dblclick',e=>e.preventDefault(),{capture:true});
   document.addEventListener('selectstart',e=>{ if(!/INPUT|TEXTAREA/.test(e.target.tagName||'')) e.preventDefault(); });
 })();
+
+// ---- "Opponent Fled!" ----
+function fledPopup(){ return new Promise(res=>{
+  const w=document.createElement('div'); w.className='abox-wrap';
+  w.innerHTML=`<div class="fledpop"><button class="nm-x" aria-label="Close">✕</button><div class="fp-lila">${lilaSVG()}</div><div class="fp-side"><p>Opponent Fled!</p><button class="tp-b" id="fpok">OK</button></div></div>`;
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add('on'));
+  const close=()=>{ w.classList.remove('on'); setTimeout(()=>{ w.remove(); res(); },200); };
+  w.querySelector('#fpok').onclick=close; w.querySelector('.nm-x').onclick=close; }); }
+finishBattle=(function(prev){ return function(){ if(B&&B.b&&B.b.fled!=null&&B.b.fled!==B.mySide&&!B.fledShown){ B.fledShown=true; fledPopup().then(()=>{ if(B) prev(); }); return; } return prev(); }; })(finishBattle);

@@ -1078,6 +1078,12 @@ body.rot .shopscr .thud{padding-left:calc(var(--sa-left) + 10px)!important;paddi
 
 html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 button,.pbtn{touch-action:manipulation}
+
+.fledpop{position:relative;display:flex;align-items:flex-end;width:min(calc(60*var(--vw)),560px);height:min(calc(62*var(--vh)),300px);border-radius:16px;background:linear-gradient(#fbf7d8,#f2ecb8);box-shadow:0 0 0 5px #fff,0 0 0 7px #6a6a6a,0 14px 30px rgba(0,0,0,.45);overflow:visible;transform:scale(.85);opacity:0;transition:.2s}
+.abox-wrap.on .fledpop{transform:none;opacity:1}
+.fp-lila{width:42%;align-self:flex-end;overflow:hidden;border-bottom-left-radius:16px}.fp-lila svg{width:100%;display:block}
+.fp-side{flex:1;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(6*var(--vh))}
+.fp-side p{margin:0;font:min(calc(7*var(--vh)),30px) "Lilita One",system-ui;color:#222}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -2368,7 +2374,7 @@ NET.sendAction = function(a){ B.net.sent=B.b.seq; B.net.action=a; NET.mr.emit('a
 NET.forfeit = function(){
   if(!B||!B.net) return;
   if(B.net.role==='guest'){ try{ NET.mr.emit('forfeit',{matchId:B.net.matchId}); }catch(e){} if(B.b){ B.b.over=true; B.b.winner=0; } NET.leaveMatch(); closeBattle(); }
-  else { B.b.over=true; B.b.winner=1; B.b.seq++; NET.broadcast(); NET.leaveMatch(); closeBattle(); }
+  else { B.b.over=true; B.b.winner=1; B.b.fled=0; B.b.seq++; NET.broadcast(); NET.leaveMatch(); closeBattle(); }
 };
 NET.leaveMatch = function(){ if(B&&B.net){ clearInterval(B.net.hb); } const mr=NET.mr; if(B&&B.net&&B.net.role==='host'&&B.b&&B.b.over&&mr){ const msg={matchId:B.net.matchId, b:Object.assign({},B.b,{log:B.b.log.slice(-6)})}; [0,500,1000].forEach(t=>setTimeout(()=>{ try{ mr.emit('state',msg); }catch(e){} },t)); } NET.mr=null; setTimeout(()=>{ try{ mr&&mr.leave&&mr.leave(); }catch(e){} },1500); if(B) B.net=null; setTimeout(NET.updatePresence,50); };
 
@@ -2881,7 +2887,7 @@ function battleMenu(){
   const sh=sheet(`<h2>Menu</h2><div class="actions">
     ${B.mode!=='local'?`<button class="btn ghost" id="mauto">${B.auto?'Turn auto off':'Turn auto on'}</button>`:''}
     <button class="btn" id="mres">Resume</button>
-    <button class="btn danger" id="mquit">${B.mode==='pvp'?'Forfeit match':'Run away'}</button></div>
+    <button class="btn danger" id="mquit">Flee</button></div>
     <p class="muted small center">${B.mode==='pvp'?'Forfeiting gives your opponent the win.':'Running away gives no rewards.'}</p>`);
   const ma=sh.body.querySelector('#mauto'); if(ma) ma.onclick=()=>{ B.auto=!B.auto; sh.close(); drive(); };
   sh.body.querySelector('#mres').onclick=sh.close;
@@ -3625,7 +3631,7 @@ NET.startHost = async function(d){
     if(ac && ac.s===1){ const ok = a.swap!=null ? act(bb,{swap:a.swap|0}) : act(bb,{skill:a.skill,target:a.target}); if(ok) afterAct(); else NET.broadcast(); }
     else NET.broadcast();
   });
-  mr.on('forfeit', a=>{ if(!B||!B.net||a.matchId!==B.net.matchId||B.b.over) return; B.b.over=true; B.b.winner=0; B.b.log.push(`${B.b.sides[1].name} forfeited.`); B.b.seq++; NET.broadcast(); drive(); });
+  mr.on('forfeit', a=>{ if(!B||!B.net||a.matchId!==B.net.matchId||B.b.over) return; B.b.over=true; B.b.winner=0; B.b.fled=1; B.b.log.push(`${B.b.sides[1].name} forfeited.`); B.b.seq++; NET.broadcast(); drive(); });
   B.net.hb=setInterval(()=>{
     if(!B||!B.net) return; NET.broadcast(); const bb=B.b; if(bb.over||B.paused) return;
     const late=(Date.now()-B.net.last)/1000;
@@ -4621,6 +4627,15 @@ Object.values(ZTASKS).forEach(list=>list.forEach(t=>{ if(t[0]==='fight'||t[0]===
   addEventListener('dblclick',e=>e.preventDefault(),{capture:true});
   document.addEventListener('selectstart',e=>{ if(!/INPUT|TEXTAREA/.test(e.target.tagName||'')) e.preventDefault(); });
 })();
+
+// ---- "Opponent Fled!" ----
+function fledPopup(){ return new Promise(res=>{
+  const w=document.createElement('div'); w.className='abox-wrap';
+  w.innerHTML=`<div class="fledpop"><button class="nm-x" aria-label="Close">✕</button><div class="fp-lila">${lilaSVG()}</div><div class="fp-side"><p>Opponent Fled!</p><button class="tp-b" id="fpok">OK</button></div></div>`;
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add('on'));
+  const close=()=>{ w.classList.remove('on'); setTimeout(()=>{ w.remove(); res(); },200); };
+  w.querySelector('#fpok').onclick=close; w.querySelector('.nm-x').onclick=close; }); }
+finishBattle=(function(prev){ return function(){ if(B&&B.b&&B.b.fled!=null&&B.b.fled!==B.mySide&&!B.fledShown){ B.fledShown=true; fledPopup().then(()=>{ if(B) prev(); }); return; } return prev(); }; })(finishBattle);
 
 </script>
 </body></html>

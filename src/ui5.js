@@ -265,7 +265,7 @@ NET.startHost = async function(d){
     if(ac && ac.s===1){ const ok = a.swap!=null ? act(bb,{swap:a.swap|0}) : act(bb,{skill:a.skill,target:a.target}); if(ok) afterAct(); else NET.broadcast(); }
     else NET.broadcast();
   });
-  mr.on('forfeit', a=>{ if(!B||!B.net||a.matchId!==B.net.matchId||B.b.over) return; B.b.over=true; B.b.winner=0; B.b.log.push(`${B.b.sides[1].name} forfeited.`); B.b.seq++; NET.broadcast(); drive(); });
+  mr.on('forfeit', a=>{ if(!B||!B.net||a.matchId!==B.net.matchId||B.b.over) return; B.b.over=true; B.b.winner=0; B.b.fled=1; B.b.log.push(`${B.b.sides[1].name} forfeited.`); B.b.seq++; NET.broadcast(); drive(); });
   B.net.hb=setInterval(()=>{
     if(!B||!B.net) return; NET.broadcast(); const bb=B.b; if(bb.over||B.paused) return;
     const late=(Date.now()-B.net.last)/1000;

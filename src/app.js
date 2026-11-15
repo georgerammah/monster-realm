@@ -480,7 +480,7 @@ NET.sendAction = function(a){ B.net.sent=B.b.seq; B.net.action=a; NET.mr.emit('a
 NET.forfeit = function(){
   if(!B||!B.net) return;
   if(B.net.role==='guest'){ try{ NET.mr.emit('forfeit',{matchId:B.net.matchId}); }catch(e){} if(B.b){ B.b.over=true; B.b.winner=0; } NET.leaveMatch(); closeBattle(); }
-  else { B.b.over=true; B.b.winner=1; B.b.seq++; NET.broadcast(); NET.leaveMatch(); closeBattle(); }
+  else { B.b.over=true; B.b.winner=1; B.b.fled=0; B.b.seq++; NET.broadcast(); NET.leaveMatch(); closeBattle(); }
 };
 NET.leaveMatch = function(){ if(B&&B.net){ clearInterval(B.net.hb); } const mr=NET.mr; if(B&&B.net&&B.net.role==='host'&&B.b&&B.b.over&&mr){ const msg={matchId:B.net.matchId, b:Object.assign({},B.b,{log:B.b.log.slice(-6)})}; [0,500,1000].forEach(t=>setTimeout(()=>{ try{ mr.emit('state',msg); }catch(e){} },t)); } NET.mr=null; setTimeout(()=>{ try{ mr&&mr.leave&&mr.leave(); }catch(e){} },1500); if(B) B.net=null; setTimeout(NET.updatePresence,50); };
 

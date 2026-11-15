@@ -245,7 +245,7 @@ function battleMenu(){
   const sh=sheet(`<h2>Menu</h2><div class="actions">
     ${B.mode!=='local'?`<button class="btn ghost" id="mauto">${B.auto?'Turn auto off':'Turn auto on'}</button>`:''}
     <button class="btn" id="mres">Resume</button>
-    <button class="btn danger" id="mquit">${B.mode==='pvp'?'Forfeit match':'Run away'}</button></div>
+    <button class="btn danger" id="mquit">Flee</button></div>
     <p class="muted small center">${B.mode==='pvp'?'Forfeiting gives your opponent the win.':'Running away gives no rewards.'}</p>`);
   const ma=sh.body.querySelector('#mauto'); if(ma) ma.onclick=()=>{ B.auto=!B.auto; sh.close(); drive(); };
   sh.body.querySelector('#mres').onclick=sh.close;
