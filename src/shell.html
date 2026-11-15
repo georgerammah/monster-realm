@@ -1181,6 +1181,17 @@ html,body{touch-action:manipulation}
 
 .eslots,body.rot .eslots{grid-template-columns:repeat(5,1fr)!important;justify-content:stretch!important;gap:min(calc(1.6*var(--vw)),12px)!important;width:100%}
 .eslot{aspect-ratio:1;max-height:none}
+
+.tipb.big{flex-direction:row!important;align-items:center;gap:8px!important;max-width:min(calc(56*var(--vw)),560px)!important;padding:6px 8px 6px 14px!important;border-radius:10px}
+.tipb.big b{font-size:min(calc(5*var(--vh)),20px)!important;white-space:nowrap}.tipb.big b::after{content:":"}
+.tipb.big span{font:600 min(calc(4.4*var(--vh)),18px)/1.2 -apple-system,system-ui!important}
+.tipb.big .ic{flex:none;width:min(calc(8*var(--vh)),34px)!important;height:min(calc(8*var(--vh)),34px)!important}
+.castname,body.rot .castname{top:30%!important;font-size:min(calc(10*var(--vh)),46px)!important;transform:translateX(-50%);white-space:nowrap;text-align:center}
+.castname.l,body.rot .castname.l{left:25%!important;right:auto!important}.castname.r,body.rot .castname.r{left:75%!important;right:auto!important}
+.await.sm{display:none!important}
+
+.castname,body.rot .castname{animation:cn2 1.3s ease-out both!important}
+@keyframes cn2{0%{opacity:0;transform:translateX(-50%) scale(.6)}15%{opacity:1;transform:translateX(-50%) scale(1.08)}25%{transform:translateX(-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-12px)}}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

@@ -631,11 +631,11 @@ let TIPH=null;
 function placeTip(h){
   if(TIPH===h&&document.querySelector('.tipb')) return; TIPH=h; hideTips(); if(!h||!h.dataset.tip) return;
   const [title,body]=tipText(h); const tip=document.createElement('div'); tip.className='tipb big';
-  tip.innerHTML=`<b>${title}</b>${body?`<span>${body}</span>`:''}`; document.body.appendChild(tip);
+  tip.innerHTML=`<b>${title}</b>${body?`<span>${body}</span>`:''}${h.querySelector('.ic')?h.querySelector('.ic').outerHTML:''}`; document.body.appendChild(tip);
   const r=localRect(h), BR=document.body.getBoundingClientRect(); const W=isRot()?BR.height:innerWidth, H=isRot()?BR.width:innerHeight;
   const right=!!h.closest('.bhp.r'); const w=tip.offsetWidth, th=tip.offsetHeight;
-  let left=right? r.left-w-16 : r.left+r.width+16; if(left<8||left+w>W-8) left=Math.max(8,Math.min(W-w-8,left));
-  let top=r.top-4; top=Math.max(8,Math.min(H-th-8,top));
+  let left=right? r.left+r.width-w : r.left; left=Math.max(6,Math.min(W-w-6,left));
+  let top=r.top-th-10; if(top<4) top=4;
   tip.style.left=left+'px'; tip.style.top=top+'px';
 }
 bindTip=function(h){ if(h._tip2) return; h._tip2=1; h._tip=1;
