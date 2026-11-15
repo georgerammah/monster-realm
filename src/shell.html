@@ -845,8 +845,12 @@ body.rot .onb .btn{padding:10px}
 body.rot .ptop{gap:10px}
 body.rot .ppor{width:28%}
 body.rot .eslots{grid-template-columns:repeat(5,minmax(0,64px));justify-content:start}
+
+*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+img,svg{-webkit-user-drag:none}
 </style></head>
-<body>
+<body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
 <nav id="bar">
   <button class="gb red" data-p="zones"><span>Zones</span></button>
