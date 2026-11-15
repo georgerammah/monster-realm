@@ -862,6 +862,13 @@ img,svg{-webkit-user-drag:none}
 .bmid{position:relative;z-index:40}
 .autob{position:relative;min-height:30px;padding:6px 12px;touch-action:manipulation;cursor:pointer}
 .autob::after{content:"";position:absolute;inset:-10px -8px}
+
+.spark.glow{width:8px;height:8px;background:radial-gradient(circle,#fff6c8 0,#ffd24a 45%,rgba(255,190,40,0) 72%);box-shadow:0 0 14px 4px rgba(255,200,70,.55);scale:var(--s)}
+.ld-box{position:relative;margin-top:calc(6*var(--vh));width:min(calc(30*var(--vw)),340px);min-width:220px;padding:8px 12px 12px;border-radius:14px;background:rgba(14,14,16,.85);box-shadow:0 4px 14px rgba(0,0,0,.5)}
+.ld-t{font:min(calc(4.2*var(--vh)),22px) "Lilita One",system-ui;color:#f2f2f2;text-align:center;letter-spacing:.5px;margin-bottom:6px;text-shadow:0 2px 0 #000}
+.ld-bar{height:min(calc(5*var(--vh)),26px);border-radius:8px;border:2px solid #e8e8e8;background:#3a3a3e;overflow:hidden}
+.ld-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c8241a,#e0661e 45%,#f2c21e);transition:width .18s linear}
+.ld-ver{position:absolute;right:calc(max(env(safe-area-inset-right),12px) + 6px);bottom:calc(env(safe-area-inset-bottom) + 8px);font:15px Georgia,serif;color:#e6e6e6;text-shadow:0 1px 2px #000}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -3970,6 +3977,23 @@ document.addEventListener('pointerdown',e=>{
   e.preventDefault(); e.stopPropagation(); B.auto=!B.auto; drive();
 },true);
 document.addEventListener('click',e=>{ if(e.target.closest&&e.target.closest('#bauto,.autob')){ e.preventDefault(); e.stopPropagation(); } },true);
+
+// ===== V12: loading screen flow =====
+function splash(){
+  return new Promise(res=>{
+    const el=$('#splash');
+    const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
+    el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-ver">v1.0.0</div>`;
+    const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
+    let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
+    setTimeout(()=>{
+      txt.textContent='Starting Game...'; let p=0;
+      const t=setInterval(()=>{ p=Math.min(100,p+6+Math.random()*10); bar.style.width=p+'%';
+        if(p>=100){ clearInterval(t); setTimeout(finish,350); } },120);
+    },1000);
+  });
+}
 
 </script>
 </body></html>
