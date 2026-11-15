@@ -1066,6 +1066,9 @@ body.rot .shopscr .thud{padding-left:calc(var(--sa-left) + 10px)!important;paddi
 .sheet.reward .sheet-x{position:absolute!important;top:10px!important;right:10px!important;left:auto!important;float:none!important;margin:0!important}
 .runner{animation:none!important;transform:none!important}
 .runner svg{animation:none!important;transform:translateX(6%) rotate(-10deg) scaleX(1.06) scaleY(.94)!important;transform-origin:30% 90%}
+
+html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button,.pbtn{touch-action:manipulation}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

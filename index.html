@@ -1075,6 +1075,9 @@ body.rot .shopscr .thud{padding-left:calc(var(--sa-left) + 10px)!important;paddi
 .sheet.reward .sheet-x{position:absolute!important;top:10px!important;right:10px!important;left:auto!important;float:none!important;margin:0!important}
 .runner{animation:none!important;transform:none!important}
 .runner svg{animation:none!important;transform:translateX(6%) rotate(-10deg) scaleX(1.06) scaleY(.94)!important;transform-origin:30% 90%}
+
+html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button,.pbtn{touch-action:manipulation}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -3224,12 +3227,12 @@ function drawMon(){
   if(!MONSH) return; const {sh,uid}=MONSH; const m=monBy(uid); if(!m){ sh.close(); return; }
   const sp=SPI[m.sp]; const fam=FAM[sp.fam]; const s=monStats(m); const base=statsOf(m.sp,m.lvl);
   const inTeam=S.team.includes(uid); const slots=slotsOf(m.lvl); const unlock=UNLOCK; const es=eqSlots(m);
-  const stat=(k,label,val)=>`<div class="pstat"><span>${label}</span><b>${val}</b>${(m.free>0||m.pts[k]>0)&&k!=='spd'?`<div class="pbtns"><button class="pbtn minus" data-pm="${k}" ${m.pts[k]>0?'':'disabled'}>−</button><button class="pbtn plus" data-pp="${k}" ${m.free>0?'':'disabled'}>+</button></div>`:''}</div>`;
+  const stat=(k,label,val)=>`<div class="pstat"><span>${label}</span><b>${val}</b>${k!=='spd'?`<div class="pbtns"><button class="pbtn minus" data-pm="${k}" ${m.pts[k]>0?'':'disabled'}>−</button><button class="pbtn plus" data-pp="${k}" ${m.free>0?'':'disabled'}>+</button></div>`:''}</div>`;
   sh.body.querySelector('.prof').innerHTML=`
     <div class="ptop"><div class="ppor" style="--c:${EL[fam.el].c}">${monSVG(m.sp,m.lvl)}</div>
       <div class="pinfo"><div class="pname"><span class="lvb">${m.lvl}</span>${sp.n}</div><span class="pstage">${STAGE_N[stageOf(m.lvl)].toLowerCase()} · ${fam.n} ${elChip(fam.el)}</span>
         <div class="pxp"><i style="width:${m.lvl>=MAXLVL?100:m.xp/xpNeed(m.lvl)*100}%"></i><em>${m.lvl>=MAXLVL?'MAX':`${m.xp} / ${xpNeed(m.lvl)} xp`}</em></div>
-        ${m.free>0?`<div class="pfree">${m.free} points</div>`:''}
+        <div class="pfree" style="${m.free>0?'':'visibility:hidden'}">${m.free|0} points</div>
         ${stat('atk','Attack',s.atk)}${stat('hp','Life',s.hp)}${stat('mp','Mana',s.mp)}
       </div></div>
     ${m.lvl<20?`<p class="psmall">${m.lvl<10?'Evolves at Lv 10':'Evolves at Lv 20'} · each stat point: +2 attack, +8 life or +8 mana</p>`:''}
@@ -4609,6 +4612,15 @@ reveal2=function(m,title,done){
 };
 // battle missions finish after a single win
 Object.values(ZTASKS).forEach(list=>list.forEach(t=>{ if(t[0]==='fight'||t[0]==='boss') t[7]=1; }));
+
+// stop iOS magnifier / double-tap zoom on rapid taps
+(function(){ let last=0, lastEl=null;
+  addEventListener('touchend',e=>{ const el=e.target.closest&&e.target.closest('button,[data-pp],[data-pm],.pbtn'); const now=Date.now();
+    if(el && el===lastEl && now-last<350){ e.preventDefault(); el.click(); }
+    last=now; lastEl=el; },{capture:true,passive:false});
+  addEventListener('dblclick',e=>e.preventDefault(),{capture:true});
+  document.addEventListener('selectstart',e=>{ if(!/INPUT|TEXTAREA/.test(e.target.tagName||'')) e.preventDefault(); });
+})();
 
 </script>
 </body></html>

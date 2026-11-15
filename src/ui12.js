@@ -411,3 +411,12 @@ reveal2=function(m,title,done){
 };
 // battle missions finish after a single win
 Object.values(ZTASKS).forEach(list=>list.forEach(t=>{ if(t[0]==='fight'||t[0]==='boss') t[7]=1; }));
+
+// stop iOS magnifier / double-tap zoom on rapid taps
+(function(){ let last=0, lastEl=null;
+  addEventListener('touchend',e=>{ const el=e.target.closest&&e.target.closest('button,[data-pp],[data-pm],.pbtn'); const now=Date.now();
+    if(el && el===lastEl && now-last<350){ e.preventDefault(); el.click(); }
+    last=now; lastEl=el; },{capture:true,passive:false});
+  addEventListener('dblclick',e=>e.preventDefault(),{capture:true});
+  document.addEventListener('selectstart',e=>{ if(!/INPUT|TEXTAREA/.test(e.target.tagName||'')) e.preventDefault(); });
+})();

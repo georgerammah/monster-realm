@@ -114,12 +114,12 @@ function drawMon(){
   if(!MONSH) return; const {sh,uid}=MONSH; const m=monBy(uid); if(!m){ sh.close(); return; }
   const sp=SPI[m.sp]; const fam=FAM[sp.fam]; const s=monStats(m); const base=statsOf(m.sp,m.lvl);
   const inTeam=S.team.includes(uid); const slots=slotsOf(m.lvl); const unlock=UNLOCK; const es=eqSlots(m);
-  const stat=(k,label,val)=>`<div class="pstat"><span>${label}</span><b>${val}</b>${(m.free>0||m.pts[k]>0)&&k!=='spd'?`<div class="pbtns"><button class="pbtn minus" data-pm="${k}" ${m.pts[k]>0?'':'disabled'}>−</button><button class="pbtn plus" data-pp="${k}" ${m.free>0?'':'disabled'}>+</button></div>`:''}</div>`;
+  const stat=(k,label,val)=>`<div class="pstat"><span>${label}</span><b>${val}</b>${k!=='spd'?`<div class="pbtns"><button class="pbtn minus" data-pm="${k}" ${m.pts[k]>0?'':'disabled'}>−</button><button class="pbtn plus" data-pp="${k}" ${m.free>0?'':'disabled'}>+</button></div>`:''}</div>`;
   sh.body.querySelector('.prof').innerHTML=`
     <div class="ptop"><div class="ppor" style="--c:${EL[fam.el].c}">${monSVG(m.sp,m.lvl)}</div>
       <div class="pinfo"><div class="pname"><span class="lvb">${m.lvl}</span>${sp.n}</div><span class="pstage">${STAGE_N[stageOf(m.lvl)].toLowerCase()} · ${fam.n} ${elChip(fam.el)}</span>
         <div class="pxp"><i style="width:${m.lvl>=MAXLVL?100:m.xp/xpNeed(m.lvl)*100}%"></i><em>${m.lvl>=MAXLVL?'MAX':`${m.xp} / ${xpNeed(m.lvl)} xp`}</em></div>
-        ${m.free>0?`<div class="pfree">${m.free} points</div>`:''}
+        <div class="pfree" style="${m.free>0?'':'visibility:hidden'}">${m.free|0} points</div>
         ${stat('atk','Attack',s.atk)}${stat('hp','Life',s.hp)}${stat('mp','Mana',s.mp)}
       </div></div>
     ${m.lvl<20?`<p class="psmall">${m.lvl<10?'Evolves at Lv 10':'Evolves at Lv 20'} · each stat point: +2 attack, +8 life or +8 mana</p>`:''}
