@@ -1,17 +1,15 @@
 // ===== V12: loading screen flow =====
-function TT_ELE(){ return `<svg viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg"><g stroke="#1b2a4a" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
-<path d="M58 150 v18 h20 v-16 M128 150 v18 h20 v-18" fill="#7fb2ea"/>
-<ellipse cx="104" cy="118" rx="62" ry="44" fill="#8cc0f5"/>
-<path d="M44 110 q-14 6 -12 20" fill="none"/>
-<path d="M150 74 q34 -6 40 26 q4 22 -6 38 q-6 10 4 16 q8 4 14 -6" fill="#8cc0f5"/>
-<circle cx="150" cy="86" r="40" fill="#8cc0f5"/>
-<path d="M128 62 q-34 -8 -40 22 q-4 26 22 34 q20 4 26 -14 z" fill="#b9dafb"/>
-<path d="M176 112 q10 8 22 2" fill="#fff"/>
-<path d="M58 168 h20 M128 168 h20" fill="none"/>
+function TT_ELE(){ return `<svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg"><g stroke="#163457" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+<circle cx="52" cy="88" r="46" fill="#79aee6"/><circle cx="168" cy="88" r="46" fill="#79aee6"/>
+<circle cx="58" cy="92" r="28" fill="#a8cdf4" stroke="none"/><circle cx="162" cy="92" r="28" fill="#a8cdf4" stroke="none"/>
+<path d="M110 120 q2 34 -6 50 q-6 12 8 16" fill="none" stroke-width="27"/>
+<path d="M110 120 q2 34 -6 50 q-6 12 8 16" fill="none" stroke="#8cc0f5" stroke-width="17"/>
+<ellipse cx="110" cy="92" rx="50" ry="48" fill="#8cc0f5"/>
+<path d="M90 124 q-4 16 -20 18 q12 -4 12 -20 z" fill="#fff" stroke-width="4"/><path d="M130 124 q4 16 20 18 q-12 -4 -12 -20 z" fill="#fff" stroke-width="4"/>
 </g>
-<circle cx="164" cy="80" r="6" fill="#1b2a4a"/><circle cx="166" cy="78" r="2" fill="#fff"/>
-<ellipse cx="172" cy="96" rx="7" ry="4" fill="#ff9fc0" opacity=".7"/>
-<path d="M150 48 q6 -10 14 -4" stroke="#1b2a4a" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`; }
+<path d="M104 132 q6 4 12 0 l-1 8 q-5 3 -10 0 z" fill="#8cc0f5"/>
+<circle cx="93" cy="90" r="5.5" fill="#163457"/><circle cx="127" cy="90" r="5.5" fill="#163457"/>
+<circle cx="95" cy="88" r="1.8" fill="#fff"/><circle cx="129" cy="88" r="1.8" fill="#fff"/></svg>`; }
 function splash(){
   return new Promise(res=>{
     const el=$('#splash');
