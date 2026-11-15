@@ -109,7 +109,7 @@ function openMon(uid){
   else if(m.free>0 && !S.tutPts && S.tut>=8){ S.tutPts=1; persist(); setTimeout(async()=>{ await lilaSay(["Each time your monster levels up, you get points to put into its stats.","You can also make its abilities stronger by training them right here in its profile."]); pointAt('.pbtn.plus'); },400); }
 }
 function upCost(sl){ return 40*sl*sl; }
-function upNeed(sl){ return sl; }
+function upNeed(sl){ return 3*sl-2; }
 function drawMon(){
   if(!MONSH) return; const {sh,uid}=MONSH; const m=monBy(uid); if(!m){ sh.close(); return; }
   const sp=SPI[m.sp]; const fam=FAM[sp.fam]; const s=monStats(m); const base=statsOf(m.sp,m.lvl);
