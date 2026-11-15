@@ -429,3 +429,101 @@ function fledPopup(){ return new Promise(res=>{
   const close=()=>{ w.classList.remove('on'); setTimeout(()=>{ w.remove(); res(); },200); };
   w.querySelector('#fpok').onclick=close; w.querySelector('.nm-x').onclick=close; }); }
 finishBattle=(function(prev){ return function(){ if(B&&B.b&&B.b.fled!=null&&B.b.fled!==B.mySide&&!B.fledShown){ B.fledShown=true; fledPopup().then(()=>{ if(B) prev(); }); return; } return prev(); }; })(finishBattle);
+
+// ===== bottom-bar pop-up submenus =====
+const SUBMENUS={
+  social:[['My Wall',()=>openProfile({me:true})],['Forums',()=>alertBox('Forums are coming soon!')],['Friends',()=>openPanelRaw('social')],['Top Trainers',()=>openTopTrainers()]],
+  menu:[['My Profile',()=>openProfile({me:true})],['Quests',()=>openPanelRaw('quests')],['Profile Picture',()=>openAvatar()],['Settings',()=>openPanelRaw('menu')]],
+  shop:[['Items',()=>{ SHOPTAB='items'; openShop(); }],['Eggs',()=>{ SHOPTAB='eggs'; openShop(); }],['Energy',()=>{ SHOPTAB='energy'; openShop(); }],['Mushrooms',()=>{ SHOPTAB='mush'; openShop(); }]]
+};
+let SUBM=null;
+function closeSub(){ if(SUBM){ SUBM.remove(); SUBM=null; document.querySelectorAll('#bar .nb.subon').forEach(x=>x.classList.remove('subon')); } }
+function openSub(key,btn){
+  const was=SUBM&&SUBM.dataset.k===key; closeSub(); if(was) return;
+  const r=localRect(btn), R=isRot()?{w:document.body.getBoundingClientRect().height}:{w:innerWidth};
+  const el=document.createElement('div'); el.className='submenu'; el.dataset.k=key;
+  el.innerHTML=SUBMENUS[key].map(([n],i)=>`<button class="subb" data-i="${i}">${n}</button>`).join('');
+  document.body.appendChild(el);
+  const w=el.offsetWidth; el.style.left=Math.max(8,Math.min(R.w-w-8, r.left+r.width/2-w/2))+'px'; el.style.bottom=(document.body.getBoundingClientRect()[isRot()?'width':'height']-r.top+8)+'px';
+  btn.classList.add('subon'); SUBM=el;
+  el.querySelectorAll('.subb').forEach(b=>b.onclick=e=>{ e.stopPropagation(); closeSub(); SUBMENUS[key][+b.dataset.i][1](); });
+}
+addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('#bar [data-p]'); if(b&&SUBMENUS[b.dataset.p]){ e.stopPropagation(); e.preventDefault(); openSub(b.dataset.p,b); return; }
+  if(SUBM&&!e.target.closest('.submenu')) closeSub(); },true);
+function openPanelRaw(name){ closeSub(); if(PANEL) PANEL.sh.close(); const sh=sheet(PANELS[name](),{cls:'panel', onClose:()=>{ if(PANEL&&PANEL.sh===sh) PANEL=null; }}); PANEL={name, sh}; TAB=name; bindView(sh.body); }
+function openTopTrainers(){
+  const list=[{name:S.name||'You',rank:myRank(),me:true,avatar:myAvatar()}].concat(NET.peers.filter(p=>!p.me).map(p=>({name:p.name||'Trainer',rank:p.rank||1000,avatar:sanitizeAv(p.avatar)}))).sort((a,b)=>b.rank-a.rank);
+  sheet(`<h2>Top Trainers</h2><div class="list">${list.map((p,i)=>`<div class="row ${p.me?'me':''}"><b class="tt-n">${i+1}</b><div class="soc-av">${avatarSVG(p.avatar||{t:'trainer',i:0})}</div><div><b>${esc(p.name)}${p.me?' (you)':''}</b><span>${rankBadge(p.rank,16)} ${p.rank}</span></div></div>`).join('')}</div><p class="muted small center">Showing trainers online right now.</p>`);
+}
+// Get More! goes straight to mushrooms
+document.addEventListener('click',e=>{ if(e.target.closest&&e.target.closest('#getmore')){ e.stopPropagation(); e.preventDefault(); SHOPTAB='mush'; openShop(); } },true);
+
+// ===== Battle hub: Arena / Practice / Challenges =====
+const CHALLENGES=[
+  {n:'Bug Swarm',fam:'bug',lv:6,d:'Three angry insects block the trail.'},
+  {n:'Sky Raiders',fam:'wing',lv:12,d:'A flock of avians swoops down.'},
+  {n:'Dragon Den',fam:'drake',lv:18,d:'Wake the dragons — if you dare.'},
+  {n:'Thunder Pack',fam:'volt',lv:24,d:'A pack of storm felines strikes.'}
+];
+openPanel=(function(prev){ return function(name){ if(name==='battle') return openBattleHub(); return prev(name); }; })(openPanel);
+function hubHud(){ tickEnergy(); return `<div class="thud"><button class="backb" id="bhb">Back</button>
+  <div class="thcol"><div class="hrow"><div class="hbar name"><span class="ico">♛</span><b>${esc(S.name||'Trainer')}</b></div><div class="hbar rank"><span class="ico r">${rankBadge(myRank(),22)}</span><b>${myRank()}</b></div><div class="hbar cash"><span class="ico c">$</span><b>${S.cash|0}</b></div></div>
+  <div class="hrow"><div class="hbar energy"><span class="ico">⚡</span><div class="ebar"><i style="width:${S.energy/S.maxEnergy*100}%"></i><b>${S.energy<S.maxEnergy?`+1 in ${nextEnergyIn()} · `:''}${S.energy} / ${S.maxEnergy}</b></div></div><div class="hbar shrooms"><span class="ico m">${mushroomSVG('#b04fd6')}</span><b>${S.mush}</b></div></div></div></div>`; }
+function openBattleHub(){
+  closeSub(); if(PANEL) PANEL.sh.close();
+  const sh=sheet(`<div class="tscreen bhub"></div>`,{cls:'full'});
+  sh.body.querySelector('.bhub').innerHTML=`${hubHud()}<div class="bh-body">
+    <button class="bh-b red" id="bh-arena">ARENA <i>★</i></button><p>Battle rival trainers for money and rank!</p>
+    <button class="bh-b blue" id="bh-prac">PRACTICE</button><p>An unranked practice match for fun and XP!</p>
+    <button class="bh-b green" id="bh-chal"><em>NEW!</em>CHALLENGES!</button><p>Complete difficult fights for new monsters!</p></div>`;
+  const q=s=>sh.body.querySelector(s);
+  q('#bhb').onclick=sh.close;
+  q('#bh-arena').onclick=()=>{ sh.close(); openPanelRaw('battle'); };
+  q('#bh-prac').onclick=()=>{ if(!S.team.length) return alertBox('Add a monster to your team first!'); if(!spend(1)) return; persist(); sh.close(); startBattle({mode:'practice', foe:rivalTeam()}); };
+  q('#bh-chal').onclick=()=>{ sh.close(); openChallenges(); };
+}
+function openChallenges(){
+  S.chal=S.chal||{};
+  const sh=sheet(`<div class="tscreen chals"></div>`,{cls:'full'});
+  const draw=()=>{ sh.body.querySelector('.chals').innerHTML=`${hubHud()}<div class="ch-row">${CHALLENGES.map((c,i)=>{ const done=S.chal[i], fam=SP.filter(s=>s.fam===c.fam);
+    return `<div class="ch-card ${done?'done':''}"><div class="ch-h"><span class="lvb">${c.lv}</span><b>${c.n}</b></div>
+      <div class="ch-foes">${fam.slice(0,3).map(s=>`<div>${monSVG(s.id,c.lv)}</div>`).join('')}</div><p>${c.d}</p>
+      <div class="ch-rw"><span>${done?'Completed':'Reward: a new monster'}</span><div class="ch-sil">${monSVG(fam[3].id,1)}</div></div>
+      <button class="tgo" data-ch2="${i}">${done?'AGAIN':'FIGHT!'} <i>▶</i></button><small>⚡ 3</small></div>`; }).join('')}</div>`;
+    sh.body.querySelector('#bhb').onclick=()=>{ sh.close(); openBattleHub(); };
+    sh.body.querySelectorAll('[data-ch2]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.ch2, c=CHALLENGES[i];
+      if(!S.team.length) return alertBox('Add a monster to your team first!');
+      if(highLvl()<c.lv-4) return alertBox(`Your monsters should be at least level ${c.lv-4} for this challenge!`);
+      if(!spend(3)) return; persist(); sh.close();
+      const fam=SP.filter(s=>s.fam===c.fam); const foe={name:c.n, mons:[0,1,2].map(k=>({sp:fam[k].id, lvl:c.lv+1, hpMul:1.1}))};
+      startBattle({mode:'challenge', foe, meta:{ci:i}}); }); };
+  draw();
+}
+finishBattle=(function(prev){ return function(){ if(B&&B.mode==='challenge'&&B.b&&B.b.over){ const win=B.b.winner===B.mySide, ci=B.meta.ci, c=CHALLENGES[ci];
+    if(win){ S.chal=S.chal||{}; const first=!S.chal[ci]; S.chal[ci]=1; let nm=null;
+      if(first){ const fam=SP.filter(s=>s.fam===c.fam); const owned=new Set(S.mons.map(m=>m.sp)); let pool=fam.filter(s=>!owned.has(s.id)); if(!pool.length) pool=fam; nm=addMon(pool[Math.floor(Math.random()*pool.length)].id, Math.max(2,c.lv-4)); if(S.team.length<3) S.team.push(nm.uid); }
+      else { S.cash=(S.cash|0)+c.lv*15; }
+      persist(); prev(); if(nm) setTimeout(()=>reveal2(nm,'You found a new monster!',()=>{}),900); return; } }
+  return prev(); }; })(finishBattle);
+
+// ===== My Friends (online now / rankings) =====
+function openFriends(tab){
+  closeSub(); if(PANEL) PANEL.sh.close(); tab=tab||'online';
+  const sh=sheet(`<div class="tscreen friends"></div>`,{cls:'full'});
+  const draw=()=>{
+    const peers=NET.peers.filter(p=>!p.me).map(p=>({name:p.name||'Trainer',rank:p.rank||1000,cid:p.cid,busy:p.busy,avatar:sanitizeAv(p.avatar)}));
+    let list=tab==='online'?peers:peers.concat([{name:S.name||'You',rank:myRank(),me:true}]);
+    list=list.sort((a,b)=>b.rank-a.rank);
+    sh.body.querySelector('.friends').innerHTML=`<div class="plankbar"><button class="backb" id="frb">Back</button><div class="plank">My Friends</div><button class="findb" id="frf">FIND 🔍</button></div>
+      <div class="fr-tabs"><button class="fr-t ${tab==='online'?'on':''}" data-ft="online"><i class="dot"></i>ONLINE NOW</button><button class="fr-t blue ${tab==='rank'?'on':''}" data-ft="rank">★ RANKINGS</button></div>
+      <div class="fr-list">${list.length?list.map((p,i)=>`<div class="fr-row ${p.me?'me':''}"><div class="fr-dot"><i></i></div><div class="fr-rk">${tab==='rank'?`<b class="fr-pos">${i+1}</b>`:''}${rankBadge(p.rank,26)}<span>${p.rank}</span></div><div class="fr-n">${esc(p.name)}${p.busy?' <small>in a battle</small>':''}</div>${p.me?'':`<button class="sparb" data-ch="${esc(p.cid||'')}" ${p.busy||NET.status!=='on'?'disabled':''}>SPAR ⚡</button>`}</div>`).join('')
+        :`<p class="fr-empty">${NET.status==='on'?'No trainers are online right now. Share the game link with friends and they will show up here!':'Live features work when the game is online.'}</p>`}</div>`;
+    const q=s=>sh.body.querySelector(s);
+    q('#frb').onclick=sh.close; q('#frf').onclick=()=>alertBox('Friend search is coming soon!');
+    sh.body.querySelectorAll('[data-ft]').forEach(b=>b.onclick=()=>{ tab=b.dataset.ft; draw(); });
+    sh.body.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{ if(!b.dataset.ch) return; NET.challenge(b.dataset.ch); });
+  };
+  draw();
+}
+SUBMENUS.social[2][1]=()=>openFriends('online');
+SUBMENUS.social[3][1]=()=>openFriends('rank');

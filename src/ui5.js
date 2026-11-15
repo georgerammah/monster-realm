@@ -8,7 +8,7 @@ function rankBadge(r,size){ const [,n,c,k]=rankOf(r); size=size||26;
   let p=''; for(let i=0;i<k;i++){ const y=18-i*5; p+=`<path d="M3 ${y} L12 ${y-6} L21 ${y} L21 ${y+4} L12 ${y-2} L3 ${y+4}Z" fill="${c}" stroke="#1a1a1a" stroke-width="1"/>`; }
   return `<svg class="rbadge" viewBox="0 0 24 24" width="${size}" height="${size}" title="${n}">${p}</svg>`; }
 function myRank(){ return S.rank==null?1000:S.rank; }
-function isArena(mode){ return mode==='pvp'||mode==='rival'||mode==='local'; }
+function isArena(mode){ return mode==='pvp'||mode==='rival'||mode==='local'||mode==='practice'||mode==='challenge'; }
 
 // ---- start arena battles ----
 function startBattle({mode, foe, meta, myName, oppRank}){
