@@ -949,6 +949,8 @@ body.rot input,body.rot textarea{touch-action:manipulation}
 .tscreen:not(.tasks):not(.zsel):not(.zdest) .bench:has(.bench-row .tcard) .bench-h{display:none}
 .tscreen:not(.tasks):not(.zsel):not(.zdest) .bench-row{padding:2px 12px}
 .tscreen:not(.tasks):not(.zsel):not(.zdest) .bench-row .tcard{width:calc(22*var(--vh))!important;max-width:130px}
+
+body.rot .zd-row,body.rot .bench-row{scroll-snap-type:none!important}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
