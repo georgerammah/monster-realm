@@ -1,0 +1,7 @@
+.git
+backend
+src
+README.md
+wrangler.jsonc
+.assetsignore
+.gitignore
