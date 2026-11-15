@@ -273,3 +273,26 @@ renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.
   document.querySelectorAll('#battle .fighter').forEach(el=>{ const s=el.dataset.s, i=el.dataset.i, f=el.querySelector('.fart'); if(!f) return;
     if(!B.enT[s]||B.enT[s].i!==i) B.enT[s]={i,t:now};
     const e=(now-B.enT[s].t)/1000; if(e<1.5){ el.classList.add('enter2'); f.style.animationDelay=(-e)+'s'; } else { el.classList.remove('enter2'); f.style.animationDelay=''; } }); }; })(renderBattle);
+
+// ---------- Monster Kingdom style info bubble: description only, sits over the icon row with a tab down to the icon ----------
+function stDesc(m,k){ const s=m.st, P=v=>Math.round((v||0)*100)+'%';
+  const d={burn:`Takes ${s.burnD|0} damage each turn`, poison:`Takes ${s.poisonD|0} damage each turn`, storm:`Takes ${s.stormD|0} damage each turn`, stun:`Can't act`,
+    bubble:`Shield absorbs ${s.bubbleHp|0} damage`, lsh:`Shield absorbs ${s.lshHp|0} damage`, fsh:`Shield absorbs ${s.fshHp|0} damage`, nsh:`Shield absorbs ${s.nshHp|0} damage`,
+    focus:`Deals ${P(s.focusV)} more damage`, charge:`Deals ${P(s.chargeV)} more damage`, cripple:`Deals ${P(s.crippleV)} less damage`, evade:`${P(s.evadeV)} chance to dodge attacks`}[k];
+  return `${d||BUFF_N[k]||k} (${s[k]} turn${s[k]>1?'s':''})`; }
+hudIcons=(function(prev){ return function(m){ if(!m) return ''; let h=prev(m).replace(/<span class="hi st"[\s\S]*?<\/span><\/span>/g,'');
+  const add=Object.keys(ST_ICON).filter(k=>m.st[k]>0).map(k=>`<span class="hi st" data-tip="|${esc(stDesc(m,k))}">${icon(ST_ICON[k][0],ST_ICON[k][1],26)}</span>`).join('');
+  const i=h.lastIndexOf('</div>'); return i>=0? h.slice(0,i)+add+h.slice(i) : h+add; }; })(hudIcons);
+placeTip=function(h){
+  if(TIPH===h&&document.querySelector('.tipb')) return; TIPH=h; hideTips(); if(!h||!h.dataset.tip) return;
+  let [,body]=tipText(h); if(!body) body=tipText(h)[0]; const right=!!h.closest('.bhp.r');
+  const ic=h.querySelector('.ic')?h.querySelector('.ic').outerHTML:'';
+  const tip=document.createElement('div'); tip.className='tipb tipmk '+(right?'r':'l'); tip.innerHTML=right?`<span>${body}</span>${ic}`:`${ic}<span>${body}</span>`;
+  const tab=document.createElement('div'); tab.className='tipb tipmk-tab'; document.body.appendChild(tab); document.body.appendChild(tip);
+  const r=localRect(h), BR=document.body.getBoundingClientRect(); const W=isRot()?BR.height:innerWidth;
+  const tabW=r.width+16, tabL=r.left-8, w=tip.offsetWidth, th=tip.offsetHeight;
+  let left=right? tabL+tabW-w : tabL; left=Math.max(4,Math.min(W-w-4,left));
+  let top=r.top-6-th; if(top<4) top=4;
+  tip.style.left=left+'px'; tip.style.top=top+'px';
+  const tTop=top+th-16; tab.style.left=tabL+'px'; tab.style.width=tabW+'px'; tab.style.top=tTop+'px'; tab.style.height=Math.max(20,r.top+r.height+7-tTop)+'px';
+};
