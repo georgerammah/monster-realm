@@ -236,7 +236,7 @@ NET.challenge = function(cid){
   if(!S.team.length) return toast('Add a monster to your team');
   const matchId=uidGen()+uidGen();
   NET.pending={matchId,to:cid,t:setTimeout(()=>{ NET.pending=null; toast('No answer'); render(); },30000)};
-  NET.room.emit('challenge',{to:cid, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId, team:teamMsg()});
+  NET.room.emit('challenge',Object.assign({to:cid, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId, team:teamMsg()}, typeof myProfile==='function'?{motto:S.motto||'',stats:myProfile().stats,cid:NET.cid}:{}));
   toast('Challenge sent'); render();
 };
 NET.showIncoming = function(d){
@@ -246,7 +246,7 @@ NET.showIncoming = function(d){
   const t=setTimeout(()=>sh.close(),28000);
   sh.body.querySelector('#acc').onclick=()=>{ clearTimeout(t); NET.incoming=null; sh.close();
     if(!S.team.length){ toast('Add a monster to your team'); return; }
-    NET.room.emit('accept',{to:d.from, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId:d.matchId, team:teamMsg()});
+    NET.room.emit('accept',Object.assign({to:d.from, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId:d.matchId, team:teamMsg()}, typeof myProfile==='function'?{motto:S.motto||'',stats:myProfile().stats,cid:NET.cid}:{}));
     NET.startGuest(d); };
   sh.body.querySelector('#dec').onclick=()=>{ clearTimeout(t); sh.close(); };
 };

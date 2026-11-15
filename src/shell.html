@@ -695,6 +695,48 @@ body.rot .mailb{top:100px!important}
 
 .sndrow{display:flex;gap:8px;margin-top:12px}.sndb{flex:1;font:17px "Lilita One",system-ui;color:#fff;padding:10px;border-radius:12px;background:linear-gradient(#9a9aa3,#5a5a63);box-shadow:0 0 0 2px #fff,0 2px 5px rgba(0,0,0,.25)}.sndb.on{background:linear-gradient(#5fd84a,#1f8a1f)}
 
+
+/* ===== arena result + profile ===== */
+.sheet.full.arenares,.tprof{background:#3a3a3c url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.7' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E")}
+.ares{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 12px)}
+.ares-ban{width:100%;max-width:640px;border-radius:12px;background:linear-gradient(#7ad45a,#3a9a2a 55%,#2a7a1f);box-shadow:0 0 0 3px #f0fff0,0 8px 20px rgba(0,0,0,.45);display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;align-items:center;padding:8px 16px 10px;animation:boxin .4s cubic-bezier(.2,1.4,.4,1)}
+.ares-ban.lose{background:linear-gradient(#ff7a6a,#c4231c 55%,#8a150f);box-shadow:0 0 0 3px #fff0f0,0 8px 20px rgba(0,0,0,.45)}
+.ares-t{grid-row:1/3;font:min(11vw,64px)/1 "Lilita One",system-ui;color:#f0ffe0;-webkit-text-stroke:3px #1f5a12;paint-order:stroke;text-shadow:0 0 14px rgba(200,255,150,.6);padding-right:14px}
+.ares-ban.lose .ares-t{color:#ffe8e0;-webkit-text-stroke-color:#5a0a0a;text-shadow:0 0 14px rgba(255,180,150,.5)}
+.ares-r{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.35);border-radius:8px;padding:2px 12px;justify-self:stretch;clip-path:polygon(0 0,100% 0,94% 100%,0 100%)}
+.ares-r b{font:italic 30px "Lilita One",system-ui;color:#fff;font-weight:400}.ares-r em{font:14px "Lilita One",system-ui;font-style:normal}.ares-r em.up{color:#bfff9a}.ares-r em.dn{color:#ffb3a8}
+.ares-c{font:18px -apple-system,system-ui;font-weight:600;color:#fff;text-align:center;margin-top:4px}.ares-c span{font:22px "Lilita One",system-ui;color:#fff}
+.ares-opp{width:100%;max-width:640px;border-radius:12px;background:rgba(40,40,44,.75);box-shadow:inset 0 0 0 2px rgba(255,255,255,.7);padding:8px 12px 12px;animation:boxin .4s .25s cubic-bezier(.2,1.4,.4,1) both}
+.ares-lab{display:inline-block;font:13px -apple-system,system-ui;color:#ddd;background:rgba(0,0,0,.35);padding:1px 8px;border-radius:4px}
+.ares-row{display:flex;align-items:center;gap:10px;margin:6px 0 10px}
+.ares-av{width:54px;height:54px;flex:none;border-radius:8px;overflow:hidden;box-shadow:0 0 0 2px #7ad45a}.ares-av svg{width:100%;height:100%}
+.ares-nm{display:flex;flex-direction:column;min-width:0}.ares-nm b{font:20px "Lilita One",system-ui;font-weight:400;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}.ares-nm span{display:flex;align-items:center;gap:4px;font:18px Georgia,serif;color:#fff}
+.ares-team{flex:1;display:flex;justify-content:flex-end;gap:4px}
+.ares-m{position:relative;width:min(16vw,110px);animation:pop .45s cubic-bezier(.2,1.6,.4,1) both}.ares-m svg{width:100%;height:auto}.ares-m .lvb{position:absolute;right:4px;bottom:4px;min-width:20px;height:20px;font-size:13px}
+.ares-btns{display:flex;justify-content:space-between;gap:10px}
+.gbtn2{font:min(4.4vw,20px) "Lilita One",system-ui;color:#fff;padding:7px 18px;border-radius:8px;box-shadow:0 0 0 2px #fff,0 3px 6px rgba(0,0,0,.35);text-shadow:0 2px 0 rgba(0,0,0,.3)}
+.gbtn2.blue{background:linear-gradient(#5f9bff,#1d4fc4)}.gbtn2.red{background:linear-gradient(#ff6a5a,#c4231c);margin-left:auto}
+.tprof{position:absolute;inset:0;display:flex;flex-direction:column}
+.ares{position:absolute;inset:0;overflow-y:auto}
+.tp-top{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 8px) 12px 6px}
+.tp-plate{flex:1;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:6px 12px;border-radius:6px;background:linear-gradient(#7a4a2a,#5a3219);box-shadow:inset 0 0 0 3px #c9a067,inset 0 0 0 5px #4a2a12,0 4px 10px rgba(0,0,0,.4)}
+.tp-av{width:52px;height:52px;flex:none;border-radius:6px;overflow:hidden;box-shadow:0 0 0 2px #7ad45a}.tp-av svg{width:100%;height:100%}
+.tp-id{flex:1;min-width:0}.tp-nm{display:flex;align-items:center;gap:8px;border-bottom:2px solid #f5ead0;padding-bottom:2px}.tp-nm b{font:22px "Lilita One",system-ui;font-weight:400;color:#f5ead0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dot{width:14px;height:14px;border-radius:50%;background:#777;box-shadow:inset 0 -2px 0 rgba(0,0,0,.3);flex:none}.dot.on{background:radial-gradient(circle at 40% 35%,#9dff6a,#2a9a12)}
+.tp-rk{display:flex;align-items:center;gap:5px;font:18px Georgia,serif;color:#f5ead0;margin-top:2px}
+.tp-motto{text-align:center;color:#fff;font:16px Georgia,serif;padding:4px 16px 8px;border-bottom:3px solid #c9a067}.tp-motto button{font:inherit;color:#fff}
+.tp-field{position:relative;flex:1;min-height:180px;overflow:hidden}.tp-field .scene{position:absolute;inset:0}
+.tp-team{position:absolute;left:0;right:0;bottom:6%;display:flex;justify-content:center;align-items:flex-end;gap:2%;z-index:3}
+.tp-m{position:relative;width:min(24vw,34vh);animation:pop .45s cubic-bezier(.2,1.6,.4,1) both}.tp-m svg{width:100%;height:auto;animation:idle 2.4s ease-in-out infinite}.tp-m .lvb{position:absolute;right:12%;top:8%}
+.tp-bar{display:flex;gap:6px;padding:8px 12px calc(env(safe-area-inset-bottom) + 8px);background:rgba(0,0,0,.35)}
+.nb2{flex:1;font:italic min(4.2vw,22px) "Lilita One",system-ui;color:#fff;padding:9px;border-radius:8px;box-shadow:0 0 0 2px #fff,0 3px 6px rgba(0,0,0,.35);text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.nb2.blue{background:linear-gradient(#6fa4ff,#2f62d8 50%,#1d43a8)}.nb2.red{background:linear-gradient(#ff6a5a,#d42a22 50%,#a8150f)}.nb2:disabled{filter:grayscale(1);opacity:.6}
+.row.tapp{cursor:pointer}.row.tapp:active{background:rgba(0,0,0,.05)}
+body.rot .ares-t{font-size:min(calc(11*var(--vw)),64px)}body.rot .ares-m{width:min(calc(16*var(--vw)),110px)}body.rot .tp-m{width:min(calc(24*var(--vw)),calc(34*var(--vh)))}
+body.rot .gbtn2{font-size:min(calc(4.4*var(--vw)),20px)}body.rot .nb2{font-size:min(calc(4.2*var(--vw)),22px)}
+@media (orientation:landscape) and (max-height:560px){ .ares{gap:8px} .ares-t{font-size:min(12vh,56px)} .ares-m{width:min(14vw,26vh)} .tp-field{min-height:0} }
+body.rot .ares{gap:8px}body.rot .ares-t{font-size:min(calc(12*var(--vh)),56px)}body.rot .ares-m{width:min(calc(14*var(--vw)),calc(26*var(--vh)))}body.rot .tp-field{min-height:0}
+
 /* rotated portrait = forced landscape */
 body.rot #hud,body.rot #bar,body.rot .bhud,body.rot .dock{padding-left:8px!important;padding-right:8px!important}
 body.rot #hud{padding-top:6px!important}body.rot #bar{padding-bottom:6px!important}body.rot .tring{left:10px!important}
@@ -805,5 +847,6 @@ body.rot .eslots{grid-template-columns:repeat(5,minmax(0,64px));justify-content:
 /*UI6*/
 /*UI7*/
 /*UI8*/
+/*UI9*/
 </script>
 </body></html>
