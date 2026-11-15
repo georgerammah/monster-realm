@@ -385,3 +385,13 @@ function confirmBox(msg,ok,fn){
   const close=()=>{ w.classList.remove('on'); setTimeout(()=>w.remove(),200); };
   w.querySelector('#cbn').onclick=close; w.querySelector('#cby').onclick=()=>{ close(); fn(); };
 }
+
+// mushroom-priced items (bowls)
+const priceHTML=id=>{ const it=ITEMS[id]; return it.mush?`<span class="mprice">${mushroomSVG('#b04fd6')}</span> ${it.mush}`:`<b class="g">$</b> ${it.cost}`; };
+buyItem=(function(prev){ return function(id){ const it=ITEMS[id]; if(!it||!it.mush) return prev(id);
+  if(it.lv>highLvl()) return toast(`Requires a Lv ${it.lv} monster`);
+  if((S.mush|0)<it.mush) return alertBox(`You need ${it.mush} mushrooms for the ${it.n}.`);
+  S.mush-=it.mush; S.inv=S.inv||{}; S.inv[id]=(S.inv[id]|0)+1; persist(); render(); toast(`Bought ${it.n}!`); }; })(buyItem);
+drawShop=(function(prev){ return function(){ prev(); if(!SHOPSH||SHOPTAB!=='items') return; const b=SHOPSH.body;
+  b.querySelectorAll('.s2item').forEach(el=>{ const id=el.dataset.si; if(ITEMS[id]&&ITEMS[id].mush){ const sp=el.querySelector('span'); if(sp) sp.innerHTML=priceHTML(id); } });
+  const sel=b.querySelector('.s2item.sel'), c=b.querySelector('.s2c'); if(sel&&c&&ITEMS[sel.dataset.si].mush) c.innerHTML=priceHTML(sel.dataset.si); }; })(drawShop);

@@ -1049,6 +1049,8 @@ body.rot .shopscr .thud{padding-left:calc(var(--sa-left) + 10px)!important;paddi
 .rsm{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 18px;border-radius:8px;font:20px "Lilita One",system-ui;color:#fff;background:linear-gradient(#f0563a,#b8200e);box-shadow:0 0 0 3px #fff,0 4px 0 #6a1206}
 .rsm i{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle,#7dff5a 0 30%,#c23bd6 32%);box-shadow:0 0 0 2px #fff}
 .abox-row{display:flex;gap:10px}.abox-ok.red{background:linear-gradient(#f0563a,#b8200e);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 1px #f3a091}
+
+.mprice{display:inline-block;width:1.3em;vertical-align:-.15em}.mprice svg{width:100%;display:block}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -3094,8 +3096,8 @@ const ITEMS = {
   collar:{n:'Spiked Collar', cost:420, lv:12, b:{atk:8,hp:20}},
   crown:{n:'Golden Crown', cost:700, lv:16, b:{atk:10,hp:45}},
   orb:{n:'Storm Orb', cost:760, lv:18, b:{mp:55}},
-  manabowl:{n:'Mana Bowl', cost:220, lv:4, b:{mp:8}, fx:{rmp:16}},
-  lifebowl:{n:'Life Bowl', cost:220, lv:4, b:{hp:16}, fx:{rhp:14}},
+  manabowl:{n:'Mana Bowl', cost:0, mush:20, lv:4, b:{mp:8}, fx:{rmp:16}},
+  lifebowl:{n:'Life Bowl', cost:0, mush:20, lv:4, b:{hp:8}, fx:{rhp:16}},
   blade:{n:'Brute Blade', cost:300, lv:8, b:{}, fx:{dflat:7,tflat:3}}
 };
 const STAT_N={atk:'attack',hp:'life',mp:'mana',spd:'speed'};
@@ -4557,6 +4559,16 @@ function confirmBox(msg,ok,fn){
   const close=()=>{ w.classList.remove('on'); setTimeout(()=>w.remove(),200); };
   w.querySelector('#cbn').onclick=close; w.querySelector('#cby').onclick=()=>{ close(); fn(); };
 }
+
+// mushroom-priced items (bowls)
+const priceHTML=id=>{ const it=ITEMS[id]; return it.mush?`<span class="mprice">${mushroomSVG('#b04fd6')}</span> ${it.mush}`:`<b class="g">$</b> ${it.cost}`; };
+buyItem=(function(prev){ return function(id){ const it=ITEMS[id]; if(!it||!it.mush) return prev(id);
+  if(it.lv>highLvl()) return toast(`Requires a Lv ${it.lv} monster`);
+  if((S.mush|0)<it.mush) return alertBox(`You need ${it.mush} mushrooms for the ${it.n}.`);
+  S.mush-=it.mush; S.inv=S.inv||{}; S.inv[id]=(S.inv[id]|0)+1; persist(); render(); toast(`Bought ${it.n}!`); }; })(buyItem);
+drawShop=(function(prev){ return function(){ prev(); if(!SHOPSH||SHOPTAB!=='items') return; const b=SHOPSH.body;
+  b.querySelectorAll('.s2item').forEach(el=>{ const id=el.dataset.si; if(ITEMS[id]&&ITEMS[id].mush){ const sp=el.querySelector('span'); if(sp) sp.innerHTML=priceHTML(id); } });
+  const sel=b.querySelector('.s2item.sel'), c=b.querySelector('.s2c'); if(sel&&c&&ITEMS[sel.dataset.si].mush) c.innerHTML=priceHTML(sel.dataset.si); }; })(drawShop);
 
 </script>
 </body></html>

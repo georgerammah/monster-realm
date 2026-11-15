@@ -10,8 +10,8 @@ const ITEMS = {
   collar:{n:'Spiked Collar', cost:420, lv:12, b:{atk:8,hp:20}},
   crown:{n:'Golden Crown', cost:700, lv:16, b:{atk:10,hp:45}},
   orb:{n:'Storm Orb', cost:760, lv:18, b:{mp:55}},
-  manabowl:{n:'Mana Bowl', cost:220, lv:4, b:{mp:8}, fx:{rmp:16}},
-  lifebowl:{n:'Life Bowl', cost:220, lv:4, b:{hp:16}, fx:{rhp:14}},
+  manabowl:{n:'Mana Bowl', cost:0, mush:20, lv:4, b:{mp:8}, fx:{rmp:16}},
+  lifebowl:{n:'Life Bowl', cost:0, mush:20, lv:4, b:{hp:8}, fx:{rhp:16}},
   blade:{n:'Brute Blade', cost:300, lv:8, b:{}, fx:{dflat:7,tflat:3}}
 };
 const STAT_N={atk:'attack',hp:'life',mp:'mana',spd:'speed'};
