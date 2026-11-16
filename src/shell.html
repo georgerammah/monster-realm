@@ -1314,6 +1314,25 @@ html,body{touch-action:manipulation}
 .tt-ele svg{filter:none!important}#splash.tt-out .tt-ele{animation:none}
 
 #battle .fring{display:none!important}
+
+/* battle sequencing */
+.fighter .fname.fn2{animation:fn2 4.3s linear both!important}
+@keyframes fn2{0%,69.7%{opacity:0;transform:translateX(-50%) scale(.6)}74%{opacity:1;transform:translateX(-50%) scale(1.1)}77%{opacity:1;transform:translateX(-50%) scale(1)}93%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%)}}
+#battle.busy .abil{visibility:hidden;pointer-events:none}
+#battle .abil.abin{animation:abup .6s cubic-bezier(.2,1.25,.4,1) both}
+@keyframes abup{0%{transform:translateY(130%);opacity:0}40%{opacity:1}100%{transform:none;opacity:1}}
+
+/* New Monster stars: inside the blue frame, clear of the title, monster and stats */
+.nmpop{overflow:visible}
+.nm-t{padding:0 min(calc(9*var(--vh)),46px)}
+.nm-s.s1{left:14px!important;top:calc(2.4*var(--vh))!important;right:auto!important;bottom:auto!important;font-size:min(calc(8*var(--vh)),36px)!important}
+.nm-s.s2{left:min(calc(7*var(--vh)),36px)!important;top:calc(10*var(--vh))!important;right:auto!important;bottom:auto!important;font-size:min(calc(5.4*var(--vh)),24px)!important}
+.nm-s.s4{right:14px!important;top:calc(2.4*var(--vh))!important;left:auto!important;bottom:auto!important;font-size:min(calc(8*var(--vh)),36px)!important}
+.nm-s.s3{right:min(calc(7*var(--vh)),36px)!important;top:calc(10*var(--vh))!important;left:auto!important;bottom:auto!important;font-size:min(calc(5.4*var(--vh)),24px)!important}
+
+.nb em{right:18px!important;top:4px!important;left:auto!important;z-index:6}.nb{isolation:auto}
+
+#battle.busy #swapb,#battle.busy .swapper{pointer-events:none;opacity:.55}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

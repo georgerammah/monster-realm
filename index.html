@@ -1323,6 +1323,25 @@ html,body{touch-action:manipulation}
 .tt-ele svg{filter:none!important}#splash.tt-out .tt-ele{animation:none}
 
 #battle .fring{display:none!important}
+
+/* battle sequencing */
+.fighter .fname.fn2{animation:fn2 4.3s linear both!important}
+@keyframes fn2{0%,69.7%{opacity:0;transform:translateX(-50%) scale(.6)}74%{opacity:1;transform:translateX(-50%) scale(1.1)}77%{opacity:1;transform:translateX(-50%) scale(1)}93%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%)}}
+#battle.busy .abil{visibility:hidden;pointer-events:none}
+#battle .abil.abin{animation:abup .6s cubic-bezier(.2,1.25,.4,1) both}
+@keyframes abup{0%{transform:translateY(130%);opacity:0}40%{opacity:1}100%{transform:none;opacity:1}}
+
+/* New Monster stars: inside the blue frame, clear of the title, monster and stats */
+.nmpop{overflow:visible}
+.nm-t{padding:0 min(calc(9*var(--vh)),46px)}
+.nm-s.s1{left:14px!important;top:calc(2.4*var(--vh))!important;right:auto!important;bottom:auto!important;font-size:min(calc(8*var(--vh)),36px)!important}
+.nm-s.s2{left:min(calc(7*var(--vh)),36px)!important;top:calc(10*var(--vh))!important;right:auto!important;bottom:auto!important;font-size:min(calc(5.4*var(--vh)),24px)!important}
+.nm-s.s4{right:14px!important;top:calc(2.4*var(--vh))!important;left:auto!important;bottom:auto!important;font-size:min(calc(8*var(--vh)),36px)!important}
+.nm-s.s3{right:min(calc(7*var(--vh)),36px)!important;top:calc(10*var(--vh))!important;left:auto!important;bottom:auto!important;font-size:min(calc(5.4*var(--vh)),24px)!important}
+
+.nb em{right:18px!important;top:4px!important;left:auto!important;z-index:6}.nb{isolation:auto}
+
+#battle.busy #swapb,#battle.busy .swapper{pointer-events:none;opacity:.55}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -3671,7 +3690,7 @@ function drive(){
   if(b.over){ if(!B.finished){ B.finished=true; B.timer=setTimeout(finishBattle, 1400); } return; }
   if(b.single && b.phase==='pick'){
     const c=B.ctl[b.pickSide];
-    if(c==='ai') B.timer=setTimeout(()=>{ if(!B||B.b!==b) return; pick(b,b.pickSide,aiPick(b,b.pickSide)); afterAct(); },1300);
+    if(c==='ai') B.timer=setTimeout(()=>{ if(!B||B.b!==b) return; pick(b,b.pickSide,aiPick(b,b.pickSide)); afterAct(); },500);
     return;
   }
   const a=actor(b); const c=B.ctl[a.s];
@@ -4469,7 +4488,7 @@ function TT_ELE(){ return `<svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2
 <ellipse cx="110" cy="92" rx="50" ry="48" fill="#8cc0f5"/>
 <path d="M90 126 q-2 12 -12 14 M130 126 q2 12 12 14" fill="none" stroke-width="13"/><path d="M90 126 q-2 12 -12 14 M130 126 q2 12 12 14" fill="none" stroke="#fff" stroke-width="7"/>
 </g>
-<path d="M104 132 q6 4 12 0 l-1 8 q-5 3 -10 0 z" fill="#8cc0f5"/>
+
 <circle cx="93" cy="90" r="5.5" fill="#163457"/><circle cx="127" cy="90" r="5.5" fill="#163457"/>
 <circle cx="95" cy="88" r="1.8" fill="#fff"/><circle cx="129" cy="88" r="1.8" fill="#fff"/></svg>`; }
 function splash(){
@@ -5412,10 +5431,10 @@ function fxTackle(ac,tgt,left){ const art=ac.querySelector('.fart'); if(!art) re
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.enT=B.enT||{}; const now=Date.now();
   document.querySelectorAll('#battle .fighter').forEach(el=>{ const s=el.dataset.s, i=el.dataset.i, f=el.querySelector('.fart'); if(!f) return;
     if(!B.enT[s]||B.enT[s].i!==i) B.enT[s]={i,t:now};
-    const e=(now-B.enT[s].t)/1000; if(e<4&&!f._enA){ const L=el.classList.contains('l'), d=L?1:-1, W=document.body.clientWidth*1.2;
+    const e=(now-B.enT[s].t)/1000; if(e<3&&!f._enA){ const L=el.classList.contains('l'), d=L?1:-1, W=document.body.clientWidth*1.2;
       const H=document.body.clientHeight*.45;
       f._enA=f.animate([{transform:`translate(${-d*W}px,0)`,easing:'cubic-bezier(.3,.7,.6,1)'},{transform:`translate(${-d*W*.45}px,${-H}px)`,offset:.36,easing:'cubic-bezier(.45,0,.8,.5)'},{transform:'translate(0,0) scale(1.14,.86)',offset:.68,easing:'ease-out'},
-        {transform:'translate(0,-12%) scale(.95,1.06)',offset:.79,easing:'ease-in'},{transform:'translate(0,0) scale(1.06,.94)',offset:.9,easing:'ease-out'},{transform:'none'}],{duration:4000,easing:'linear'});
+        {transform:'translate(0,-12%) scale(.95,1.06)',offset:.79,easing:'ease-in'},{transform:'translate(0,0) scale(1.06,.94)',offset:.9,easing:'ease-out'},{transform:'none'}],{duration:3000,easing:'linear'});
       f._enA.currentTime=e*1000; } }); }; })(renderBattle);
 
 // ---------- Monster Kingdom style info bubble: description only, sits over the icon row with a tab down to the icon ----------
@@ -5449,6 +5468,24 @@ openPick=(function(prev){ return function(side,swap){ const w=swap?0:pickWaitLef
   if(w>0){ if(!B.pkWait) B.pkWait=setTimeout(()=>{ if(!B) return; B.pkWait=null; if(B.b&&B.b.phase==='pick'&&myInput()&&!PICKEL) openPick(side,false); },w+60); return; }
   return prev(side,swap); }; })(openPick);
 setInterval(()=>{ if(B&&B.b&&B.b.phase==='pick'&&!PICKEL&&pickWaitLeft()>0) B.stamp=Date.now(); },100);
+
+// ---------- battle sequencing: pick -> 3s entrance -> name on landing for 1s -> next pick -> ... -> abilities slide up ----------
+const ENT_MS=3000, NAME_MS=1000, BUSY_MS=ENT_MS+NAME_MS+250;
+function busyLeft(){ if(!B||!B.enT) return 0; let m=0; Object.values(B.enT).forEach(e=>{ m=Math.max(m,e.t+BUSY_MS-Date.now()); }); return Math.max(0,m); }
+pickWaitLeft=busyLeft;
+drive=(function(prev){ return function(){ const r=prev(); if(!B||!B.b||B.b.over||B.paused) return r; const w=busyLeft();
+  if(w>0){ clearTimeout(B.timer); B.timer=setTimeout(()=>{ if(B) drive(); },w+40); } return r; }; })(drive);
+humanAct=(function(prev){ return function(skill,target){ if(busyLeft()>0) return; return prev(skill,target); }; })(humanAct);
+renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b||!B.enT) return; const now=Date.now(), root=$('#battle'); if(!root) return;
+  root.querySelectorAll('.fighter').forEach(el=>{ const f=el.querySelector('.fname'), e=B.enT[el.dataset.s]; if(!f) return; f.classList.remove('fnon');
+    const t=e?(now-e.t):1e9; if(t<ENT_MS+NAME_MS+300){ f.classList.add('fn2'); f.style.animationDelay=(-t/1000)+'s'; } else { f.classList.remove('fn2'); f.style.animationDelay=''; } });
+  const busy=busyLeft()>0; root.classList.toggle('busy',busy);
+  const ab=root.querySelector('.abil'); if(ab&&!busy&&B.abT&&now-B.abT<700){ ab.classList.add('abin'); ab.style.animationDelay=(-(now-B.abT)/1000)+'s'; } }; })(renderBattle);
+setInterval(()=>{ if(!B||!B.b) return; const root=$('#battle'); const busy=busyLeft()>0;
+  if(busy){ B.stamp=Date.now(); B.wasBusy=true; }
+  else if(B.wasBusy){ B.wasBusy=false; B.abT=Date.now(); if(root){ root.classList.remove('busy'); const ab=root.querySelector('.abil'); if(ab){ ab.classList.remove('abin'); void ab.offsetWidth; ab.classList.add('abin'); ab.style.animationDelay='0s'; } } }
+  else if(root) root.classList.remove('busy'); },80);
+openPick=(function(prev){ return function(side,swap){ if(swap&&busyLeft()>0) return; return prev(side,swap); }; })(openPick);
 
 </script>
 </body></html>

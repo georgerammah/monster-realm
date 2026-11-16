@@ -7,7 +7,7 @@ function TT_ELE(){ return `<svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2
 <ellipse cx="110" cy="92" rx="50" ry="48" fill="#8cc0f5"/>
 <path d="M90 126 q-2 12 -12 14 M130 126 q2 12 12 14" fill="none" stroke-width="13"/><path d="M90 126 q-2 12 -12 14 M130 126 q2 12 12 14" fill="none" stroke="#fff" stroke-width="7"/>
 </g>
-<path d="M104 132 q6 4 12 0 l-1 8 q-5 3 -10 0 z" fill="#8cc0f5"/>
+
 <circle cx="93" cy="90" r="5.5" fill="#163457"/><circle cx="127" cy="90" r="5.5" fill="#163457"/>
 <circle cx="95" cy="88" r="1.8" fill="#fff"/><circle cx="129" cy="88" r="1.8" fill="#fff"/></svg>`; }
 function splash(){

@@ -272,10 +272,10 @@ function fxTackle(ac,tgt,left){ const art=ac.querySelector('.fart'); if(!art) re
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.enT=B.enT||{}; const now=Date.now();
   document.querySelectorAll('#battle .fighter').forEach(el=>{ const s=el.dataset.s, i=el.dataset.i, f=el.querySelector('.fart'); if(!f) return;
     if(!B.enT[s]||B.enT[s].i!==i) B.enT[s]={i,t:now};
-    const e=(now-B.enT[s].t)/1000; if(e<4&&!f._enA){ const L=el.classList.contains('l'), d=L?1:-1, W=document.body.clientWidth*1.2;
+    const e=(now-B.enT[s].t)/1000; if(e<3&&!f._enA){ const L=el.classList.contains('l'), d=L?1:-1, W=document.body.clientWidth*1.2;
       const H=document.body.clientHeight*.45;
       f._enA=f.animate([{transform:`translate(${-d*W}px,0)`,easing:'cubic-bezier(.3,.7,.6,1)'},{transform:`translate(${-d*W*.45}px,${-H}px)`,offset:.36,easing:'cubic-bezier(.45,0,.8,.5)'},{transform:'translate(0,0) scale(1.14,.86)',offset:.68,easing:'ease-out'},
-        {transform:'translate(0,-12%) scale(.95,1.06)',offset:.79,easing:'ease-in'},{transform:'translate(0,0) scale(1.06,.94)',offset:.9,easing:'ease-out'},{transform:'none'}],{duration:4000,easing:'linear'});
+        {transform:'translate(0,-12%) scale(.95,1.06)',offset:.79,easing:'ease-in'},{transform:'translate(0,0) scale(1.06,.94)',offset:.9,easing:'ease-out'},{transform:'none'}],{duration:3000,easing:'linear'});
       f._enA.currentTime=e*1000; } }); }; })(renderBattle);
 
 // ---------- Monster Kingdom style info bubble: description only, sits over the icon row with a tab down to the icon ----------
@@ -309,3 +309,21 @@ openPick=(function(prev){ return function(side,swap){ const w=swap?0:pickWaitLef
   if(w>0){ if(!B.pkWait) B.pkWait=setTimeout(()=>{ if(!B) return; B.pkWait=null; if(B.b&&B.b.phase==='pick'&&myInput()&&!PICKEL) openPick(side,false); },w+60); return; }
   return prev(side,swap); }; })(openPick);
 setInterval(()=>{ if(B&&B.b&&B.b.phase==='pick'&&!PICKEL&&pickWaitLeft()>0) B.stamp=Date.now(); },100);
+
+// ---------- battle sequencing: pick -> 3s entrance -> name on landing for 1s -> next pick -> ... -> abilities slide up ----------
+const ENT_MS=3000, NAME_MS=1000, BUSY_MS=ENT_MS+NAME_MS+250;
+function busyLeft(){ if(!B||!B.enT) return 0; let m=0; Object.values(B.enT).forEach(e=>{ m=Math.max(m,e.t+BUSY_MS-Date.now()); }); return Math.max(0,m); }
+pickWaitLeft=busyLeft;
+drive=(function(prev){ return function(){ const r=prev(); if(!B||!B.b||B.b.over||B.paused) return r; const w=busyLeft();
+  if(w>0){ clearTimeout(B.timer); B.timer=setTimeout(()=>{ if(B) drive(); },w+40); } return r; }; })(drive);
+humanAct=(function(prev){ return function(skill,target){ if(busyLeft()>0) return; return prev(skill,target); }; })(humanAct);
+renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b||!B.enT) return; const now=Date.now(), root=$('#battle'); if(!root) return;
+  root.querySelectorAll('.fighter').forEach(el=>{ const f=el.querySelector('.fname'), e=B.enT[el.dataset.s]; if(!f) return; f.classList.remove('fnon');
+    const t=e?(now-e.t):1e9; if(t<ENT_MS+NAME_MS+300){ f.classList.add('fn2'); f.style.animationDelay=(-t/1000)+'s'; } else { f.classList.remove('fn2'); f.style.animationDelay=''; } });
+  const busy=busyLeft()>0; root.classList.toggle('busy',busy);
+  const ab=root.querySelector('.abil'); if(ab&&!busy&&B.abT&&now-B.abT<700){ ab.classList.add('abin'); ab.style.animationDelay=(-(now-B.abT)/1000)+'s'; } }; })(renderBattle);
+setInterval(()=>{ if(!B||!B.b) return; const root=$('#battle'); const busy=busyLeft()>0;
+  if(busy){ B.stamp=Date.now(); B.wasBusy=true; }
+  else if(B.wasBusy){ B.wasBusy=false; B.abT=Date.now(); if(root){ root.classList.remove('busy'); const ab=root.querySelector('.abil'); if(ab){ ab.classList.remove('abin'); void ab.offsetWidth; ab.classList.add('abin'); ab.style.animationDelay='0s'; } } }
+  else if(root) root.classList.remove('busy'); },80);
+openPick=(function(prev){ return function(side,swap){ if(swap&&busyLeft()>0) return; return prev(side,swap); }; })(openPick);

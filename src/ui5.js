@@ -50,7 +50,7 @@ function drive(){
   if(b.over){ if(!B.finished){ B.finished=true; B.timer=setTimeout(finishBattle, 1400); } return; }
   if(b.single && b.phase==='pick'){
     const c=B.ctl[b.pickSide];
-    if(c==='ai') B.timer=setTimeout(()=>{ if(!B||B.b!==b) return; pick(b,b.pickSide,aiPick(b,b.pickSide)); afterAct(); },1300);
+    if(c==='ai') B.timer=setTimeout(()=>{ if(!B||B.b!==b) return; pick(b,b.pickSide,aiPick(b,b.pickSide)); afterAct(); },500);
     return;
   }
   const a=actor(b); const c=B.ctl[a.s];
