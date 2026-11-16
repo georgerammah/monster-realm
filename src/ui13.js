@@ -366,3 +366,6 @@ battleMenu=function(){
     else { if(b.over) return finishBattle(); if(B.net) NET.forfeit(); else { const back=B.mode==='campaign'&&B.meta?B.meta.zi:null; closeBattle(); if(back!=null) openTasks(back); } } });
 };
 closeBattle=(function(prev){ return function(){ document.querySelectorAll('.bm-wrap').forEach(x=>x.remove()); return prev.apply(this,arguments); }; })(closeBattle);
+
+// ---------- every newly obtained monster starts at level 1 ----------
+addMon=(function(prev){ return function(sp){ return prev(sp,1); }; })(addMon);
