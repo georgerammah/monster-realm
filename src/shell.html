@@ -1443,6 +1443,23 @@ body.auto-on .float2.buff{display:none!important}
 .thud .thcol:has(.hbar.name) .hbar.shrooms{grid-column:3}
 .thud .thcol:has(.hbar.name) .hbar.energy .ebar{flex:1;min-width:0}
 .thud .thcol:has(.hbar.name) .hbar b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* monster screen: Monster Kingdom look */
+.sheet.mkprof{background:#f3ecb2!important;box-shadow:inset 0 0 0 3px #5a4a2a,0 10px 30px rgba(0,0,0,.35)!important}
+.mkprof .ppor{background:#f3ecb2!important;box-shadow:inset 0 0 0 2.5px #3a2e18!important;border-radius:14px}
+.mkprof .pname{font-family:"Lilita One",system-ui;color:#1c160c}
+.mkprof .pname .lvb{background:linear-gradient(#e07ad8,#a0309a)!important;color:#fff;border-radius:3px 3px 50% 50% / 3px 3px 30% 30%!important;clip-path:polygon(0 0,100% 0,100% 72%,50% 100%,0 72%);padding:2px 7px 7px!important;box-shadow:none!important}
+.mkprof .pstage{font:15px Georgia,"Times New Roman",serif;color:#2a2214}
+.mkprof .pxp{height:24px;border-radius:12px;background:#3d3d3f;box-shadow:inset 0 0 0 2px #8a8a86}
+.mkprof .pxp em{font:15px "Lilita One",system-ui;color:#fff;letter-spacing:.3px}
+.mkprof .pstat span{font:min(calc(5.4*var(--vw)),22px) "Lilita One",system-ui;color:#1c160c}
+.mkprof .pstat b{font:min(calc(5.2*var(--vw)),21px) system-ui;color:#1c160c;font-weight:500}
+.mkprof .eslot{background:#e2d99c!important;box-shadow:inset 0 0 0 2.5px #3a2e18,inset 0 0 12px 3px rgba(60,45,15,.35)!important;border-radius:10px}
+.mkprof .eslot.open span{font:min(calc(3.6*var(--vw)),15px) "Lilita One",system-ui;color:#5a4f30}
+.mkprof .eslot.lock{opacity:1!important;background:#e2d99c!important}
+.mkprof .eslot.lock .padlk{width:62%;height:62%}
+.mkprof .eslot.lock.next{cursor:pointer}
+.mkprof .ph{font:min(calc(6.4*var(--vw)),26px) "Lilita One",system-ui;color:#1c160c}
+.mkprof .ph .upav{font:inherit;font-size:.8em;color:#d42a2a}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

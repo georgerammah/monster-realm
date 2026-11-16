@@ -705,3 +705,25 @@ setInterval(syncRing,80);
 let SKD_M=null;
 showInfo=(function(prev){ return function(id,a){ SKD_M=a&&a.m; try{ return prev(id,a); } finally{ SKD_M=null; } }; })(showInfo);
 skillDesc=(function(prev){ return function(id,L){ if(id==='basic'&&SKD_M){ const m=SKD_M; const d=Math.round(skDmg('basic',1,m))+Math.round((m.pas&&m.pas.fury)||0); return `Deals ${d} damage`; } return prev(id,L); }; })(skillDesc);
+
+// ---------- monster screen, Monster Kingdom look ----------
+const PADLOCK_SVG='<svg viewBox="0 0 64 64" class="padlk"><path d="M20 28 V20 a12 12 0 0 1 24 0 V28" fill="none" stroke="#a89e6c" stroke-width="7"/><rect x="12" y="27" width="40" height="30" rx="5" fill="#a89e6c"/><circle cx="32" cy="39" r="4.5" fill="#d8cfa0"/><path d="M30 41 h4 l1.5 9 h-7Z" fill="#d8cfa0"/></svg>';
+drawMon=(function(prev){ return function(){ prev(); if(!MONSH) return; const m=monBy(MONSH.uid); if(!m) return; const b=MONSH.sh.body;
+  const st=b.querySelector('.pstage'); if(st) st.textContent=STAGE_N[stageOf(m.lvl)].toLowerCase();
+  const ps=b.querySelector('.psmall'); if(ps) ps.remove();
+  b.querySelectorAll('.eslot.lock').forEach(el=>{ el.innerHTML=PADLOCK_SVG; });
+  const up=b.querySelector('.ph .upav'); if(up) up.textContent='(Upgrades Available)';
+  const sh=b.closest('.sheet'); if(sh) sh.classList.add('mkprof'); }; })(drawMon);
+
+// Mana Bowl / Life Bowl: pet bowl with a bone and a gold emblem (Monster Kingdom art)
+(function(){ const bowl=(c1,c2,c3,emblem)=>`<svg viewBox="0 0 64 64"><defs><linearGradient id="bw${c1.slice(1)}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient><linearGradient id="gd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe58a"/><stop offset="1" stop-color="#d49a1a"/></linearGradient></defs>
+
+  <ellipse cx="32" cy="34" rx="26" ry="8" fill="${c3}" stroke="#2a1a10" stroke-width="2"/><ellipse cx="32" cy="35" rx="21" ry="5.5" fill="#2a1d14"/>
+  <g transform="translate(-4 12) rotate(-38 40 18)"><rect x="22" y="14" width="30" height="7" rx="3.5" fill="#f4f1e6" stroke="#6b6250" stroke-width="1.6"/><circle cx="22" cy="14.5" r="4.6" fill="#f4f1e6" stroke="#6b6250" stroke-width="1.6"/><circle cx="22" cy="20.5" r="4.6" fill="#f4f1e6" stroke="#6b6250" stroke-width="1.6"/><circle cx="52" cy="14.5" r="4.6" fill="#f4f1e6" stroke="#6b6250" stroke-width="1.6"/><circle cx="52" cy="20.5" r="4.6" fill="#f4f1e6" stroke="#6b6250" stroke-width="1.6"/><rect x="21" y="14.6" width="32" height="5.8" fill="#f4f1e6"/></g>
+  <path d="M6 34 Q7 52 14 54 H50 Q57 52 58 34 Q46 42 32 42 Q18 42 6 34Z" fill="url(#bw${c1.slice(1)})" stroke="#2a1a10" stroke-width="2"/>
+  <circle cx="13" cy="44" r="2.6" fill="url(#gd)"/><circle cx="51" cy="44" r="2.6" fill="url(#gd)"/><circle cx="21" cy="48" r="2.2" fill="url(#gd)" opacity=".9"/><circle cx="43" cy="48" r="2.2" fill="url(#gd)" opacity=".9"/>
+  ${emblem}</svg>`;
+  const heart='<path d="M32 56 C22 49 20 44 22 40.5 C24 37.5 29 37.5 32 41.5 C35 37.5 40 37.5 42 40.5 C44 44 42 49 32 56Z" fill="url(#gd)" stroke="#8a5a0a" stroke-width="1.2"/>';
+  const drop='<path d="M32 37 C36 43 39 46 39 50 A7 7 0 0 1 25 50 C25 46 28 43 32 37Z" fill="url(#gd)" stroke="#8a5a0a" stroke-width="1.2"/>';
+  const ART={lifebowl:bowl('#ef4a3a','#a8180f','#c42a1e',heart), manabowl:bowl('#4aa8f0','#145fb0','#1f6fc0',drop)};
+  itemSVG=(function(prev){ return function(id){ return ART[id]||prev(id); }; })(itemSVG); })();
