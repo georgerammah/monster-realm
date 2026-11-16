@@ -84,7 +84,15 @@ function askNewName(msg){ return new Promise(res=>{
 document.addEventListener('click',async e=>{ const go=e.target.closest&&e.target.closest('#go'); if(!go||!window.MR_ACCT||go.dataset.ok) return; const nm=document.querySelector('#nm'); if(!nm) return;
   e.stopImmediatePropagation(); e.preventDefault(); const v=nm.value.trim(); if(!v) return;
   go.disabled=true; const old=go.textContent; go.textContent='Checking name…'; const r=await claimName(v); go.textContent=old; go.disabled=false;
-  if(!r.ok){ alertBox(nameError(r.err)); return; } go.dataset.ok=1; go.click(); },true);
+  if(!r.ok){ nameMsg(nameError(r.err)); return; } go.dataset.ok=1; go.click(); },true);
+// onboarding name: say what's wrong right under the box (never a hidden popup)
+const NAME_OK=v=>{ const k=v.trim().toLowerCase(); return k.length>=2&&k.length<=16&&/^[a-z0-9 _.-]+$/.test(k); };
+function nameMsg(t){ const nm=document.querySelector('#nm'); if(!nm) return alertBox(t); let e=document.querySelector('.nm-err'); if(!e){ e=document.createElement('p'); e.className='nm-err'; nm.insertAdjacentElement('afterend',e); } e.textContent=t||''; }
+document.addEventListener('input',e=>{ if(e.target.id!=='nm') return; const v=e.target.value; const go=document.querySelector('#go');
+  nameMsg(v.trim()&&!NAME_OK(v)?'Names can be 2–16 letters, numbers, spaces, - _ or .':'');
+  if(go&&!NAME_OK(v)) go.disabled=true; },true);
+document.addEventListener('click',e=>{ const go=e.target.closest&&e.target.closest('#go'); if(!go) return; const nm=document.querySelector('#nm'); if(!nm||NAME_OK(nm.value)) return;
+  e.stopImmediatePropagation(); e.preventDefault(); nameMsg('Names can be 2–16 letters, numbers, spaces, - _ or .'); },true);
 
 // ---------- the studio ----------
 let STUDIO=null;
