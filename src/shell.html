@@ -1399,6 +1399,19 @@ html,body{touch-action:manipulation}
 @keyframes ttcov{from{opacity:0}to{opacity:1}}
 
 .fighter.ko:not(.ko2) .fart,.fighter.ko:not(.ko2) .fart svg{animation:none!important;filter:none!important;opacity:1!important}
+
+.sheet.rklsheet{width:min(calc(94*var(--vw)),720px)!important;max-height:calc(94*var(--vh))!important;overflow:hidden!important}
+.rkl h2{margin:0 0 calc(2*var(--vh));text-align:center}
+.rkl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(1.6*var(--vh)) 10px}
+.rkl-c{display:flex;align-items:center;gap:8px;padding:calc(1.4*var(--vh)) 10px;border-radius:12px;background:rgba(0,0,0,.06)}
+.rkl-c.on{background:#ffe9a8;box-shadow:inset 0 0 0 2px #e0a800}
+.rkl-c .rbadge{flex:none;width:min(calc(10*var(--vh)),40px);height:min(calc(10*var(--vh)),40px)}
+.rkl-c b{display:block;font-size:min(calc(4.4*var(--vh)),17px);white-space:nowrap}
+.rkl-c span{font-size:min(calc(3.8*var(--vh)),14px);opacity:.75}
+.rkl-me{margin:calc(2.2*var(--vh)) 0 0;text-align:center;font-size:min(calc(4*var(--vh)),15px)}
+.hbar.rank,.cc-rank,.ares-r{cursor:pointer}
+
+.rkl-me{display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}.rkl-me .rbadge{display:inline-block;width:20px;height:20px;flex:none}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

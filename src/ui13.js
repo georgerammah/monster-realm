@@ -457,3 +457,9 @@ rankBadge=(function(prev){ return function(r,size){ const [,n]=rankOf(r); size=s
   if(n==='Cobalt Star') return `<svg class="rbadge" viewBox="0 0 24 24" width="${size}" height="${size}"><title>${n}</title><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#bfe6ff"/><stop offset=".45" stop-color="#4aa3ea"/><stop offset="1" stop-color="#1c5fae"/></linearGradient></defs><path d="${P}" fill="url(#${id})" stroke="#174a86" stroke-width=".6" stroke-linejoin="round"/><path d="M12 3.2 L12 16.8 L6.5 20 L7.9 13.8 L3.1 9.6 L9.4 9Z" fill="#fff" opacity=".22"/></svg>`;
   if(n==='Emerald Star') return `<svg class="rbadge" viewBox="0 0 24 24" width="${size}" height="${size}"><title>${n}</title><defs><radialGradient id="${id}"><stop offset=".6" stop-color="#1d6b2a"/><stop offset="1" stop-color="#7ee04a"/></radialGradient></defs><circle cx="12" cy="12" r="11" fill="url(#${id})" stroke="#c8f56a" stroke-width="1"/><circle cx="12" cy="12" r="8.6" fill="#173d1c"/><path d="${P}" transform="translate(12 12.4) scale(.78) translate(-12 -12)" fill="#5a1f8c" stroke="#7ee04a" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
   return prev(r,size); }; })(rankBadge);
+
+// ---------- tap your rank: the full rank ladder ----------
+function openRanks(){ const me=myRank(), cur=rankOf(me)[1];
+  sheet(`<div class="rkl"><h2>Ranks</h2><div class="rkl-grid">${RANKS.map((r,i)=>{ const nx=RANKS[i+1]; return `<div class="rkl-c ${r[1]===cur?'on':''}">${rankBadge(r[0],40)}<div><b>${r[1]}</b><span>${nx?`${r[0]} – ${nx[0]-1}`:`${r[0]}+`}</span></div></div>`; }).join('')}</div>
+    <p class="rkl-me">You: ${rankBadge(me,20)} <b>${me}</b> · Every season starts at 200</p></div>`,{cls:'rklsheet'}); }
+document.addEventListener('click',e=>{ const t=e.target.closest&&e.target.closest('.hbar.rank, .cc-rank, .ares-r'); if(!t) return; e.stopPropagation(); openRanks(); },true);
