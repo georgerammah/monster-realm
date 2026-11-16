@@ -588,3 +588,13 @@ skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1;
   if(id==='trample'&&s&&s.m) return `Physical attack that does your regular attack damage plus an additional ${Math.round((lv(s.m,L)-1)*100)}% damage.`;
   return prev(id,L); }; })(skillDesc);
 ICON.mkclaw='<path d="M4 15 L15.5 5.5 L12.5 9.5 L17 7.5 Z M5 19 L18 8.5 L14.8 12.8 L19.8 10.5 Z M8 21.5 L19.5 12.5 L16.8 16.2 L20.8 14.5 Z" fill="#fff"/>';
+
+// stat +/- buttons: act on touch-down (no double-tap gestures, so no iOS magnifier), hold to keep adding
+(function(){ let tmr=null, rep=null;
+  const stop=()=>{ clearTimeout(tmr); clearInterval(rep); tmr=rep=null; document.querySelectorAll('.pbtn.held').forEach(x=>x.classList.remove('held')); };
+  const fire=sel=>{ const x=document.querySelector(sel); if(!x||x.disabled){ stop(); return; } x.classList.add('held'); x.click(); const y=document.querySelector(sel); if(y) y.classList.add('held'); };
+  addEventListener('touchstart',e=>{ const b=e.target.closest&&e.target.closest('[data-pp],[data-pm]'); if(!b) return;
+    e.preventDefault(); stop(); const sel=b.dataset.pp?`[data-pp="${b.dataset.pp}"]`:`[data-pm="${b.dataset.pm}"]`;
+    if(b.disabled) return; fire(sel); tmr=setTimeout(()=>{ rep=setInterval(()=>fire(sel),120); },420); },{capture:true,passive:false});
+  ['touchend','touchcancel'].forEach(ev=>addEventListener(ev,stop,{capture:true}));
+})();

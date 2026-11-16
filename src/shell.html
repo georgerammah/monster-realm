@@ -1431,6 +1431,13 @@ html,body{touch-action:manipulation}
 body.kb-open .sheet{transform:translateY(calc(-1 * min(calc(26*var(--vh)),150px)))!important;transition:transform .2s}
 .kbd{gap:5px!important;padding-top:5px!important}
 .aneed{display:inline-flex;align-items:center;gap:3px;justify-content:center;min-width:34px;height:24px;padding:0 6px;border-radius:12px;background:linear-gradient(#ffa63d,#d96a0c);color:#fff;font:12px "Lilita One",system-ui}.aneed::before{content:"⚔"}.aneed.bad{background:linear-gradient(#aaa,#777)}
+.pbtns{display:flex;gap:0;margin-left:4px}
+.pbtn{position:relative;width:48px;height:40px;font:26px/1 "Lilita One",system-ui;color:#fff;border:2.5px solid #3a2a1a;box-shadow:inset 0 3px 0 rgba(255,255,255,.35),0 3px 0 #3a2a1a;text-shadow:0 2px 0 rgba(0,0,0,.25);transition:transform .06s}
+.pbtn.minus{border-right-width:1.25px}.pbtn.plus{border-left-width:1.25px}
+.pbtn.minus{border-radius:20px 0 0 20px}.pbtn.plus{border-radius:0 20px 20px 0}
+.pbtn::after{content:"";position:absolute;inset:-8px -4px}
+.pbtn.held,.pbtn:active{transform:translateY(2px);box-shadow:inset 0 3px 0 rgba(255,255,255,.35),0 1px 0 #3a2a1a}
+.pstat{padding:5px 0}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
