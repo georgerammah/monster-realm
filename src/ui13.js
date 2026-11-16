@@ -645,3 +645,12 @@ renderBattle=(function(prev){ return function(){
 (function(){ const give=()=>{ try{ if(!ADMIN||typeof S==='undefined'||!S||S.giftMush1k) return false; S.mush=(S.mush|0)+1000; S.giftMush1k=1; persist(); if(typeof renderHUD==='function') renderHUD(); if(typeof toast==='function') toast('+1000 mushrooms'); return true; }catch(_){ return false; } };
   setAdmin=(function(prev){ return function(v){ const r=prev(v); setTimeout(give,300); return r; }; })(setAdmin);
   let n=0; const iv=setInterval(()=>{ if(give()||++n>40) clearInterval(iv); },1500); })();
+
+// home yard: a tap opens the monster actually drawn under your finger (overlapping monsters no longer steal taps)
+document.addEventListener('click',e=>{ if(!e.isTrusted) return; const t=e.target; if(t.closest&&t.closest('.pet.roam')) return;
+  if(t.closest&&t.closest('button,a,input,.sheet,.hbar,[data-go]')) return;
+  const x=e.clientX, y=e.clientY; let best=null, bd=1e9;
+  document.querySelectorAll('.pet.roam').forEach(p=>{ const r=p.getBoundingClientRect(); const pad=8;
+    if(x<r.left-pad||x>r.right+pad||y<r.top-pad||y>r.bottom+pad) return;
+    const d=Math.hypot(x-(r.left+r.right)/2,y-(r.top+r.bottom)/2); if(d<bd){ bd=d; best=p; } });
+  if(best){ e.stopPropagation(); best.click(); } },true);
