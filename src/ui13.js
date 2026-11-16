@@ -549,3 +549,20 @@ skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1;
   if(id==='moltencore'&&s){ const d=Math.round(lv(s.dmg,L)); return `Launches a powerful attack that deals ${d} fire damage but inflicts ${Math.round(d*(s.recoil||0))} damage on yourself.`; }
   if(id==='leech'&&s&&s.mpLeech){ const d=Math.round(lv(s.dmg,L)); return `A natural attack that deals ${d} damage and steals ${Math.round(d*s.mpLeech)} mana.`; }
   return prev(id,L); }; })(skillDesc);
+
+// Crustan screenshot (lv 10): Wave, Purge, Splash, Camel Back
+Object.assign(ICON,{mkpurge:'<path d="M12 3 Q17.5 10 17.5 14.2 A5.5 5.5 0 0 1 6.5 14.2 Q6.5 10 12 3Z" fill="#fff"/><path d="M11 11 H13 V13.2 H15.2 V15.2 H13 V17.4 H11 V15.2 H8.8 V13.2 H11Z" fill="#22a6e3"/>',
+  mkcamel:'<path d="M4 7.5 Q8 5.5 12 7.5 T20 7.5 V10.5 Q16 8.5 12 10.5 T4 10.5Z M4 12.5 Q8 10.5 12 12.5 T20 12.5 V15.5 Q16 13.5 12 15.5 T4 15.5Z M4 17.5 Q8 15.5 12 17.5 T20 17.5 V20 Q16 18 12 20 T4 20Z" fill="#fff"/>'});
+Object.assign(MK_ICON,{purge:'mkpurge',camelback:'mkcamel'});
+Object.assign(SK.wave,{mp:[16,9],dmg:[15,12],soak:.33,soakTurns:6,desc:"Deals {dmg} water damage and reduces enemy's water resistance by 33% for 6 turns."}); delete SK.wave.weaken;
+Object.assign(SK.purge,{mp:[12,4],healFlat:[15,9],desc:'Heals {amt} life and removes all negative effects.'}); delete SK.purge.heal;
+Object.assign(SK.splash,{dmg:[22,19]});
+Object.assign(SK.camelback,{v:[6,5],desc:'Regenerates {v} mana every turn.'});
+['wave','purge','splash','camelback'].forEach(k=>{ DEFAULT_SK[k]=JSON.parse(JSON.stringify(SK[k])); });
+ST_ICON.soak=['mkwave','#22a6e3']; BUFF_N.soak='Soaked';
+stDesc=(function(prev){ return function(m,k){ if(k==='soak') return `Takes ${Math.round((m.st.soakV||0)*100)}% more water damage (${m.st.soak} turn${m.st.soak>1?'s':''})`; return prev(m,k); }; })(stDesc);
+skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1;
+  if(id==='wave'&&s&&s.soak) return `Deals ${Math.round(lv(s.dmg,L))} water damage and reduces enemy's water resistance by ${Math.round(s.soak*100)}% for ${s.soakTurns||6} turns.`;
+  if(id==='purge'&&s&&s.healFlat) return `Heals ${Math.round(lv(s.healFlat,L))} life and removes all negative effects.`;
+  if(id==='camelback'&&s) return `Regenerates ${Math.round(lv(s.v,L))} mana every turn.`;
+  return prev(id,L); }; })(skillDesc);

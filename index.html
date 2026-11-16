@@ -1671,7 +1671,7 @@ function beginTurn(b){
     const a = actor(b); const m=a.m;
     if(m.hp<=0){ b.turnIdx++; continue; }
     const st=m.st;
-    ['bubble','lsh','fsh','nsh','mshield','absorb','crit','focus','evade','cripple','pers'].forEach(k=>{ if(st[k]>0){ st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } });
+    ['bubble','lsh','fsh','nsh','mshield','absorb','crit','focus','evade','cripple','pers','soak'].forEach(k=>{ if(st[k]>0){ st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } });
     m.mp = Math.min(m.maxmp, m.mp+3+Math.round(m.maxmp*0.03)+Math.round(m.pas.camel||0));
     for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm']]){
       if(st[k]>0 && m.hp>0){ const d=Math.max(1,Math.round(st[k+'D'])); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el}); log(b,`${m.n} is hurt by ${nm}.`); }
@@ -1712,6 +1712,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   let dmg = mult*elemMult(el, d.el);
   dmg *= dmgMods;
   if(a.st.cripple>0) dmg*=1-a.st.crippleV;
+  if(el==='water' && d.st.soak>0) dmg*=1+(d.st.soakV||0);
   const crit = a.st.crit>0 && rnd(b)<a.st.critV; if(crit) dmg*=2;
   if(a.pas.pounce) dmg*=1+a.pas.pounce;
   if(d.pas.thick) dmg*=1-d.pas.thick;
@@ -1772,6 +1773,7 @@ function act(b, action){
       for(let h=0;h<(sk.hits||1);h++) tot+=dealHit(b,a,foe,ti,skDmg(skId,L,me),sk.el,tm,sk.pierce);
       if(sk.stormTick && d0.hp>0){ d0.st.storm=sk.stormTurns; d0.st.stormD=lv(sk.stormTick,L); b.ev.push({k:'buff',s:foe,i:ti,b:'storm'}); }
       if(d0.hp>0 && sk.drainFrac){ const x=Math.min(d0.mp, Math.round(tot*sk.drainFrac)); d0.mp-=x; }
+      if(d0.hp>0 && sk.soak){ d0.st.soak=sk.soakTurns||6; d0.st.soakV=sk.soak; b.ev.push({k:'buff',s:foe,i:ti,b:'soak'}); }
       if(d0.hp>0 && sk.weaken){ d0.st.cripple=2; d0.st.crippleV=Math.max(d0.st.crippleV||0, lv(sk.weaken,L)); b.ev.push({k:'buff',s:foe,i:ti,b:'cripple'}); }
       const d=b.sides[foe].mons[ti]; if(d.hp<=0) return;
       if(sk.burn && rnd(b)<lv(sk.burn,L) && !(d.pas.sweaty && rnd(b)<0.5)){ d.st.burn=3; d.st.burnD=sk.btick?lv(sk.btick,L):8; log(b,`${d.n} was burned!`); }
@@ -1800,7 +1802,8 @@ function act(b, action){
   } else if(sk.k==='heal'){
     if(sk.hot){ me.st.roots=sk.turns; me.st.rootsV=lv(sk.hot,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
     if(sk.heal){ const hv=Math.round(me.maxhp*lv(sk.heal,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
-    if(sk.cleanse){ ['burn','poison','storm','cripple','stun'].forEach(k=>me.st[k]=0); }
+    if(sk.healFlat){ const hv=Math.round(lv(sk.healFlat,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
+    if(sk.cleanse){ ['burn','poison','storm','cripple','stun','soak'].forEach(k=>me.st[k]=0); }
   } else if(sk.k==='drain' && sk.stealHp){
     const d=b.sides[foe].mons[tgt];
     if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:foe,i:tgt}); log(b,`${d.n} dodged!`); }
@@ -5822,6 +5825,23 @@ Object.assign(SK.perseverance,{el:'nature',mp:[16,7]}); Object.assign(SK.regrowt
 skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1;
   if(id==='moltencore'&&s){ const d=Math.round(lv(s.dmg,L)); return `Launches a powerful attack that deals ${d} fire damage but inflicts ${Math.round(d*(s.recoil||0))} damage on yourself.`; }
   if(id==='leech'&&s&&s.mpLeech){ const d=Math.round(lv(s.dmg,L)); return `A natural attack that deals ${d} damage and steals ${Math.round(d*s.mpLeech)} mana.`; }
+  return prev(id,L); }; })(skillDesc);
+
+// Crustan screenshot (lv 10): Wave, Purge, Splash, Camel Back
+Object.assign(ICON,{mkpurge:'<path d="M12 3 Q17.5 10 17.5 14.2 A5.5 5.5 0 0 1 6.5 14.2 Q6.5 10 12 3Z" fill="#fff"/><path d="M11 11 H13 V13.2 H15.2 V15.2 H13 V17.4 H11 V15.2 H8.8 V13.2 H11Z" fill="#22a6e3"/>',
+  mkcamel:'<path d="M4 7.5 Q8 5.5 12 7.5 T20 7.5 V10.5 Q16 8.5 12 10.5 T4 10.5Z M4 12.5 Q8 10.5 12 12.5 T20 12.5 V15.5 Q16 13.5 12 15.5 T4 15.5Z M4 17.5 Q8 15.5 12 17.5 T20 17.5 V20 Q16 18 12 20 T4 20Z" fill="#fff"/>'});
+Object.assign(MK_ICON,{purge:'mkpurge',camelback:'mkcamel'});
+Object.assign(SK.wave,{mp:[16,9],dmg:[15,12],soak:.33,soakTurns:6,desc:"Deals {dmg} water damage and reduces enemy's water resistance by 33% for 6 turns."}); delete SK.wave.weaken;
+Object.assign(SK.purge,{mp:[12,4],healFlat:[15,9],desc:'Heals {amt} life and removes all negative effects.'}); delete SK.purge.heal;
+Object.assign(SK.splash,{dmg:[22,19]});
+Object.assign(SK.camelback,{v:[6,5],desc:'Regenerates {v} mana every turn.'});
+['wave','purge','splash','camelback'].forEach(k=>{ DEFAULT_SK[k]=JSON.parse(JSON.stringify(SK[k])); });
+ST_ICON.soak=['mkwave','#22a6e3']; BUFF_N.soak='Soaked';
+stDesc=(function(prev){ return function(m,k){ if(k==='soak') return `Takes ${Math.round((m.st.soakV||0)*100)}% more water damage (${m.st.soak} turn${m.st.soak>1?'s':''})`; return prev(m,k); }; })(stDesc);
+skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1;
+  if(id==='wave'&&s&&s.soak) return `Deals ${Math.round(lv(s.dmg,L))} water damage and reduces enemy's water resistance by ${Math.round(s.soak*100)}% for ${s.soakTurns||6} turns.`;
+  if(id==='purge'&&s&&s.healFlat) return `Heals ${Math.round(lv(s.healFlat,L))} life and removes all negative effects.`;
+  if(id==='camelback'&&s) return `Regenerates ${Math.round(lv(s.v,L))} mana every turn.`;
   return prev(id,L); }; })(skillDesc);
 
 </script>
