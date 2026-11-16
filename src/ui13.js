@@ -595,6 +595,8 @@ ICON.mkclaw='<path d="M4 15 L15.5 5.5 L12.5 9.5 L17 7.5 Z M5 19 L18 8.5 L14.8 12
   const fire=sel=>{ const x=document.querySelector(sel); if(!x||x.disabled){ stop(); return; } x.classList.add('held'); x.click(); const y=document.querySelector(sel); if(y) y.classList.add('held'); };
   addEventListener('touchstart',e=>{ const b=e.target.closest&&e.target.closest('[data-pp],[data-pm]'); if(!b) return;
     e.preventDefault(); stop(); const sel=b.dataset.pp?`[data-pp="${b.dataset.pp}"]`:`[data-pm="${b.dataset.pm}"]`;
-    if(b.disabled) return; fire(sel); tmr=setTimeout(()=>{ rep=setInterval(()=>fire(sel),120); },420); },{capture:true,passive:false});
+    if(b.disabled) return; fire(sel); tmr=setTimeout(()=>{ rep=setInterval(()=>fire(sel),170); },650); },{capture:true,passive:false});
   ['touchend','touchcancel'].forEach(ev=>addEventListener(ev,stop,{capture:true}));
+  let lastTouch=0; addEventListener('touchstart',()=>{ lastTouch=Date.now(); },{capture:true,passive:true});
+  addEventListener('click',e=>{ if(e.isTrusted && Date.now()-lastTouch<1000 && e.target.closest&&e.target.closest('[data-pp],[data-pm]')){ e.preventDefault(); e.stopImmediatePropagation(); } },true);
 })();

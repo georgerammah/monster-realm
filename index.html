@@ -1441,9 +1441,9 @@ body.kb-open .sheet{transform:translateY(calc(-1 * min(calc(26*var(--vh)),150px)
 .kbd{gap:5px!important;padding-top:5px!important}
 .aneed{display:inline-flex;align-items:center;gap:3px;justify-content:center;min-width:34px;height:24px;padding:0 6px;border-radius:12px;background:linear-gradient(#ffa63d,#d96a0c);color:#fff;font:12px "Lilita One",system-ui}.aneed::before{content:"⚔"}.aneed.bad{background:linear-gradient(#aaa,#777)}
 .pbtns{display:flex;gap:0;margin-left:4px}
-.pbtn{position:relative;width:48px;height:40px;font:26px/1 "Lilita One",system-ui;color:#fff;border:2.5px solid #3a2a1a;box-shadow:inset 0 3px 0 rgba(255,255,255,.35),0 3px 0 #3a2a1a;text-shadow:0 2px 0 rgba(0,0,0,.25);transition:transform .06s}
+.pbtn{position:relative;width:40px;height:33px;font:22px/1 "Lilita One",system-ui;color:#fff;border:2.5px solid #3a2a1a;box-shadow:inset 0 3px 0 rgba(255,255,255,.35),0 3px 0 #3a2a1a;text-shadow:0 2px 0 rgba(0,0,0,.25);transition:transform .06s}
 .pbtn.minus{border-right-width:1.25px}.pbtn.plus{border-left-width:1.25px}
-.pbtn.minus{border-radius:20px 0 0 20px}.pbtn.plus{border-radius:0 20px 20px 0}
+.pbtn.minus{border-radius:17px 0 0 17px}.pbtn.plus{border-radius:0 17px 17px 0}
 .pbtn::after{content:"";position:absolute;inset:-8px -4px}
 .pbtn.held,.pbtn:active{transform:translateY(2px);box-shadow:inset 0 3px 0 rgba(255,255,255,.35),0 1px 0 #3a2a1a}
 .pstat{padding:5px 0}
@@ -5024,7 +5024,7 @@ Object.values(ZTASKS).forEach(list=>list.forEach(t=>{ if(t[0]==='fight'||t[0]===
 
 // stop iOS magnifier / double-tap zoom on rapid taps
 (function(){ let last=0, lastEl=null;
-  addEventListener('touchend',e=>{ const el=e.target.closest&&e.target.closest('button,[data-pp],[data-pm],.pbtn'); const now=Date.now();
+  addEventListener('touchend',e=>{ if(e.target.closest&&e.target.closest('[data-pp],[data-pm]')) return; const el=e.target.closest&&e.target.closest('button,.pbtn'); const now=Date.now();
     if(el && el===lastEl && now-last<350){ e.preventDefault(); el.click(); }
     last=now; lastEl=el; },{capture:true,passive:false});
   addEventListener('dblclick',e=>e.preventDefault(),{capture:true});
@@ -5259,7 +5259,7 @@ addEventListener('pointerup',endTip,true); addEventListener('touchend',endTip,tr
 
 // ---- no iOS magnifier/loupe anywhere: swallow every quick second tap and long-press selection ----
 (function(){ let last=0;
-  addEventListener('touchend',e=>{ const now=Date.now(); const t=e.target; const field=t&&/INPUT|TEXTAREA/.test(t.tagName);
+  addEventListener('touchend',e=>{ const now=Date.now(); const t=e.target; const field=t&&/INPUT|TEXTAREA/.test(t.tagName); if(t&&t.closest&&t.closest('[data-pp],[data-pm]')){ last=0; return; }
     if(!field && now-last<400){ const already=e.defaultPrevented; e.preventDefault(); if(already){ last=now; return; } const b=t.closest&&t.closest('button,[data-pp],[data-pm],a'); if(b&&!b._dt){ b.click(); } }
     last=now; },{capture:true,passive:false});
   addEventListener('touchstart',e=>{ if(e.touches.length>1) e.preventDefault(); },{capture:true,passive:false});
@@ -5881,8 +5881,10 @@ ICON.mkclaw='<path d="M4 15 L15.5 5.5 L12.5 9.5 L17 7.5 Z M5 19 L18 8.5 L14.8 12
   const fire=sel=>{ const x=document.querySelector(sel); if(!x||x.disabled){ stop(); return; } x.classList.add('held'); x.click(); const y=document.querySelector(sel); if(y) y.classList.add('held'); };
   addEventListener('touchstart',e=>{ const b=e.target.closest&&e.target.closest('[data-pp],[data-pm]'); if(!b) return;
     e.preventDefault(); stop(); const sel=b.dataset.pp?`[data-pp="${b.dataset.pp}"]`:`[data-pm="${b.dataset.pm}"]`;
-    if(b.disabled) return; fire(sel); tmr=setTimeout(()=>{ rep=setInterval(()=>fire(sel),120); },420); },{capture:true,passive:false});
+    if(b.disabled) return; fire(sel); tmr=setTimeout(()=>{ rep=setInterval(()=>fire(sel),170); },650); },{capture:true,passive:false});
   ['touchend','touchcancel'].forEach(ev=>addEventListener(ev,stop,{capture:true}));
+  let lastTouch=0; addEventListener('touchstart',()=>{ lastTouch=Date.now(); },{capture:true,passive:true});
+  addEventListener('click',e=>{ if(e.isTrusted && Date.now()-lastTouch<1000 && e.target.closest&&e.target.closest('[data-pp],[data-pm]')){ e.preventDefault(); e.stopImmediatePropagation(); } },true);
 })();
 
 </script>

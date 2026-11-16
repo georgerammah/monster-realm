@@ -427,7 +427,7 @@ Object.values(ZTASKS).forEach(list=>list.forEach(t=>{ if(t[0]==='fight'||t[0]===
 
 // stop iOS magnifier / double-tap zoom on rapid taps
 (function(){ let last=0, lastEl=null;
-  addEventListener('touchend',e=>{ const el=e.target.closest&&e.target.closest('button,[data-pp],[data-pm],.pbtn'); const now=Date.now();
+  addEventListener('touchend',e=>{ if(e.target.closest&&e.target.closest('[data-pp],[data-pm]')) return; const el=e.target.closest&&e.target.closest('button,.pbtn'); const now=Date.now();
     if(el && el===lastEl && now-last<350){ e.preventDefault(); el.click(); }
     last=now; lastEl=el; },{capture:true,passive:false});
   addEventListener('dblclick',e=>e.preventDefault(),{capture:true});
@@ -662,7 +662,7 @@ addEventListener('pointerup',endTip,true); addEventListener('touchend',endTip,tr
 
 // ---- no iOS magnifier/loupe anywhere: swallow every quick second tap and long-press selection ----
 (function(){ let last=0;
-  addEventListener('touchend',e=>{ const now=Date.now(); const t=e.target; const field=t&&/INPUT|TEXTAREA/.test(t.tagName);
+  addEventListener('touchend',e=>{ const now=Date.now(); const t=e.target; const field=t&&/INPUT|TEXTAREA/.test(t.tagName); if(t&&t.closest&&t.closest('[data-pp],[data-pm]')){ last=0; return; }
     if(!field && now-last<400){ const already=e.defaultPrevented; e.preventDefault(); if(already){ last=now; return; } const b=t.closest&&t.closest('button,[data-pp],[data-pm],a'); if(b&&!b._dt){ b.click(); } }
     last=now; },{capture:true,passive:false});
   addEventListener('touchstart',e=>{ if(e.touches.length>1) e.preventDefault(); },{capture:true,passive:false});
