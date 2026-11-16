@@ -1373,6 +1373,16 @@ html,body{touch-action:manipulation}
 /* MENU badge sits on the tab's top-right corner, above the neighbouring tab */
 .nb em{right:-9px!important;top:-9px!important;left:auto!important;z-index:6}
 .nb:has(em:not(:empty)){z-index:3}
+
+/* zone complete: text and button always fit between the title and the bottom edge */
+.zd-side{top:calc(24*var(--vh))!important;bottom:calc(var(--sa-bottom) + 5*var(--vh))!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(4*var(--vh));font-size:min(calc(5.2*var(--vh)),22px)!important}
+.zd-side p{margin:0}
+.zd-done{margin-top:0!important;flex:none;white-space:nowrap}
+
+/* no "is thinking..." / waiting text in battle */
+#battle .await,#battle .dwho{display:none!important}
+/* ability info card sits above the monsters */
+#battle .abinfo{z-index:260!important}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -1642,10 +1652,10 @@ const SHIELD_VS = {bubble:['neutral','fire','bolt'], lsh:null, fsh:['fire','neut
 function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   const a=as.m; const d = b.sides[ds].mons[di]; if(d.hp<=0) return 0;
   if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:ds,i:di}); log(b,`${d.n} dodged!`); return 0; }
-  let dmg = mult*elemMult(el, d.el)*(0.9+rnd(b)*0.2);
+  let dmg = mult*elemMult(el, d.el);
   dmg *= dmgMods;
   if(a.st.cripple>0) dmg*=1-a.st.crippleV;
-  const crit = rnd(b)<(a.st.crit>0?a.st.critV:0.08); if(crit) dmg*=(a.st.crit>0?2:1.5);
+  const crit = a.st.crit>0 && rnd(b)<a.st.critV; if(crit) dmg*=2;
   if(a.pas.pounce) dmg*=1+a.pas.pounce;
   if(d.pas.thick) dmg*=1-d.pas.thick;
   if(el==='bolt' && d.pas.grounded) dmg*=1-d.pas.grounded;
@@ -5472,7 +5482,7 @@ renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.
 function stDesc(m,k){ const s=m.st, P=v=>Math.round((v||0)*100)+'%';
   const d={burn:`Takes ${s.burnD|0} damage each turn`, poison:`Takes ${s.poisonD|0} damage each turn`, storm:`Takes ${s.stormD|0} damage each turn`, stun:`Can't act`,
     bubble:`Shield absorbs ${s.bubbleHp|0} damage`, lsh:`Shield absorbs ${s.lshHp|0} damage`, fsh:`Shield absorbs ${s.fshHp|0} damage`, nsh:`Shield absorbs ${s.nshHp|0} damage`,
-    focus:`Deals ${P(s.focusV)} more damage`, charge:`Deals ${P(s.chargeV)} more damage`, cripple:`Deals ${P(s.crippleV)} less damage`, evade:`${P(s.evadeV)} chance to dodge attacks`}[k];
+    focus:`Deals ${P(s.focusV)} more damage`, charge:`Deals ${P(s.chargeV)} more damage`, cripple:`Deals ${P(s.crippleV)} less damage`, evade:`${P(s.evadeV)} chance to dodge attacks`, absorb:`Turns ${P(s.absorbV)} of damage taken into mana`, crit:`${P(s.critV)} chance to deal double damage`, mshield:`Mana blocks ${P(s.mshieldV)} of damage taken`, pers:`Deals ${P(s.persV)} more damage, double when low on life`, roots:`Recovers ${P(s.rootsV)} of max life each turn`}[k];
   return `${d||BUFF_N[k]||k} (${s[k]} turn${s[k]>1?'s':''})`; }
 hudIcons=(function(prev){ return function(m){ if(!m) return ''; let h=prev(m).replace(/<span class="hi st"[\s\S]*?<\/span><\/span>/g,'');
   const add=Object.keys(ST_ICON).filter(k=>m.st[k]>0).map(k=>`<span class="hi st" data-tip="|${esc(stDesc(m,k))}">${icon(ST_ICON[k][0],ST_ICON[k][1],26)}</span>`).join('');

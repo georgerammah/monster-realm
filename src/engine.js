@@ -255,10 +255,10 @@ const SHIELD_VS = {bubble:['neutral','fire','bolt'], lsh:null, fsh:['fire','neut
 function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   const a=as.m; const d = b.sides[ds].mons[di]; if(d.hp<=0) return 0;
   if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:ds,i:di}); log(b,`${d.n} dodged!`); return 0; }
-  let dmg = mult*elemMult(el, d.el)*(0.9+rnd(b)*0.2);
+  let dmg = mult*elemMult(el, d.el);
   dmg *= dmgMods;
   if(a.st.cripple>0) dmg*=1-a.st.crippleV;
-  const crit = rnd(b)<(a.st.crit>0?a.st.critV:0.08); if(crit) dmg*=(a.st.crit>0?2:1.5);
+  const crit = a.st.crit>0 && rnd(b)<a.st.critV; if(crit) dmg*=2;
   if(a.pas.pounce) dmg*=1+a.pas.pounce;
   if(d.pas.thick) dmg*=1-d.pas.thick;
   if(el==='bolt' && d.pas.grounded) dmg*=1-d.pas.grounded;

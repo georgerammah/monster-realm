@@ -1364,6 +1364,16 @@ html,body{touch-action:manipulation}
 /* MENU badge sits on the tab's top-right corner, above the neighbouring tab */
 .nb em{right:-9px!important;top:-9px!important;left:auto!important;z-index:6}
 .nb:has(em:not(:empty)){z-index:3}
+
+/* zone complete: text and button always fit between the title and the bottom edge */
+.zd-side{top:calc(24*var(--vh))!important;bottom:calc(var(--sa-bottom) + 5*var(--vh))!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(4*var(--vh));font-size:min(calc(5.2*var(--vh)),22px)!important}
+.zd-side p{margin:0}
+.zd-done{margin-top:0!important;flex:none;white-space:nowrap}
+
+/* no "is thinking..." / waiting text in battle */
+#battle .await,#battle .dwho{display:none!important}
+/* ability info card sits above the monsters */
+#battle .abinfo{z-index:260!important}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
