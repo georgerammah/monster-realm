@@ -5624,5 +5624,13 @@ function fmtAllEnergy(){ document.querySelectorAll('.hbar.energy .ebar b').forEa
 setInterval(fmtAllEnergy,500);
 new MutationObserver(ms=>{ for(const m of ms) for(const n of m.addedNodes){ if(n.nodeType===1&&(n.matches&&n.matches('.hbar.energy, .ebar')||n.querySelector&&n.querySelector('.hbar.energy .ebar b'))){ fmtAllEnergy(); return; } } }).observe(document.body,{childList:true,subtree:true});
 
+// ---------- ranks: bronze/silver/gold/cobalt/emerald, each a stripe then a star ----------
+RANKS.length=0; [['Bronze','#c07a3e'],['Silver','#c9d1db'],['Gold','#f2c14e'],['Cobalt','#2f6fd8'],['Emerald','#2fbf6a']].forEach(([n,c],i)=>{
+  RANKS.push([i===0?0:1000+i*200,n+' Stripe',c,'stripe']); RANKS.push([1100+i*200,n+' Star',c,'star']); });
+rankBadge=function(r,size){ const [,n,c,k]=rankOf(r); size=size||26; const hi=shade(c,40), lo=shade(c,-35);
+  const g=k==='star'?`<path d="M12 2.2 L14.8 8.6 L21.7 9.2 L16.5 13.8 L18.1 20.6 L12 17 L5.9 20.6 L7.5 13.8 L2.3 9.2 L9.2 8.6Z" fill="${c}" stroke="#1a1a1a" stroke-width="1.2" stroke-linejoin="round"/><path d="M12 5 L13.6 9.4 L11 9.8Z" fill="${hi}" opacity=".8"/>`
+    :`<path d="M3 14 L12 7 L21 14 L21 19 L12 12 L3 19Z" fill="${c}" stroke="#1a1a1a" stroke-width="1.2" stroke-linejoin="round"/><path d="M5 14.2 L12 8.8 L19 14.2" fill="none" stroke="${hi}" stroke-width="1" opacity=".8"/><path d="M3 19 L12 12 L21 19" fill="none" stroke="${lo}" stroke-width=".8"/>`;
+  return `<svg class="rbadge" viewBox="0 0 24 24" width="${size}" height="${size}"><title>${n}</title>${g}</svg>`; };
+
 </script>
 </body></html>
