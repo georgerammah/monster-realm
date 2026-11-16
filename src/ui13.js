@@ -446,11 +446,11 @@ hudIcons=(function(prev){ return function(m){ let h=prev(m); if(!m) return h; Ob
 
 // ---------- rank ladder (season starts at 200; nothing below Bronze Stripe) ----------
 RANKS.length=0; [[0,'Bronze Stripe','#c07a3e','stripe'],[300,'Bronze Star','#c07a3e','star'],[400,'Silver Stripe','#c9d1db','stripe'],[600,'Silver Star','#c9d1db','star'],
-  [800,'Gold Stripe','#f2c14e','stripe'],[1000,'Gold Star','#f2c14e','star'],[1400,'Cobalt Star','#2f6fd8','star'],[2000,'Emerald Stripe','#2fbf6a','stripe'],[2500,'Emerald Star','#2fbf6a','star']].forEach(r=>RANKS.push(r));
+  [700,'Gold Stripe','#f2c14e','stripe'],[1000,'Gold Star','#f2c14e','star'],[1400,'Cobalt Star','#2f6fd8','star'],[2000,'Emerald Stripe','#2fbf6a','stripe'],[2500,'Emerald Star','#2fbf6a','star']].forEach(r=>RANKS.push(r));
 const SEASON=1; if(S&&S.season!==SEASON){ S.season=SEASON; S.rank=200; S.lastRankD=null; try{ persist(); }catch(_){} }
 rankBadge=(function(prev){ return function(r,size){ const [,n,c,k]=rankOf(r); if(k!=='stripe') return prev(r,size); size=size||26; const id='rb'+(GID++), lt=shade(c,45), dk=shade(c,-30);
   const chev=y=>`<path d="M2.5 ${y+6} L12 ${y} L21.5 ${y+6} L21.5 ${y+10.5} L12 ${y+4.5} L2.5 ${y+10.5}Z" fill="url(#${id})" stroke="${shade(c,-55)}" stroke-width=".6" stroke-linejoin="round"/>`;
-  return `<svg class="rbadge" viewBox="0 0 24 24" width="${size}" height="${size}"><title>${n}</title><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${lt}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${dk}"/></linearGradient></defs>${chev(2.5)}${chev(10)}</svg>`; }; })(rankBadge);
+  return `<svg class="rbadge" viewBox="0 0 24 24" width="${size}" height="${size}"><title>${n}</title><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${lt}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${dk}"/></linearGradient></defs>${chev(2.5)}${n==='Emerald Stripe'?chev(10).replace(`url(#${id})`,`url(#${id}p)`):chev(10)}</svg>`.replace('</defs>',n==='Emerald Stripe'?`<linearGradient id="${id}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b07ae0"/><stop offset="1" stop-color="#5a2a8c"/></linearGradient></defs>`:'</defs>'); }; })(rankBadge);
 // Monster Kingdom star artwork: glossy cobalt star; emerald star = purple star in a green ring
 rankBadge=(function(prev){ return function(r,size){ const [,n]=rankOf(r); size=size||26; const id='rs'+(GID++);
   const P='M12 3.2 L14.6 9 L20.9 9.6 L16.1 13.8 L17.5 20 L12 16.8 L6.5 20 L7.9 13.8 L3.1 9.6 L9.4 9Z';
