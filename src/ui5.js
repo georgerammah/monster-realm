@@ -7,7 +7,7 @@ function rankOf(r){ let t=RANKS[0]; RANKS.forEach(x=>{ if(r>=x[0]) t=x; }); retu
 function rankBadge(r,size){ const [,n,c,k]=rankOf(r); size=size||26;
   let p=''; for(let i=0;i<k;i++){ const y=18-i*5; p+=`<path d="M3 ${y} L12 ${y-6} L21 ${y} L21 ${y+4} L12 ${y-2} L3 ${y+4}Z" fill="${c}" stroke="#1a1a1a" stroke-width="1"/>`; }
   return `<svg class="rbadge" viewBox="0 0 24 24" width="${size}" height="${size}" title="${n}">${p}</svg>`; }
-function myRank(){ return S.rank==null?1000:S.rank; }
+function myRank(){ return S.rank==null?200:S.rank; }
 function isArena(mode){ return mode==='pvp'||mode==='rival'||mode==='local'||mode==='practice'||mode==='challenge'; }
 
 // ---- start arena battles ----
@@ -202,7 +202,7 @@ closeBattle=function(){ closePick(); _closeBattleV5(); };
 const _finishV5 = finishBattle;
 finishBattle = function(){
   if(B && B.mode==='pvp' && B.b && B.b.over){
-    const win=B.b.winner===B.mySide; const me=myRank(), op=B.oppRank||1000;
+    const win=B.b.winner===B.mySide; const me=myRank(), op=B.oppRank||200;
     const exp=1/(1+Math.pow(10,(op-me)/400)); const d=Math.round(32*((win?1:0)-exp));
     S.rank=Math.max(0,me+d); S.lastRankD=d;
   } else if(B) S.lastRankD=null;
@@ -221,7 +221,7 @@ function viewArena(){
   let live;
   if(NET.status==='off') live=`<p class="muted small">Live battles work when the game is opened from its Claude link.</p>`;
   else if(NET.status==='connecting') live=`<p class="muted small">Connecting…</p>`;
-  else live = peers.length? `<div class="list">${peers.map(p=>`<div class="row"><div><b>${esc(p.name||'Trainer')}</b><span>${rankBadge(p.rank||1000,18)} ${p.rank||1000}${p.busy?' · in a battle':''}</span></div><button class="btn sm" data-ch="${esc(p.cid)}" ${p.busy||NET.pending?'disabled':''}>Battle</button></div>`).join('')}</div>`
+  else live = peers.length? `<div class="list">${peers.map(p=>`<div class="row"><div><b>${esc(p.name||'Trainer')}</b><span>${rankBadge(p.rank||200,18)} ${p.rank||200}${p.busy?' · in a battle':''}</span></div><button class="btn sm" data-ch="${esc(p.cid)}" ${p.busy||NET.pending?'disabled':''}>Battle</button></div>`).join('')}</div>`
      : `<p class="muted small">No one else is in the arena right now. Share the game with a friend, and when they open it they'll show up here.</p>`;
   const r=myRank(), rk=rankOf(r);
   return `<h1>Arena</h1>
@@ -241,7 +241,7 @@ NET.challenge = function(cid){
 };
 NET.showIncoming = function(d){
   const team=sanitizeTeam(d.team); NET.incoming=d;
-  const sh=sheet(`<h2>Live battle!</h2><p class="muted"><b>${esc(d.name||'A trainer')}</b> ${rankBadge(d.rank||1000,16)} ${d.rank|0||1000} wants to battle.</p><div class="stage-mons big">${team.map(m=>monSVG(m.sp,m.lvl)).join('')}</div>
+  const sh=sheet(`<h2>Live battle!</h2><p class="muted"><b>${esc(d.name||'A trainer')}</b> ${rankBadge(d.rank||200,16)} ${d.rank|0||200} wants to battle.</p><div class="stage-mons big">${team.map(m=>monSVG(m.sp,m.lvl)).join('')}</div>
     <div class="actions"><button class="btn gbtn" id="acc">Accept</button><button class="btn ghost" id="dec">Decline</button></div>`, {onClose:()=>{ if(NET.incoming===d){ NET.incoming=null; NET.room.emit('decline',{to:d.from, matchId:d.matchId}); } }});
   const t=setTimeout(()=>sh.close(),28000);
   sh.body.querySelector('#acc').onclick=()=>{ clearTimeout(t); NET.incoming=null; sh.close();
