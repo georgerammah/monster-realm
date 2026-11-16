@@ -1470,6 +1470,21 @@ body.auto-on .float2.buff{display:none!important}
 .mkprof .ph{font:min(calc(6.4*var(--vw)),26px) "Lilita One",system-ui;color:#1c160c}
 .mkprof .ph .upav{font:inherit;font-size:.8em;color:#d42a2a}
 .nm-err{color:#d42a2a;font:600 13.5px system-ui;margin:4px 0 0;min-height:0;text-align:center}.nm-err:empty{display:none}
+/* mission SUCCESS! — Monster Kingdom layout */
+.sheet.mksucc{background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 2px,transparent 2px 7px),linear-gradient(#2f9a2a,#5cba3a 70%,#7cc64a)!important}
+.mksucc .rw{display:flex!important;flex-direction:column;align-items:center;gap:calc(1.4*var(--vh))}
+.mksucc .rw-t{font-size:min(calc(13*var(--vh)),60px)!important;color:#fff!important;-webkit-text-stroke:3px #1d8a1d!important;text-shadow:0 0 0 #000,0 4px 0 #0d5a0d,0 6px 10px rgba(0,0,0,.25)!important;letter-spacing:1px}
+.mksucc .rw-cash{align-self:stretch;margin:0 3%!important;background:rgba(40,60,40,.35)!important;box-shadow:inset 0 0 0 2px rgba(20,30,15,.75)!important;border-radius:14px;padding:4px 0 6px!important;align-items:center}
+.mksucc .mkc{display:flex;align-items:center;gap:6px;line-height:1}
+.mksucc .mkc i{font:normal min(calc(10*var(--vh)),46px) "Lilita One",system-ui;color:#8fe03a;-webkit-text-stroke:1.5px #2c6a10;paint-order:stroke}
+.mksucc .mkc b{font:min(calc(9*var(--vh)),42px) "Lilita One",system-ui;color:#fff!important}
+.mksucc .rw-cash span{font:min(calc(4.4*var(--vh)),19px) Georgia,serif!important;color:#fff;opacity:1!important;margin:-2px 0 0 4em}
+.mksucc .rw-mons{max-height:calc(30*var(--vh))!important;justify-content:center;gap:4%}
+.mksucc .rw .runner svg{max-height:calc(24*var(--vh))!important}
+.mksucc .rw-mon .tag{font:min(calc(3.8*var(--vh)),15px) "Lilita One",system-ui;background:rgba(0,0,0,.35);color:#ffe066;border-radius:8px;padding:2px 8px;margin-top:2px;white-space:nowrap}
+.mksucc .rw-xp{background:#2f5a22!important;box-shadow:inset 0 0 0 1px rgba(0,0,0,.3);border-radius:14px;padding:4px 34px!important;font:min(calc(8*var(--vh)),36px) "Lilita One",system-ui!important;color:#fff}
+.mksucc .rw-xp b{color:#6ef03a!important}
+.mksucc #rwok{display:none!important}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -6075,6 +6090,15 @@ animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(r
   return r; }; })(animateBattle);
 busyLeft=(function(prev){ return function(){ const base=prev(); const a=B&&B.animEnd?B.animEnd-Date.now():0; return Math.max(base,a>0?a:0); }; })(busyLeft);
 pickWaitLeft=busyLeft;
+
+// match over: the monsters still standing relax back into their neutral pose
+setInterval(()=>{ if(!B||!B.b||!B.b.over) return; B.overAt=B.overAt||Date.now(); if(Date.now()-B.overAt<900) return;
+  document.querySelectorAll('#battle .fighter:not(.ko)').forEach(f=>{ f.classList.remove('cast','casting','lunge-l','lunge-r','dash-l','dash-r','pose-atk','tackling','acting','shake','hitflash'); }); },150);
+
+// mission SUCCESS! in the Monster Kingdom layout: title, wide $ bar, the team, then the XP pill (close with the ✕)
+rewardPopup=(function(prev){ return function(o){ const r=prev(o); try{ if(o&&o.title==='SUCCESS!'){ const s=r.body.closest('.sheet')||r.body; s.classList.add('mksucc');
+  const c=r.body.querySelector('.rw-cash:not(.m)'); if(c){ const n=(o.cash|0); c.innerHTML=`<div class="mkc"><i>$</i><b>+${n}</b></div><span>dollars</span>`; }
+  const x=r.body.querySelector('.rw-xp'); if(x) x.innerHTML=`+${o.xp} <b>XP</b>`; } }catch(_){} return r; }; })(rewardPopup);
 
 </script>
 </body></html>

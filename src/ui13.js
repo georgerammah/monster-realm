@@ -762,3 +762,12 @@ animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(r
   return r; }; })(animateBattle);
 busyLeft=(function(prev){ return function(){ const base=prev(); const a=B&&B.animEnd?B.animEnd-Date.now():0; return Math.max(base,a>0?a:0); }; })(busyLeft);
 pickWaitLeft=busyLeft;
+
+// match over: the monsters still standing relax back into their neutral pose
+setInterval(()=>{ if(!B||!B.b||!B.b.over) return; B.overAt=B.overAt||Date.now(); if(Date.now()-B.overAt<900) return;
+  document.querySelectorAll('#battle .fighter:not(.ko)').forEach(f=>{ f.classList.remove('cast','casting','lunge-l','lunge-r','dash-l','dash-r','pose-atk','tackling','acting','shake','hitflash'); }); },150);
+
+// mission SUCCESS! in the Monster Kingdom layout: title, wide $ bar, the team, then the XP pill (close with the ✕)
+rewardPopup=(function(prev){ return function(o){ const r=prev(o); try{ if(o&&o.title==='SUCCESS!'){ const s=r.body.closest('.sheet')||r.body; s.classList.add('mksucc');
+  const c=r.body.querySelector('.rw-cash:not(.m)'); if(c){ const n=(o.cash|0); c.innerHTML=`<div class="mkc"><i>$</i><b>+${n}</b></div><span>dollars</span>`; }
+  const x=r.body.querySelector('.rw-xp'); if(x) x.innerHTML=`+${o.xp} <b>XP</b>`; } }catch(_){} return r; }; })(rewardPopup);
