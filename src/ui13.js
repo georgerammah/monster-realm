@@ -600,3 +600,22 @@ ICON.mkclaw='<path d="M4 15 L15.5 5.5 L12.5 9.5 L17 7.5 Z M5 19 L18 8.5 L14.8 12
   let lastTouch=0; addEventListener('touchstart',()=>{ lastTouch=Date.now(); },{capture:true,passive:true});
   addEventListener('click',e=>{ if(e.isTrusted && Date.now()-lastTouch<1000 && e.target.closest&&e.target.closest('[data-pp],[data-pm]')){ e.preventDefault(); e.stopImmediatePropagation(); } },true);
 })();
+
+// mission and rival fights: bring the whole team (Monster Kingdom style: pick one, swap any time)
+newBattle=(function(prev){ return function(a,b,o){
+  if(o&&o.mode==='campaign'&&a&&a.name===S.name&&a.mons&&a.mons.length===1){
+    const tm=teamMons(); if(tm.length>1){ const first=a.mons[0];
+      const rest=tm.filter(m=>m.uid!==first.uid).map(snapOf); a=Object.assign({},a,{mons:[first].concat(rest)}); o=Object.assign({},o,{single:true}); } }
+  return prev(a,b,o); }; })(newBattle);
+drive=(function(prev){ let introFor=null; return function(){
+  if(B&&B.mode==='campaign'&&B.b&&B.b.single&&introFor!==B.b){ introFor=B.b; B.stamp=Date.now(); B.tkey=turnKey(B.b); }
+  return prev(); }; })(drive);
+// auto battle picks for you right away (missions: your mission monster first)
+drive=(function(prev){ return function(){ prev(); const b=B&&B.b; if(!b||B.paused||b.over||!b.single||b.phase!=='pick') return;
+  const s=b.pickSide; if(B.ctl[s]!=='human'||!B.auto||(B.net&&B.net.role==='guest')) return;
+  clearTimeout(B.timer); B.timer=setTimeout(()=>{ if(!B||B.b!==b||b.phase!=='pick'||b.pickSide!==s||!B.auto) return;
+    let i=aiPick(b,s); if(B.mode==='campaign'&&B.meta&&B.meta.uid){ const j=b.sides[s].mons.findIndex(m=>m.uid===B.meta.uid&&m.hp>0); if(j>=0&&b.sides[s].active==null) i=j; }
+    pick(b,s,i); afterAct(); },400); }; })(drive);
+// auto battle: no ability-name / effect-name words floating over the field
+renderBattle=(function(prev){ return function(){ const r=prev.apply(this,arguments); document.body.classList.toggle('auto-on',!!(B&&B.auto)); return r; }; })(renderBattle);
+closeBattle=(function(prev){ return function(){ document.body.classList.remove('auto-on'); return prev.apply(this,arguments); }; })(closeBattle);
