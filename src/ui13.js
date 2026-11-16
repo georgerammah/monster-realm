@@ -67,7 +67,7 @@ function setAdmin(v){ ADMIN=!!v; try{ localStorage.setItem('mr-admin',ADMIN?'1':
   SUBMENUS.menu=SUBMENUS.menu.filter(x=>x[0]!=='Ability Studio'); if(ADMIN) SUBMENUS.menu.push(['Ability Studio',()=>openStudio()]); }
 setAdmin(ADMIN);
 function nameError(err){ return err==='taken'?'That name is already taken. Try another one!':err==='invalid'?'Names can be 2–16 letters, numbers, spaces, - _ or .':"Couldn't check that name right now. Try again."; }
-async function claimName(name){ if(!window.MR_ACCT) return {ok:1}; try{ const r=await MR_ACCT.claim(name); if(r&&r.ok) setAdmin(r.admin); return r||{ok:0}; }catch(_){ return {ok:0,err:'net'}; } }
+async function claimName(name){ if(!window.MR_ACCT) return {ok:1}; try{ const r=await Promise.race([MR_ACCT.claim(name),new Promise(res=>setTimeout(()=>res({ok:0,err:'net'}),8000))]); if(r&&r.ok) setAdmin(r.admin); return r||{ok:0,err:'net'}; }catch(_){ return {ok:0,err:'net'}; } }
 function askNewName(msg){ return new Promise(res=>{
   const w=document.createElement('div'); w.className='abox-wrap on';
   w.innerHTML=`<div class="abox"><p>${msg}</p><input id="nn" maxlength="16" autocomplete="off" value="${esc(S.name||'')}" style="width:100%;padding:10px;border-radius:8px;border:0;font:17px system-ui;margin-bottom:10px;box-sizing:border-box"><p class="nn-err" style="min-height:1.2em;font-size:14px;color:#ffd0c8;margin:0 0 8px"></p><button class="abox-ok" id="nok">Save name</button></div>`;
@@ -84,7 +84,7 @@ function askNewName(msg){ return new Promise(res=>{
 document.addEventListener('click',async e=>{ const go=e.target.closest&&e.target.closest('#go'); if(!go||!window.MR_ACCT||go.dataset.ok) return; const nm=document.querySelector('#nm'); if(!nm) return;
   e.stopImmediatePropagation(); e.preventDefault(); const v=nm.value.trim(); if(!v) return;
   go.disabled=true; const old=go.textContent; go.textContent='Checking name…'; const r=await claimName(v); go.textContent=old; go.disabled=false;
-  if(!r.ok){ nameMsg(nameError(r.err)); return; } go.dataset.ok=1; go.click(); },true);
+  if(!r.ok&&(r.err==='taken'||r.err==='invalid')){ nameMsg(nameError(r.err)); return; } go.dataset.ok=1; go.click(); },true);
 // onboarding name: say what's wrong right under the box (never a hidden popup)
 const NAME_OK=v=>{ const k=v.trim().toLowerCase(); return k.length>=2&&k.length<=16&&/^[a-z0-9 _.-]+$/.test(k); };
 function nameMsg(t){ const nm=document.querySelector('#nm'); if(!nm) return alertBox(t); let e=document.querySelector('.nm-err'); if(!e){ e=document.createElement('p'); e.className='nm-err'; nm.insertAdjacentElement('afterend',e); } e.textContent=t||''; }
