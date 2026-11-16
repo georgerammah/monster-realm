@@ -1397,6 +1397,8 @@ html,body{touch-action:manipulation}
 /* studio intro ends with a blue cover fading in over the logo (the logo itself never fades) */
 .tt-cover{position:absolute;inset:0;z-index:5;background:radial-gradient(circle at 50% 48%,#c8f0ff 0,#4cc3ff 38%,#0aa2f0 75%,#0788d6 100%);animation:ttcov .38s ease-out both}
 @keyframes ttcov{from{opacity:0}to{opacity:1}}
+
+.fighter.ko:not(.ko2) .fart,.fighter.ko:not(.ko2) .fart svg{animation:none!important;filter:none!important;opacity:1!important}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

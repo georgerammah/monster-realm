@@ -329,12 +329,14 @@ setInterval(()=>{ if(!B||!B.b) return; const root=$('#battle'); const busy=busyL
 openPick=(function(prev){ return function(side,swap){ if(swap&&busyLeft()>0) return; return prev(side,swap); }; })(openPick);
 
 // ---------- KNOCKED OUT!: thrown-back pose + big text, then the monster slowly slides off its side ----------
-const KO_MS=3400;
+const KO_MS=3400, KO_DELAY=750;
 function koCheck(){ if(!B||!B.b) return; B.koT=B.koT||{}; const now=Date.now();
   document.querySelectorAll('#battle .fighter').forEach(el=>{ const k=el.dataset.s+'-'+el.dataset.i, f=el.querySelector('.fart'); if(!f) return;
     const m=B.b.sides[+el.dataset.s]&&B.b.sides[+el.dataset.s].mons[+el.dataset.i]; const out=el.classList.contains('ko')||(m&&m.hp<=0);
-    if(!out){ if(B.koT[k]&&m&&m.hp>0) delete B.koT[k]; return; }
-    if(!B.koT[k]){ B.koT[k]=now; const [x,y]=fCenter(el); const r=localRect(f);
+    if(!out){ if(B.koT[k]&&m&&m.hp>0){ delete B.koT[k]; if(B.koShown) delete B.koShown[k]; } return; }
+    if(!B.koT[k]){ B.koT[k]=now+KO_DELAY; setTimeout(koCheck,KO_DELAY+20); return; }
+    if(now<B.koT[k]) return;
+    if(!(B.koShown=B.koShown||{})[k]){ B.koShown[k]=1; const [x,y]=fCenter(el); const r=localRect(f);
       const t=fxAt(x,y-r.height*.62,'kotext','<b>KNOCKED</b><b>OUT!</b><i class="ks1">★</i><i class="ks2">★</i><i class="ks3">★</i>');
       fxGo(t,[{transform:'translate(-50%,-50%) scale(.3) rotate(-14deg)',opacity:0},{transform:'translate(-50%,-50%) scale(1.15) rotate(-8deg)',opacity:1,offset:.08},{transform:'translate(-50%,-50%) scale(1) rotate(-8deg)',opacity:1,offset:.14},{transform:'translate(-50%,-50%) scale(1) rotate(-8deg)',opacity:1,offset:.8},{transform:'translate(-50%,-60%) scale(1) rotate(-8deg)',opacity:0}],{duration:2600,easing:'ease-out'}); }
     el.classList.add('ko2'); const e=now-B.koT[k];
