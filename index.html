@@ -3890,7 +3890,7 @@ NET.startHost = async function(d){
   B.net.hb=setInterval(()=>{
     if(!B||!B.net) return; NET.broadcast(); const bb=B.b; if(bb.over||B.paused) return;
     const late=(Date.now()-B.net.last)/1000;
-    if(bb.phase==='pick' && bb.pickSide===1 && late>PICK_SECS+4){ pick(bb,1,aiPick(bb,1)); afterAct(); }
+    if(bb.phase==='pick' && bb.pickSide===1 && late>PICK_SECS+9){ pick(bb,1,aiPick(bb,1)); afterAct(); }
     else if(bb.phase==='fight'){ const ac=actor(bb); if(ac && ac.s===1 && late>TURN_SECS+4){ act(bb,{skill:'basic',target:castTarget(ac,'basic')}); afterAct(); } }
   },2000);
   openBattle(); NET.updatePresence(); NET.broadcast(); renderBattle();
@@ -5412,10 +5412,10 @@ function fxTackle(ac,tgt,left){ const art=ac.querySelector('.fart'); if(!art) re
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.enT=B.enT||{}; const now=Date.now();
   document.querySelectorAll('#battle .fighter').forEach(el=>{ const s=el.dataset.s, i=el.dataset.i, f=el.querySelector('.fart'); if(!f) return;
     if(!B.enT[s]||B.enT[s].i!==i) B.enT[s]={i,t:now};
-    const e=(now-B.enT[s].t)/1000; if(e<2&&!f._enA){ const L=el.classList.contains('l'), d=L?1:-1, W=document.body.clientWidth*1.2;
+    const e=(now-B.enT[s].t)/1000; if(e<4&&!f._enA){ const L=el.classList.contains('l'), d=L?1:-1, W=document.body.clientWidth*1.2;
       const H=document.body.clientHeight*.45;
       f._enA=f.animate([{transform:`translate(${-d*W}px,0)`,easing:'cubic-bezier(.3,.7,.6,1)'},{transform:`translate(${-d*W*.45}px,${-H}px)`,offset:.36,easing:'cubic-bezier(.45,0,.8,.5)'},{transform:'translate(0,0) scale(1.14,.86)',offset:.68,easing:'ease-out'},
-        {transform:'translate(0,-12%) scale(.95,1.06)',offset:.79,easing:'ease-in'},{transform:'translate(0,0) scale(1.06,.94)',offset:.9,easing:'ease-out'},{transform:'none'}],{duration:2000,easing:'linear'});
+        {transform:'translate(0,-12%) scale(.95,1.06)',offset:.79,easing:'ease-in'},{transform:'translate(0,0) scale(1.06,.94)',offset:.9,easing:'ease-out'},{transform:'none'}],{duration:4000,easing:'linear'});
       f._enA.currentTime=e*1000; } }); }; })(renderBattle);
 
 // ---------- Monster Kingdom style info bubble: description only, sits over the icon row with a tab down to the icon ----------
@@ -5440,6 +5440,15 @@ placeTip=function(h){
   tip.style.left=left+'px'; tip.style.top=top+'px';
   const tTop=top+th-16; tab.style.left=tabL+'px'; tab.style.width=tabW+'px'; tab.style.top=tTop+'px'; tab.style.height=Math.max(20,r.top+r.height+7-tTop)+'px';
 };
+
+// ---------- pick card waits until the foe's monster has fully entered and its name has faded ----------
+const ENTER_MS=4000;
+function pickWaitLeft(){ if(!B||!B.b||B.mode==='local'||!B.enT) return 0; const fs=String(1-B.mySide), e=B.enT[fs]; if(!e) return 0;
+  if(!document.querySelector(`#battle .fighter[data-s="${fs}"]`)) return 0; return Math.max(0, e.t+ENTER_MS-Date.now()); }
+openPick=(function(prev){ return function(side,swap){ const w=swap?0:pickWaitLeft();
+  if(w>0){ if(!B.pkWait) B.pkWait=setTimeout(()=>{ if(!B) return; B.pkWait=null; if(B.b&&B.b.phase==='pick'&&myInput()&&!PICKEL) openPick(side,false); },w+60); return; }
+  return prev(side,swap); }; })(openPick);
+setInterval(()=>{ if(B&&B.b&&B.b.phase==='pick'&&!PICKEL&&pickWaitLeft()>0) B.stamp=Date.now(); },100);
 
 </script>
 </body></html>

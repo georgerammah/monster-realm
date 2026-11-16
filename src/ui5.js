@@ -269,7 +269,7 @@ NET.startHost = async function(d){
   B.net.hb=setInterval(()=>{
     if(!B||!B.net) return; NET.broadcast(); const bb=B.b; if(bb.over||B.paused) return;
     const late=(Date.now()-B.net.last)/1000;
-    if(bb.phase==='pick' && bb.pickSide===1 && late>PICK_SECS+4){ pick(bb,1,aiPick(bb,1)); afterAct(); }
+    if(bb.phase==='pick' && bb.pickSide===1 && late>PICK_SECS+9){ pick(bb,1,aiPick(bb,1)); afterAct(); }
     else if(bb.phase==='fight'){ const ac=actor(bb); if(ac && ac.s===1 && late>TURN_SECS+4){ act(bb,{skill:'basic',target:castTarget(ac,'basic')}); afterAct(); } }
   },2000);
   openBattle(); NET.updatePresence(); NET.broadcast(); renderBattle();
