@@ -5368,10 +5368,10 @@ openPick=(function(prev){ return function(side, swap){
     w.classList.add('picked'); btn.classList.add('sel'); B.going=true; sfx&&sfx('go');
     const t=w.querySelector('.pk-t'); if(t) t.textContent=`Go ${m.n}!`;
     const x=w.querySelector('#pkx'); if(x) x.style.visibility='hidden';
-    setTimeout(()=>{ w.classList.add('out'); setTimeout(()=>{ if(PICKEL===w) PICKEL=null; w.remove(); if(!B) return; B.going=false;
+    setTimeout(()=>{ w.classList.add('out'); if(PICKEL===w) PICKEL=null; setTimeout(()=>w.remove(),260); if(!B) return; B.going=false;
       if(swap){ if(B.net&&B.net.role==='guest'){ NET.sendAction({swap:i}); renderBattle(); return; } act(b,{swap:i}); afterAct(); }
       else { const s=b.pickSide; if(B.net&&B.net.role==='guest'){ NET.sendAction({pick:i}); renderBattle(); return; } pick(b,s,i); afterAct(); }
-    },220); },850);
+    },300);
   });
 }; })(openPick);
 
