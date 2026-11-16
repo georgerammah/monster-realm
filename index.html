@@ -1685,7 +1685,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   if(d.pas.thick) dmg*=1-d.pas.thick;
   if(el==='bolt' && d.pas.grounded) dmg*=1-d.pas.grounded;
   if((el==='fire'||el==='water') && d.pas.sweaty) dmg*=1-d.pas.sweaty;
-  if(el==='neutral' && a.pas.fury) dmg*=1+a.pas.fury;
+  if(a.pas.fury && b._sk==='basic') dmg+=a.pas.fury;
   if(a.st.pers>0) dmg*=1+a.st.persV*(a.hp/a.maxhp<0.4?2:1);
   dmg += (a.fx&&a.fx.dflat||0) + (d.fx&&d.fx.tflat||0);
   if(el==='neutral' && d.pas.hard) dmg*=1-d.pas.hard;
@@ -1736,6 +1736,7 @@ function act(b, action){
       if(sk.burnBonus && d0.st.burn>0) tm*=1+sk.burnBonus;
       if(sk.missingBonus) tm*=1+sk.missingBonus*(1-me.hp/me.maxhp);
       if(sk.dbl && rnd(b)<sk.dbl) tm*=2;
+      b._sk=skId;
       for(let h=0;h<(sk.hits||1);h++) tot+=dealHit(b,a,foe,ti,skDmg(skId,L,me),sk.el,tm,sk.pierce);
       if(sk.stormTick && d0.hp>0){ d0.st.storm=sk.stormTurns; d0.st.stormD=lv(sk.stormTick,L); b.ev.push({k:'buff',s:foe,i:ti,b:'storm'}); }
       if(d0.hp>0 && sk.drainFrac){ const x=Math.min(d0.mp, Math.round(tot*sk.drainFrac)); d0.mp-=x; }
@@ -5279,7 +5280,7 @@ try{ applyMoveOverrides(JSON.parse(localStorage.getItem('mr-moves')||'{}')); }ca
 // custom descriptions with placeholders
 skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; if(!s) return '';
   if(s.desc){ const f=x=>Math.round(x), P=x=>Math.round(x*100)+'%';
-    const map={dmg:s.dmg?f(lv(s.dmg,L)):'', pct:s.m?P(lv(s.m,L)):'', cost:skCost(id,L), tick:s.tick?f(lv(s.tick,L)):'', turns:s.turns||'', hits:s.hits||1,
+    const map={dmg:s.dmg?f(lv(s.dmg,L)):'', pct:s.m?P(lv(s.m,L)):'', cost:skCost(id,L), tick:s.tick?f(lv(s.tick,L)):s.stormTick?f(lv(s.stormTick,L)):'', turns:s.turns||s.stormTurns||'', hits:s.hits||1,
       amt:s.amt?f(lv(s.amt,L)):'', v:s.v?(lv(s.v,L)<1?P(lv(s.v,L)):f(lv(s.v,L))):'', heal:s.heal?P(lv(s.heal,L)):s.hot?P(lv(s.hot,L)):'',
       steal:s.stealHp?f(lv(s.stealHp,L)):s.steal?f(lv(s.steal,L)):'', leech:s.leechL?P(lv(s.leechL,L)):'', mana:s.mpAtk?P(lv(s.mpAtk,L)):s.burnmp?f(lv(s.burnmp,L)):'',
       stun:s.stun?P(lv(s.stun,L)):'', recoil:s.recoil?P(s.recoil):'', dbl:s.dbl?P(s.dbl):''};
@@ -5631,6 +5632,44 @@ rankBadge=function(r,size){ const [,n,c,k]=rankOf(r); size=size||26; const hi=sh
   const g=k==='star'?`<path d="M12 2.2 L14.8 8.6 L21.7 9.2 L16.5 13.8 L18.1 20.6 L12 17 L5.9 20.6 L7.5 13.8 L2.3 9.2 L9.2 8.6Z" fill="${c}" stroke="#1a1a1a" stroke-width="1.2" stroke-linejoin="round"/><path d="M12 5 L13.6 9.4 L11 9.8Z" fill="${hi}" opacity=".8"/>`
     :`<path d="M3 14 L12 7 L21 14 L21 19 L12 12 L3 19Z" fill="${c}" stroke="#1a1a1a" stroke-width="1.2" stroke-linejoin="round"/><path d="M5 14.2 L12 8.8 L19 14.2" fill="none" stroke="${hi}" stroke-width="1" opacity=".8"/><path d="M3 19 L12 12 L21 19" fill="none" stroke="${lo}" stroke-width=".8"/>`;
   return `<svg class="rbadge" viewBox="0 0 24 24" width="${size}" height="${size}"><title>${n}</title>${g}</svg>`; };
+
+// ---------- abilities from Monster Kingdom screenshots: same wording, costs, elements and symbols ----------
+Object.assign(ICON,{
+  mkdevour:'<path d="M4 9 L8 5 L11 7 L14 4 L16 7 L20 6 L19 10 L21 13 L17 14 L18 17 L14 15 L12 19 L10 15 L6 17 L7 13 L3 12Z" fill="#fff"/><path d="M9 11 l1.5 2 l1.5 -2 l1.5 2 l1.5 -2" stroke="#e85d1f" stroke-width="1.2" fill="none" stroke-linejoin="round"/><circle cx="10" cy="9" r="1" fill="#e85d1f"/>',
+  mksoul:'<path d="M5 6 Q12 3 19 6 Q21 13 17 18 Q12 21 7 18 Q3 13 5 6Z" fill="#fff"/><path d="M7.5 10 l3.5 1.5 l-3.5 1Z M16.5 10 l-3.5 1.5 l3.5 1Z" fill="#e85d1f"/><path d="M7.5 14.5 Q12 18.5 16.5 14.5 L15 15.2 L14 14.3 L12.8 15.4 L12 14.4 L11.2 15.4 L10 14.3 L9 15.2Z" fill="#e85d1f"/>',
+  mkabsorb:'<path d="M5 13 Q5 6 12 6 Q16 6 18 9" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M19.5 6 L18.4 10.3 L14.6 8.6Z" fill="#fff"/><path d="M19 11 Q19 18 12 18 Q8 18 6 15" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M4.5 18 L5.6 13.7 L9.4 15.4Z" fill="#fff"/>',
+  mksplash:'<circle cx="15.5" cy="11" r="5" fill="#fff"/><circle cx="9" cy="12.5" r="2.8" fill="#fff"/><circle cx="5" cy="12" r="1.6" fill="#fff"/><circle cx="9" cy="17" r="1.4" fill="#fff"/>',
+  mkfury:'<path d="M6 7 h2.5 v-2.5 h2 v2.5 h2.5 v2 h-2.5 v2.5 h-2 v-2.5 h-2.5Z" fill="#fff"/><path d="M14 20 Q9 19 10 14 Q11 11 13.5 9 Q13 12.5 15 13 Q15 10 18 8 Q17 11.5 19 14 Q20 19 14 20Z" fill="#fff"/>',
+  mkstatic:'<path d="M5 11 Q4 6 9 6 Q11 3 15 5 Q20 5 19 10 Q21 13 17 14 L7 14 Q4 14 5 11Z" fill="#fff"/><path d="M9 10.5 Q10 9.5 11 10.5 M13 10.5 Q14 9.5 15 10.5" stroke="#e8a000" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M10 12.8 Q12 11.5 14 12.8" stroke="#e8a000" stroke-width="1" fill="none"/><path d="M12.5 14 L10.5 17.5 L12.5 17.5 L11 21 L15 16.5 L13 16.5 L14 14Z" fill="#fff"/>',
+  mkspark:'<path d="M9 3 L10.4 8.6 L16 10 L10.4 11.4 L9 17 L7.6 11.4 L2 10 L7.6 8.6Z" fill="#fff"/><path d="M17 12 L17.8 15.2 L21 16 L17.8 16.8 L17 20 L16.2 16.8 L13 16 L16.2 15.2Z" fill="#fff"/><path d="M17 3 L17.6 5.4 L20 6 L17.6 6.6 L17 9 L16.4 6.6 L14 6 L16.4 5.4Z" fill="#fff"/>',
+  mkpounce:'<path d="M4 15 Q5 6 14 6 L14 3.5 L19 8 L14 12.5 L14 10 Q8 10 7 16Z" fill="#fff"/><path d="M13 20 l2 -5 M16 20 l1.5 -4.5 M19 19 l1 -4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>',
+  mkbolt:'<path d="M13.5 2.5 L6 13 L11 13 L9.5 21.5 L18 10 L13 10Z" fill="#fff"/>',
+  mkburn:'<path d="M12 21 Q5.5 20 6 13.5 Q6.5 9 10 6 Q9.5 10 12 11 Q11.5 6.5 15 3 Q14.5 8 17.5 11 Q19.5 14.5 17.5 18 Q15.5 21 12 21Z" fill="#fff"/>',
+  mkbone:'<path d="M7.6 5.2 a2.2 2.2 0 1 0 -2.4 2.4 L15.4 17.8 a2.2 2.2 0 1 0 2.4 -2.4 a2.2 2.2 0 1 0 1.4 -3.8 a2.2 2.2 0 0 0 -2.6 1.2 L10.8 7 a2.2 2.2 0 0 0 1.2 -2.6 a2.2 2.2 0 1 0 -3.8 1.4 a2.2 2.2 0 0 0 -0.6 -0.6Z" fill="#fff"/>',
+  mkpaw:'<ellipse cx="12" cy="15.5" rx="4.6" ry="3.8" fill="#fff"/><ellipse cx="6" cy="10.5" rx="1.9" ry="2.4" fill="#fff"/><ellipse cx="9.6" cy="7" rx="1.9" ry="2.5" fill="#fff"/><ellipse cx="14.4" cy="7" rx="1.9" ry="2.5" fill="#fff"/><ellipse cx="18" cy="10.5" rx="1.9" ry="2.4" fill="#fff"/>',
+  mkclaw:'<path d="M5 18 L14 5 L12 10 L17 4 L14 11 L19 6 L9 20Z" fill="#fff"/>',
+  mkwave:'<path d="M3 16 Q6 9 12 9 Q17 9 18 13 Q15 11 13.5 13 Q16 13 16 16 Q13 15 11 17 L21 17 L21 19 L3 19Z" fill="#fff"/>'
+});
+const MK_ICON={devour:'mkdevour',souleater:'mksoul',absorb:'mkabsorb',splash:'mksplash',furyfist:'mkfury',staticd:'mkstatic',spark:'mkspark',pounce:'mkpounce',bolt:'mkbolt',burn:'mkburn',cripple:'mkbone',trample:'mkpaw',berserk:'mkclaw',wave:'mkwave'};
+skIconKey=(function(prev){ return function(id){ return MK_ICON[id]||prev(id); }; })(skIconKey);
+// exact Monster Kingdom wording and numbers
+Object.assign(SK.devour,{el:'neutral',mp:[5,5],leechL:[.5,.05],desc:'Attack the enemy and devour their life essence, stealing {leech} of damage dealt.'});
+Object.assign(SK.souleater,{el:'neutral',mp:[8,4],m:[.8,.02],mpAtk:[.4,.01],desc:"Strike the enemy's soul, dealing {pct} of your attack damage and stealing {mana} of your attack in mana."});
+Object.assign(SK.absorb,{el:'water',mp:[11,4],v:[.26,.05556],turns:4,desc:'Your mana heals by {v} of any damage taken for the next {turns} turns.'});
+Object.assign(SK.splash,{el:'water',mp:[15,11],dmg:[25,13],desc:'Shoots a powerful bubble that deals {dmg} water damage.'});
+Object.assign(SK.furyfist,{el:'fire',p:'fury',v:[6,2],desc:'Passively adds {v} damage to your regular attack.'});
+Object.assign(SK.staticd,{el:'bolt',mp:[20,9],dmg:[20,12],stormTick:[14,12],stormTurns:2,desc:'Unleash an electrical discharge at your enemy to cause {dmg} direct damage and {tick} damage each turn for {turns} turns.'});
+Object.assign(SK.spark,{el:'bolt',mp:[10,6],v:[.40,.04],turns:4,desc:'Gives {v} chance to do a critical 2x damage on any attack for {turns} turns.'});
+Object.assign(SK.pounce,{el:'neutral',v:[.05,.01],desc:'Amplifies all damage by {v}.'});
+Object.assign(SK.bolt,{el:'bolt',mp:[20,12],dmg:[26,13],dbl:.5,desc:'Strong lightning attack that deals {dmg} damage and has a {dbl} chance to do 2x damage.'});
+Object.assign(SK.burn,{mp:[20,9]}); Object.assign(SK.cripple,{mp:[24,7]});
+Object.assign(DEFAULT_SK,JSON.parse(JSON.stringify({devour:SK.devour,souleater:SK.souleater,absorb:SK.absorb,splash:SK.splash,furyfist:SK.furyfist,staticd:SK.staticd,spark:SK.spark,pounce:SK.pounce,bolt:SK.bolt,burn:SK.burn,cripple:SK.cripple})));
+// placeholders for storm ticks; Fury Fist is a flat bonus on the regular attack
+skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; if(s&&s.desc&&s.stormTick){ const t=Math.round(lv(s.stormTick,L||1)); return prev(id,L).replace(/\{tick\}/g,t).replace(/(for )(\s*)(turns)/,'$1'+s.stormTurns+' $3'); } return prev(id,L); }; })(skillDesc);
+// in-battle bubble wording for Monster Kingdom passives
+const MK_TIP={furyfist:L=>`Adds ${Math.round(lv(SK.furyfist.v,L))} damage to physical attacks`};
+hudIcons=(function(prev){ return function(m){ let h=prev(m); if(!m) return h; Object.keys(MK_TIP).forEach(id=>{ if(!(m.sk||[]).includes(id)) return; const L=(m.skl&&m.skl[id])||1;
+  h=h.replace(new RegExp('data-tip="'+SK[id].n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+' \\(passive[^"]*"'),`data-tip="|${MK_TIP[id](L)}"`); }); return h; }; })(hudIcons);
 
 </script>
 </body></html>

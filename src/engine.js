@@ -263,7 +263,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   if(d.pas.thick) dmg*=1-d.pas.thick;
   if(el==='bolt' && d.pas.grounded) dmg*=1-d.pas.grounded;
   if((el==='fire'||el==='water') && d.pas.sweaty) dmg*=1-d.pas.sweaty;
-  if(el==='neutral' && a.pas.fury) dmg*=1+a.pas.fury;
+  if(a.pas.fury && b._sk==='basic') dmg+=a.pas.fury;
   if(a.st.pers>0) dmg*=1+a.st.persV*(a.hp/a.maxhp<0.4?2:1);
   dmg += (a.fx&&a.fx.dflat||0) + (d.fx&&d.fx.tflat||0);
   if(el==='neutral' && d.pas.hard) dmg*=1-d.pas.hard;
@@ -314,6 +314,7 @@ function act(b, action){
       if(sk.burnBonus && d0.st.burn>0) tm*=1+sk.burnBonus;
       if(sk.missingBonus) tm*=1+sk.missingBonus*(1-me.hp/me.maxhp);
       if(sk.dbl && rnd(b)<sk.dbl) tm*=2;
+      b._sk=skId;
       for(let h=0;h<(sk.hits||1);h++) tot+=dealHit(b,a,foe,ti,skDmg(skId,L,me),sk.el,tm,sk.pierce);
       if(sk.stormTick && d0.hp>0){ d0.st.storm=sk.stormTurns; d0.st.stormD=lv(sk.stormTick,L); b.ev.push({k:'buff',s:foe,i:ti,b:'storm'}); }
       if(d0.hp>0 && sk.drainFrac){ const x=Math.min(d0.mp, Math.round(tot*sk.drainFrac)); d0.mp-=x; }
