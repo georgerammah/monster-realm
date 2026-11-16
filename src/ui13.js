@@ -747,3 +747,10 @@ skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; const 
   if(id==='acidbite'&&s) return `Bite the enemy with acid, attacking with the power of nature and reducing their nature defense by ${P(lv(s.acid,L))} for ${s.acidTurns||4} turns.`;
   if(id==='cripple'&&s) return `Cripples your opponent, making them do ${P(Math.min(.75,lv(s.v,L)))} less damage on all direct attacks.`;
   return prev(id,L); }; })(skillDesc);
+
+// nobody moves until the end-of-turn effects (bowl refills, burns, poison ticks) have played out
+animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(root,b,animating);
+  if(animating){ const n=(b.ev||[]).filter(e=>e.k==='dot'||e.k==='stun'||e.end).length; if(n) B.animEnd=Date.now()+1120+420*(n-1)+250; }
+  return r; }; })(animateBattle);
+busyLeft=(function(prev){ return function(){ const base=prev(); const a=B&&B.animEnd?B.animEnd-Date.now():0; return Math.max(base,a>0?a:0); }; })(busyLeft);
+pickWaitLeft=busyLeft;
