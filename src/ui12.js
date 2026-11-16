@@ -162,7 +162,12 @@ function pickZone(cb){
   const sh=sheet(`<div class="zpl"><h2>Choose a Zone</h2>${ZONES.map((z,i)=>{ const open=zoneUnlocked(i), pct=zonePct(i), rep=SP.filter(s=>s.fam===z.fam)[0];
     return `<button class="zone ${open?'':'locked'}" data-pz="${i}" style="--zc:${z.c}"><div class="zone-art">${monSVG(rep.id,pct>=100?20:1)}</div>
       <div class="zone-info"><b><span class="lvb sm">${z.lv}</span> ${z.n}</b><div class="zbar"><i style="width:${pct}%"></i><em>${pct}% complete</em></div></div><div class="zone-go">${open?'›':'🔒'}</div></button>`; }).join('')}</div>`,{cls:'panel'});
-  sh.body.querySelectorAll('[data-pz]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.pz; if(!zoneUnlocked(i)) return toast(`Finish ${ZONES[i-1].n} first`); sh.close(); cb(i); });
+  const zrow=sh.body.querySelector('.zd-row');
+  const glide=(row,to)=>{ const from=row.scrollLeft, t0=performance.now(), D=320; const step=t=>{ const k=Math.min(1,(t-t0)/D), e=1-Math.pow(1-k,3); row.scrollLeft=from+(to-from)*e; if(k<1) requestAnimationFrame(step); }; requestAnimationFrame(step); };
+  sh.body.querySelectorAll('[data-pz]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.pz;
+    const target=b.offsetLeft-(zrow.clientWidth-b.offsetWidth)/2, max=zrow.scrollWidth-zrow.clientWidth, to=Math.max(0,Math.min(max,target));
+    if(Math.abs(zrow.scrollLeft-to)>b.offsetWidth*0.2){ glide(zrow,to); return; }
+    if(!zoneUnlocked(i)) return toast(`Finish ${ZONES[i-1].n} first`); sh.close(); cb(i); });
 }
 
 // ---- team cards: "!" for unspent points, no type stripe ----
@@ -208,7 +213,12 @@ pickZone=function(cb){
       return `<button class="zd-card ${open?'':'locked'}" data-pz="${i}" style="--c1:${c[0]};--c2:${c[1]}"><div class="zd-h"><span class="lvb">${z.lv}</span><b>${z.n}</b></div><div class="zd-art">${zoneScene(z.id)}${open?'':'<div class="zd-lock">🔒</div>'}</div>
         <div class="zd-foot">${i===0?'<div class="zs-ft">Learn the basics with Lila</div>':!open?`<div class="zs-ft">Complete ${ZONES[i-1].n} to unlock!</div>`:`<div class="zs-ft">Monsters Found</div><div class="zs-found">${SP.filter(s=>s.fam===z.fam).map(s=>`<div class="zs-f ${owned.has(s.id)?'':'sil'}">${monSVG(s.id,1)}</div>`).join('')}</div>`}</div></button>`; }).join('')}</div></div></div>`,{cls:'full'});
   sh.body.querySelector('#zdb').onclick=sh.close;
-  sh.body.querySelectorAll('[data-pz]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.pz; if(!zoneUnlocked(i)) return toast(`Finish ${ZONES[i-1].n} first`); sh.close(); cb(i); });
+  const zrow=sh.body.querySelector('.zd-row');
+  const glide=(row,to)=>{ const from=row.scrollLeft, t0=performance.now(), D=320; const step=t=>{ const k=Math.min(1,(t-t0)/D), e=1-Math.pow(1-k,3); row.scrollLeft=from+(to-from)*e; if(k<1) requestAnimationFrame(step); }; requestAnimationFrame(step); };
+  sh.body.querySelectorAll('[data-pz]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.pz;
+    const target=b.offsetLeft-(zrow.clientWidth-b.offsetWidth)/2, max=zrow.scrollWidth-zrow.clientWidth, to=Math.max(0,Math.min(max,target));
+    if(Math.abs(zrow.scrollLeft-to)>b.offsetWidth*0.2){ glide(zrow,to); return; }
+    if(!zoneUnlocked(i)) return toast(`Finish ${ZONES[i-1].n} first`); sh.close(); cb(i); });
   const cur=sh.body.querySelector(`[data-pz="${S.lastZone|0}"]`), row=sh.body.querySelector('.zd-row'); if(cur) setTimeout(()=>{ row.scrollLeft=cur.offsetLeft-(row.clientWidth-cur.offsetWidth)/2; },30);
 };
 const _dt12=drawTeam; drawTeam=function(){ _dt12(); const f=TEAMSH&&TEAMSH.body.querySelector('.tfield .scene'); if(f) f.outerHTML=sceneBG(); };
