@@ -272,10 +272,10 @@ function fxTackle(ac,tgt,left){ const art=ac.querySelector('.fart'); if(!art) re
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.enT=B.enT||{}; const now=Date.now();
   document.querySelectorAll('#battle .fighter').forEach(el=>{ const s=el.dataset.s, i=el.dataset.i, f=el.querySelector('.fart'); if(!f) return;
     if(!B.enT[s]||B.enT[s].i!==i) B.enT[s]={i,t:now};
-    const e=(now-B.enT[s].t)/1000; if(e<1.5&&!f._enA){ const L=el.classList.contains('l'), d=L?1:-1, W=document.body.clientWidth*1.2;
+    const e=(now-B.enT[s].t)/1000; if(e<2&&!f._enA){ const L=el.classList.contains('l'), d=L?1:-1, W=document.body.clientWidth*1.2;
       const H=document.body.clientHeight*.45;
-      f._enA=f.animate([{transform:`translate(${-d*W}px,0)`,easing:'cubic-bezier(.3,.7,.6,1)'},{transform:`translate(${-d*W*.45}px,${-H}px)`,offset:.28,easing:'cubic-bezier(.45,0,.8,.5)'},{transform:'translate(0,0) scale(1.14,.86)',offset:.52,easing:'ease-out'},
-        {transform:'translate(0,-12%) scale(.95,1.06)',offset:.66,easing:'ease-in'},{transform:'translate(0,0) scale(1.06,.94)',offset:.8,easing:'ease-out'},{transform:'none'}],{duration:1500,easing:'linear'});
+      f._enA=f.animate([{transform:`translate(${-d*W}px,0)`,easing:'cubic-bezier(.3,.7,.6,1)'},{transform:`translate(${-d*W*.45}px,${-H}px)`,offset:.36,easing:'cubic-bezier(.45,0,.8,.5)'},{transform:'translate(0,0) scale(1.14,.86)',offset:.68,easing:'ease-out'},
+        {transform:'translate(0,-12%) scale(.95,1.06)',offset:.79,easing:'ease-in'},{transform:'translate(0,0) scale(1.06,.94)',offset:.9,easing:'ease-out'},{transform:'none'}],{duration:2000,easing:'linear'});
       f._enA.currentTime=e*1000; } }); }; })(renderBattle);
 
 // ---------- Monster Kingdom style info bubble: description only, sits over the icon row with a tab down to the icon ----------
