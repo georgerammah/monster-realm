@@ -1383,6 +1383,13 @@ html,body{touch-action:manipulation}
 #battle .await,#battle .dwho{display:none!important}
 /* ability info card sits above the monsters */
 #battle .abinfo{z-index:260!important}
+
+.task.tdone{box-shadow:inset 0 0 0 3px #3fbf4a!important}
+.tchk{display:inline-flex;align-items:center;margin-left:10px;padding:2px 9px;border-radius:999px;background:#2fa83b;color:#fff;font:700 min(calc(3.6*var(--vh)),14px)/1.3 -apple-system,system-ui;vertical-align:middle;white-space:nowrap}
+
+.thteam{display:flex;gap:6px;align-items:flex-end;flex:none}
+.thteam .thmon{opacity:.55;transform:scale(.82);transform-origin:bottom center;transition:.15s}
+.thteam .thmon.on{opacity:1;transform:none}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -5569,6 +5576,21 @@ closeBattle=(function(prev){ return function(){ document.querySelectorAll('.bm-w
 
 // ---------- every newly obtained monster starts at level 1 ----------
 addMon=(function(prev){ return function(sp){ return prev(sp,1); }; })(addMon);
+
+// ---------- missions: show which ones are completed, and how many are left before the boss ----------
+drawTasks=(function(prev){ return function(){ prev(); if(!TASKSH) return; const zi=TASKSH.zi, tl=taskList(zi), pr=taskProg(zi);
+  const cards=TASKSH.sh.body.querySelectorAll('.tlist .task'); let left=0;
+  tl.forEach((t,k)=>{ const done=taskDone(zi,k)||pr[k]>=t.reps; if(t.t!=='boss'&&!done) left++;
+    const c=cards[k]; if(!c) return; c.classList.toggle('tdone',done);
+    const h=c.querySelector('.t-h'); if(done&&h&&!h.querySelector('.tchk')) h.insertAdjacentHTML('beforeend','<span class="tchk">✓ Completed</span>'); });
+  TASKSH.sh.body.querySelectorAll('.task.lockedq').forEach(c=>{ c.querySelectorAll('*').forEach(el=>{ if(el.children.length===0&&el.textContent.trim()==='Finish the other activities first') el.textContent=`Complete ${left} more ${left===1?'mission':'missions'} to unlock`; }); }); }; })(drawTasks);
+// whole team in the corner; the one doing missions is highlighted, tap another to switch
+drawTasks=(function(prev){ return function(){ prev(); if(!TASKSH) return; const box=TASKSH.sh.body.querySelector('.thmon'); if(!box) return;
+  const tm=teamMons(); if(tm.length<2) return; const cur=monBy(S.zoneMon)||tm[0];
+  const wrap=document.createElement('div'); wrap.className='thteam';
+  wrap.innerHTML=tm.map(m=>`<div class="thmon ${m.uid===cur.uid?'on':''}" data-u="${m.uid}">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div>`).join('');
+  box.replaceWith(wrap);
+  wrap.querySelectorAll('[data-u]').forEach(el=>el.onclick=e=>{ e.stopPropagation(); if(el.dataset.u===cur.uid) return openTeam(); S.zoneMon=el.dataset.u; persist(); drawTasks(); }); }; })(drawTasks);
 
 </script>
 </body></html>

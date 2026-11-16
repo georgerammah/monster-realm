@@ -1374,6 +1374,13 @@ html,body{touch-action:manipulation}
 #battle .await,#battle .dwho{display:none!important}
 /* ability info card sits above the monsters */
 #battle .abinfo{z-index:260!important}
+
+.task.tdone{box-shadow:inset 0 0 0 3px #3fbf4a!important}
+.tchk{display:inline-flex;align-items:center;margin-left:10px;padding:2px 9px;border-radius:999px;background:#2fa83b;color:#fff;font:700 min(calc(3.6*var(--vh)),14px)/1.3 -apple-system,system-ui;vertical-align:middle;white-space:nowrap}
+
+.thteam{display:flex;gap:6px;align-items:flex-end;flex:none}
+.thteam .thmon{opacity:.55;transform:scale(.82);transform-origin:bottom center;transition:.15s}
+.thteam .thmon.on{opacity:1;transform:none}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

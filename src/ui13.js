@@ -369,3 +369,18 @@ closeBattle=(function(prev){ return function(){ document.querySelectorAll('.bm-w
 
 // ---------- every newly obtained monster starts at level 1 ----------
 addMon=(function(prev){ return function(sp){ return prev(sp,1); }; })(addMon);
+
+// ---------- missions: show which ones are completed, and how many are left before the boss ----------
+drawTasks=(function(prev){ return function(){ prev(); if(!TASKSH) return; const zi=TASKSH.zi, tl=taskList(zi), pr=taskProg(zi);
+  const cards=TASKSH.sh.body.querySelectorAll('.tlist .task'); let left=0;
+  tl.forEach((t,k)=>{ const done=taskDone(zi,k)||pr[k]>=t.reps; if(t.t!=='boss'&&!done) left++;
+    const c=cards[k]; if(!c) return; c.classList.toggle('tdone',done);
+    const h=c.querySelector('.t-h'); if(done&&h&&!h.querySelector('.tchk')) h.insertAdjacentHTML('beforeend','<span class="tchk">✓ Completed</span>'); });
+  TASKSH.sh.body.querySelectorAll('.task.lockedq').forEach(c=>{ c.querySelectorAll('*').forEach(el=>{ if(el.children.length===0&&el.textContent.trim()==='Finish the other activities first') el.textContent=`Complete ${left} more ${left===1?'mission':'missions'} to unlock`; }); }); }; })(drawTasks);
+// whole team in the corner; the one doing missions is highlighted, tap another to switch
+drawTasks=(function(prev){ return function(){ prev(); if(!TASKSH) return; const box=TASKSH.sh.body.querySelector('.thmon'); if(!box) return;
+  const tm=teamMons(); if(tm.length<2) return; const cur=monBy(S.zoneMon)||tm[0];
+  const wrap=document.createElement('div'); wrap.className='thteam';
+  wrap.innerHTML=tm.map(m=>`<div class="thmon ${m.uid===cur.uid?'on':''}" data-u="${m.uid}">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div>`).join('');
+  box.replaceWith(wrap);
+  wrap.querySelectorAll('[data-u]').forEach(el=>el.onclick=e=>{ e.stopPropagation(); if(el.dataset.u===cur.uid) return openTeam(); S.zoneMon=el.dataset.u; persist(); drawTasks(); }); }; })(drawTasks);
