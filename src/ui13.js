@@ -176,8 +176,8 @@ openPick=(function(prev){ return function(side, swap){
 }; })(openPick);
 
 // ---------- battles: raise the ground so monsters stand on it ----------
-function battleScene(id){ const z=ZSCENE[id]||ZSCENE.meadow;
-  return zoneScene(id).replace(/(<circle[^>]*\/><circle[^>]*\/>)([\s\S]*)<\/svg>$/, (_,orb,rest)=>`${orb}<g transform="translate(0 -20)">${rest}</g><rect y="78" width="200" height="22" fill="${z.hills[1]}"/></svg>`); }
+function battleScene(id){ const z=ZSCENE[id]||ZSCENE.meadow; const sx=z.x; z.x=({palm:'sea',tents:'',cactus:'',deadtrees:''})[sx]??sx; const html=zoneScene(id); z.x=sx;
+  return html.replace(/(<circle[^>]*\/><circle[^>]*\/>)([\s\S]*)<\/svg>$/, (_,orb,rest)=>`${orb}<g transform="translate(0 -20)">${rest}</g><rect y="78" width="200" height="22" fill="${z.hills[1]}"/></svg>`); }
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; const root=$('#battle'); const sc=root.querySelector('.bzscene');
   if(sc&&!sc.dataset.lift&&B.meta&&B.meta.zi!=null){ sc.dataset.lift=1; sc.innerHTML=battleScene(ZONES[B.meta.zi].id); } }; })(renderBattle);
 
@@ -233,12 +233,12 @@ taskProg=(function(prev){ return function(zi){ const p=prev(zi); const id=ZONES[
 
 // ---------- passive/item icons: tap to show what it does; it stays until you tap elsewhere ----------
 removeEventListener('pointerup',endTip,true); removeEventListener('touchend',endTip,true); removeEventListener('pointercancel',endTip,true); removeEventListener('touchcancel',endTip,true);
-const endTip2=()=>{ TIPDRAG=false; };
+const endTip2=()=>{ TIPDRAG=false; TIPH=null; hideTips(); };
 addEventListener('pointerup',endTip2,true); addEventListener('touchend',endTip2,true); addEventListener('pointercancel',endTip2,true); addEventListener('touchcancel',endTip2,true);
 addEventListener('pointerdown',e=>{ if(!(e.target.closest&&e.target.closest('.hi'))){ TIPH=null; hideTips(); } },true);
 placeTip=(function(prev){ return function(h){ prev(h); const tip=document.querySelector('.tipb'); if(!tip||!h) return; const r=localRect(h);
   if(parseFloat(tip.style.top)<r.top+r.height && parseFloat(tip.style.top)+tip.offsetHeight>r.top-2) tip.style.top=(r.top+r.height+10)+'px'; }; })(placeTip);
-bindTip=(function(prev){ return function(h){ prev(h); if(h._tip3) return; h._tip3=1; h.addEventListener('click',e=>{ e.stopPropagation(); TIPH=null; placeTip(h); }); }; })(bindTip);
+
 
 // ---------- tap a monster in battle: monster + stats, then abilities, then special items ----------
 monInfo=function(b,s,i){

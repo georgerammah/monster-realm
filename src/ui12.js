@@ -187,6 +187,7 @@ const ZSCENE={
 function zoneScene(id){
   const z=ZSCENE[id]||ZSCENE.meadow, g='zg'+id;
   const extra={
+    sea:`<rect x="0" y="66" width="200" height="12" fill="${z.sea}"/>`,
     tents:'<path d="M40 74 l12 -16 l12 16z" fill="#e8743b"/><path d="M52 58 v16" stroke="#8a3a12" stroke-width="1.5"/><path d="M140 76 l10 -13 l10 13z" fill="#f2c14e"/>',
     palm:`<rect x="0" y="66" width="200" height="12" fill="${z.sea}"/><path d="M150 92 q4 -20 2 -36" stroke="#8a5a2e" stroke-width="4" fill="none"/><path d="M152 56 q-14 -6 -24 4 M152 56 q14 -8 24 2 M152 56 q-6 -12 -18 -12 M152 56 q8 -12 20 -10" stroke="#3f9a3a" stroke-width="4" fill="none" stroke-linecap="round"/>`,
     cactus:'<path d="M60 92 v-30 m0 10 h-8 v-8 m8 12 h8 v-10" stroke="#3f8a3a" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M150 90 v-20 m0 8 h6 v-6" stroke="#3f8a3a" stroke-width="5" fill="none" stroke-linecap="round"/>',
