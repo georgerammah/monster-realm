@@ -446,7 +446,7 @@ hudIcons=(function(prev){ return function(m){ let h=prev(m); if(!m) return h; Ob
 
 // ---------- rank ladder (season starts at 200; nothing below Bronze Stripe) ----------
 RANKS.length=0; [[0,'Bronze Stripe','#c07a3e','stripe'],[250,'Bronze Star','#c07a3e','star'],[300,'Silver Stripe','#c9d1db','stripe'],[500,'Silver Star','#c9d1db','star'],
-  [700,'Gold Stripe','#f2c14e','stripe'],[1000,'Gold Star','#f2c14e','star'],[1400,'Cobalt Star','#2f6fd8','star'],[1900,'Emerald Stripe','#2fbf6a','stripe'],[2500,'Emerald Star','#2fbf6a','star']].forEach(r=>RANKS.push(r));
+  [700,'Gold Stripe','#f2c14e','stripe'],[1000,'Gold Star','#f2c14e','star'],[1400,'Cobalt Star','#2f6fd8','star'],[1900,'Emerald Stripe','#2fbf6a','stripe'],[2400,'Emerald Star','#2fbf6a','star']].forEach(r=>RANKS.push(r));
 const SEASON=1; if(S&&S.season!==SEASON){ S.season=SEASON; S.rank=200; S.lastRankD=null; try{ persist(); }catch(_){} }
 rankBadge=(function(prev){ return function(r,size){ const [,n,c,k]=rankOf(r); if(k!=='stripe') return prev(r,size); size=size||26; const id='rb'+(GID++), lt=shade(c,45), dk=shade(c,-30);
   const chev=y=>`<path d="M2.5 ${y+6} L12 ${y} L21.5 ${y+6} L21.5 ${y+10.5} L12 ${y+4.5} L2.5 ${y+10.5}Z" fill="url(#${id})" stroke="${shade(c,-55)}" stroke-width=".6" stroke-linejoin="round"/>`;
