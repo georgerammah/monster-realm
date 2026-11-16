@@ -727,3 +727,23 @@ drawMon=(function(prev){ return function(){ prev(); if(!MONSH) return; const m=m
   const drop='<path d="M32 37 C36 43 39 46 39 50 A7 7 0 0 1 25 50 C25 46 28 43 32 37Z" fill="url(#gd)" stroke="#8a5a0a" stroke-width="1.2"/>';
   const ART={lifebowl:bowl('#ef4a3a','#a8180f','#c42a1e',heart), manabowl:bowl('#4aa8f0','#145fb0','#1f6fc0',drop)};
   itemSVG=(function(prev){ return function(id){ return ART[id]||prev(id); }; })(itemSVG); })();
+
+// Emerald Shift, Acid Bite, Cripple (Monster Kingdom screenshots, lv 10 numbers)
+Object.assign(ICON,{
+  mkprism:'<path d="M4 18 L12.5 7 L19 18Z" fill="#fff"/><path d="M14 11.5 L21 8.8 V10.6 L14.6 12.6Z" fill="#ff8a8a"/><path d="M14.9 13.3 L21.4 11.6 V13.4 L15.4 14.4Z" fill="#ffd36a"/><path d="M15.6 15.1 L21.6 14.4 V16.2 L16 16.2Z" fill="#8ee08a"/><path d="M2.5 15.5 L9.5 13.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>',
+  mkacid:'<path d="M14.5 3.5 L17.5 6.5 L8.5 15.5 Q6.5 17.5 4.8 15.8 Q3.1 14.1 5.1 12.1Z" fill="#fff"/><path d="M5.6 13.6 L11 8.2 L12.6 9.8 L7.2 15.2 Q6 16.2 5.3 15.3 Q4.6 14.5 5.6 13.6Z" fill="#7ad36a"/><circle cx="15" cy="16" r="1.4" fill="#fff"/><circle cx="18" cy="13.5" r="1" fill="#fff"/><path d="M17 19 L18 17.5 L19 19 L20.5 18.3 L19.6 20" stroke="#fff" stroke-width="1.2" fill="none"/>'});
+Object.assign(MK_ICON,{emeraldshift:'mkprism',acidbite:'mkacid'});
+SK.emeraldshift={n:'Emerald Shift',el:'nature',t:'enemy',k:'debuff',mp:[10,6],buff:'eshift',v:[.25,.02],v2:[.10,.02],turns:4};
+SK.acidbite={n:'Acid Bite',el:'nature',t:'enemy',k:'hit',mp:[2,1],m:[1,0],acid:[.13,.02],acidTurns:4};
+Object.assign(SK.cripple,{el:'bolt',mp:[14,5],v:[.16,.0589]});
+['emeraldshift','acidbite','cripple'].forEach(k=>{ DEFAULT_SK[k]=JSON.parse(JSON.stringify(SK[k])); });
+ST_ICON.acid=['mkacid','#2f9e44']; BUFF_N.acid='Acid'; ST_ICON.eshift=['mkprism','#2f9e44']; BUFF_N.eshift='Emerald Shift';
+stDesc=(function(prev){ return function(m,k){ const s=m.st, P=v=>Math.round((v||0)*100)+'%', T=n=>`(${n} turn${n>1?'s':''})`;
+  if(k==='acid') return `Takes ${P(s.acidV)} more nature damage ${T(s.acid)}`;
+  if(k==='eshift') return `Lightning and physical attacks do ${P(s.eshiftV)} less, takes ${P(s.eshiftR)} more fire and water damage ${T(s.eshift)}`;
+  return prev(m,k); }; })(stDesc);
+skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; const P=v=>Math.round(v*100)+'%';
+  if(id==='emeraldshift'&&s) return `Reduce the enemy's lightning and physical attacks by ${P(lv(s.v,L))} on all direct attacks and reduce their resistance to fire and water by ${P(lv(s.v2,L))}`;
+  if(id==='acidbite'&&s) return `Bite the enemy with acid, attacking with the power of nature and reducing their nature defense by ${P(lv(s.acid,L))} for ${s.acidTurns||4} turns.`;
+  if(id==='cripple'&&s) return `Cripples your opponent, making them do ${P(Math.min(.75,lv(s.v,L)))} less damage on all direct attacks.`;
+  return prev(id,L); }; })(skillDesc);
