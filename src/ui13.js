@@ -700,3 +700,8 @@ function timerRunning(){ if(!B||!B.b||B.paused||B.b.over) return false; const ti
 function syncRing(){ const r=document.querySelector('#battle .tring'); if(r) r.classList.toggle('show',timerRunning()); }
 renderBattle=(function(prev){ return function(){ const x=prev.apply(this,arguments); syncRing(); return x; }; })(renderBattle);
 setInterval(syncRing,80);
+
+// Attack: "Deals 17 damage" (your monster's attack, plus Fury Fist)
+let SKD_M=null;
+showInfo=(function(prev){ return function(id,a){ SKD_M=a&&a.m; try{ return prev(id,a); } finally{ SKD_M=null; } }; })(showInfo);
+skillDesc=(function(prev){ return function(id,L){ if(id==='basic'&&SKD_M){ const m=SKD_M; const d=Math.round(skDmg('basic',1,m))+Math.round((m.pas&&m.pas.fury)||0); return `Deals ${d} damage`; } return prev(id,L); }; })(skillDesc);

@@ -1435,6 +1435,14 @@ body.kb-open .sheet{transform:translateY(calc(-1 * min(calc(26*var(--vh)),150px)
 body.auto-on .float2.buff{display:none!important}
 .pet.roam{pointer-events:none}.pet.roam svg *{pointer-events:visiblePainted}.pet.roam .roam-alert{pointer-events:auto}
 #battle .tring{opacity:0;transition:opacity .25s;pointer-events:none}#battle .tring.show{opacity:1}
+/* MK top bar: name | rank | cash on top; energy spans under name+rank, mushrooms under cash */
+.thud .thcol:has(.hbar.name){flex:1;min-width:0;display:grid!important;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,.9fr);gap:5px 8px}
+.thud .thcol:has(.hbar.name) .hrow{display:contents!important}
+.thud .thcol:has(.hbar.name) .hbar{min-width:0;width:auto!important;flex:none!important;margin:0!important}
+.thud .thcol:has(.hbar.name) .hbar.energy{grid-column:1 / 3}
+.thud .thcol:has(.hbar.name) .hbar.shrooms{grid-column:3}
+.thud .thcol:has(.hbar.name) .hbar.energy .ebar{flex:1;min-width:0}
+.thud .thcol:has(.hbar.name) .hbar b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
