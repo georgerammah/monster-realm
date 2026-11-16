@@ -5904,5 +5904,23 @@ drive=(function(prev){ return function(){ prev(); const b=B&&B.b; if(!b||B.pause
 renderBattle=(function(prev){ return function(){ const r=prev.apply(this,arguments); document.body.classList.toggle('auto-on',!!(B&&B.auto)); return r; }; })(renderBattle);
 closeBattle=(function(prev){ return function(){ document.body.classList.remove('auto-on'); return prev.apply(this,arguments); }; })(closeBattle);
 
+// ---------- smoother arena entrance: glides in from the side with three easing hops, lands with a soft squash ----------
+const ENT_FRAMES=(function(){ const fr=[], LAND=LAND_MS/ENT_MS, N=36;
+  for(let k=0;k<=N;k++){ const p=k/N, e=1-Math.pow(1-p,3); const hop=Math.abs(Math.sin(Math.PI*3*p))*(1-p*.55);
+    fr.push({p, x:1-e, y:hop, offset:p*LAND}); }
+  return fr; })();
+function entAnim(f,d,W,H){
+  const fr=ENT_FRAMES.map(q=>({transform:`translate(${(-d*W*q.x).toFixed(1)}px,${(-H*q.y).toFixed(1)}px)`,offset:q.offset}));
+  const L=LAND_MS/ENT_MS;
+  fr.push({transform:'translate(0,0) scale(1.07,.93)',offset:L+.05},{transform:'translate(0,0) scale(.98,1.02)',offset:L+.13},{transform:'none',offset:L+.21},{transform:'none',offset:1});
+  return f.animate(fr,{duration:ENT_MS,easing:'linear'}); }
+renderBattle=(function(prev){ return function(){
+  document.querySelectorAll('#battle .fighter .fart').forEach(f=>{ if(f._enA){ f._enA.cancel(); } });
+  prev(); if(!B||!B.b) return; const now=Date.now();
+  document.querySelectorAll('#battle .fighter').forEach(el=>{ const s=el.dataset.s, f=el.querySelector('.fart'); if(!f||!B.enT||!B.enT[s]) return;
+    const e=now-B.enT[s].t; if(e>=ENT_MS) return; if(f._enA) f._enA.cancel();
+    const d=el.classList.contains('l')?1:-1, W=document.body.clientWidth*.62, H=document.body.clientHeight*.11;
+    f._enA=entAnim(f,d,W,H); f._enA.currentTime=e; }); }; })(renderBattle);
+
 </script>
 </body></html>
