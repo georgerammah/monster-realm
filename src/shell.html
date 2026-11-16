@@ -1412,6 +1412,24 @@ html,body{touch-action:manipulation}
 .hbar.rank,.cc-rank,.ares-r{cursor:pointer}
 
 .rkl-me{display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}.rkl-me .rbadge{display:inline-block;width:20px;height:20px;flex:none}
+
+/* defeat screen is red */
+.sheet.reward:has(.rw.lose){background:linear-gradient(#e2473b,#a8191a)!important}
+.sheet.reward:has(.rw.lose) .rw-t{color:#fff!important;-webkit-text-stroke:0!important;text-shadow:0 3px 0 #6e0d0d!important}
+.sheet.reward:has(.rw.lose) .rw-xp,.sheet.reward:has(.rw.lose) .rw-cash{background:rgba(0,0,0,.22)!important}
+
+.atkf{display:none}
+.fighter.pose-atk .atkf,.fighter.tackling.pose-atk .atkf,.atkdemo .atkf{display:inline}
+
+/* in-game keyboard (rotated layout) */
+.kbd{position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#d1d4db;padding:6px 4px calc(6px + var(--sa-bottom));display:flex;flex-direction:column;gap:6px;box-shadow:0 -2px 10px rgba(0,0,0,.25);user-select:none;-webkit-user-select:none}
+.kb-r{display:flex;gap:5px;justify-content:center}
+.kb-k{flex:1 1 0;max-width:9.4%;height:min(calc(8.2*var(--vh)),40px);border:0;border-radius:7px;background:#fff;color:#111;font:400 min(calc(5.6*var(--vh)),22px) -apple-system,system-ui;box-shadow:0 1px 0 #8a8d93;padding:0}
+.kb-k:active{background:#b8bcc4}
+.kb-shift,.kb-back,.kb-123,.kb-ABC{background:#aeb3bc;max-width:13%;flex:1.4 1 0}.kb-shift.on{background:#fff}
+.kb-space{flex:5 1 0;max-width:none}.kb-done{flex:1.6 1 0;max-width:18%;background:#2f7bf6;color:#fff;font-weight:600}
+body.kb-open .sheet{transform:translateY(calc(-1 * min(calc(26*var(--vh)),150px)))!important;transition:transform .2s}
+.kbd{gap:5px!important;padding-top:5px!important}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

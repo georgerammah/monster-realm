@@ -179,7 +179,7 @@ function drive(){
   if(c==='ai' || (c==='human' && B.auto && !(B.net&&B.net.role==='guest'&&B.net.sent===b.seq))){
     B.timer=setTimeout(()=>{ if(!B||B.b!==b||B.paused) return;
       if(B.net && B.net.role==='guest'){ NET.sendAction(aiChoose(JSON.parse(JSON.stringify(b)))); renderBattle(); return; }
-      act(b, aiChoose(b)); afterAct(); }, c==='ai'?1500:900);
+      act(b, aiChoose(b)); afterAct(); }, c==='ai'?1500:(B.autoKick?(B.autoKick=0,200):900));
   }
 }
 
@@ -235,7 +235,7 @@ function renderBattle(){
     <div class="blog2">${esc(b.log.slice(-1)[0]||'')}</div>
     <div class="dock">${dock}</div><div class="abinfo" id="abinfo"></div>`;
   $('#bmenu').onclick=battleMenu;
-  const au=$('#bauto'); if(au) au.onclick=()=>{ B.auto=!B.auto; drive(); };
+  const au=$('#bauto'); if(au) au.onclick=()=>{ B.auto=!B.auto; B.autoKick=B.auto; clearTimeout(B.timer); renderBattle(); drive(); };
   root.querySelectorAll('.fighter.tap').forEach(el=>el.onclick=()=>{ B.tgt[+el.dataset.s]=+el.dataset.i; renderBattle(); });
   root.querySelectorAll('.ab').forEach(btn=>bindAbility(btn,a));
   if(B.animSeq!==b.seq){ B.animSeq=b.seq; animateBattle(root,b,animating); }
