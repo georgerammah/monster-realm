@@ -520,3 +520,11 @@ function kbOpen(el){ KBIN=el; KBSHIFT=!el.value; KBNUM=false; if(!KB){ KB=docume
 document.addEventListener('focusin',e=>{ const el=e.target; if(!(el instanceof HTMLInputElement||el instanceof HTMLTextAreaElement)) return; if(el.type&&/checkbox|radio|range|file|button|submit/.test(el.type)) return;
   if(!isRot()){ el.removeAttribute('inputmode'); return; } el.setAttribute('inputmode','none'); kbOpen(el); },true);
 document.addEventListener('pointerdown',e=>{ if(!KB) return; if(e.target.closest('.kbd')||e.target===KBIN) return; kbClose(); },true);
+
+// Mana Shards (MK screenshot: 30 mana, steals 90 at lv 10) and Hydrate cost (132 at lv 10)
+Object.assign(ICON,{mkshards:'<path d="M5 19 L8 7 L10 19Z M9.5 19 L12.5 4 L15 19Z M14.5 19 L17.5 9 L19.5 19Z" fill="#fff"/><path d="M4 20 Q12 17 20 20" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/>',
+  mkhydrate:'<path d="M9.5 4 H14.5 V9.5 H20 V14.5 H14.5 V20 H9.5 V14.5 H4 V9.5 H9.5Z" fill="#fff"/>'});
+Object.assign(MK_ICON,{manashards:'mkshards',hydrate:'mkhydrate'});
+SK.manashards={n:'Mana Shards',el:'water',t:'enemy',k:'drain',mp:[12,2],steal:[18,8],desc:"Crystalize {steal} of the enemy's mana, stealing it to gain {steal} mana."};
+Object.assign(SK.hydrate,{mp:[15,13]});
+DEFAULT_SK.manashards=JSON.parse(JSON.stringify(SK.manashards)); if(DEFAULT_SK.hydrate) DEFAULT_SK.hydrate.mp=[15,13];
