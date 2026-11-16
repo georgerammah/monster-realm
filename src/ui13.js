@@ -640,3 +640,8 @@ renderBattle=(function(prev){ return function(){
     const e=now-B.enT[s].t; if(e>=ENT_MS) return; if(f._enA) f._enA.cancel();
     const d=el.classList.contains('l')?1:-1, W=document.body.clientWidth*.62, H=document.body.clientHeight*.11;
     f._enA=entAnim(f,d,W,H); f._enA.currentTime=e; }); }; })(renderBattle);
+
+// one-time admin gift: 1000 mushrooms
+(function(){ const give=()=>{ try{ if(!ADMIN||typeof S==='undefined'||!S||S.giftMush1k) return false; S.mush=(S.mush|0)+1000; S.giftMush1k=1; persist(); if(typeof renderHUD==='function') renderHUD(); if(typeof toast==='function') toast('+1000 mushrooms'); return true; }catch(_){ return false; } };
+  setAdmin=(function(prev){ return function(v){ const r=prev(v); setTimeout(give,300); return r; }; })(setAdmin);
+  let n=0; const iv=setInterval(()=>{ if(give()||++n>40) clearInterval(iv); },1500); })();
