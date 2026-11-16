@@ -146,9 +146,9 @@ function doTask(zi,k){
   if(t.t==='act'){
     const pr=taskProg(zi); pr[k]=Math.min(t.reps,pr[k]+1);
     if(pr[k]<t.reps){ persist(); drawTasks(); renderHUD(); const tk=document.querySelectorAll('.tasks .task')[k]; if(tk){ tk.classList.add('bump'); setTimeout(()=>tk.classList.remove('bump'),450); } return; }
-    S.cash=(S.cash|0)+t.cash; const r=giveXp(m,t.xp);
+    S.cash=(S.cash|0)+t.cash; const all=teamXp(t.xp,m); const r=all[0].r;
     persist(); drawTasks(); renderHUD();
-    rewardPopup({title:'SUCCESS!', cash:t.cash, xp:t.xp, mons:[{m,r}], onClose:afterTaskTut});
+    rewardPopup({title:'SUCCESS!', cash:t.cash, xp:t.xp, mons:all, onClose:afterTaskTut});
     return;
   }
   persist();
@@ -363,11 +363,11 @@ function finishBattle(){
           const nm=addMon(pool[Math.floor(Math.random()*pool.length)].id, Math.max(2,z.lv)); if(S.team.length<3) S.team.push(nm.uid); extra.push([`You found a new monster!`,nm]); } }
     }
     S.cash=(S.cash|0)+cash; S.mush+=mush;
-    const r=m?giveXp(m,xp):null;
+    const all=xp?teamXp(xp,m):(m?[{m,r:null}]:[]); const r=all.length?all[0].r:null;
     persist(); closeBattle(); openTasks(zi);
     const tutDone = S.tut===3 && win; if(tutDone){ S.tut=4; persist(); }
     if(partial&&!tutDone){ toast(`Victory! ${partial}`); return; }
-    rewardPopup({title:win?'VICTORY!':'DEFEAT', lose:!win, cash, xp, mush, mons:m?[{m,r}]:[], onClose:async()=>{
+    rewardPopup({title:win?'VICTORY!':'DEFEAT', lose:!win, cash, xp, mush, mons:all, onClose:async()=>{
       if(zoneJust) await zoneCompleteScreen(zi);
       for(const [tt,mm] of extra){ await new Promise(res=>{ const s=reveal2(mm,tt,res); }); }
       if(tutDone){ await lilaSay(["See? It's that easy!","Next, let's visit the shop and pick up some mana wood. It gives your monster more mana!"]); S.tut=5; persist(); if(TASKSH) TASKSH.sh.close(); setTimeout(()=>pointAt('[data-p="shop"]'),400); }
@@ -379,7 +379,7 @@ function finishBattle(){
   let xp=Math.round((15+avg*7)*(win?1:0.3)), cash=0, mush=0;
   if(win){ S.stats.wins++; S.stats.arenaWins++; if(mode==='rival'){ cash=Math.round(20+avg*6); } else if(mode==='pvp'){ cash=Math.round(40+avg*8); S.stats.pvpWins++; xp=Math.round(xp*1.3); } }
   S.cash=(S.cash|0)+cash; S.mush+=mush;
-  const res=b.sides[B.mySide].mons.map((bm,i)=>{ const m=monBy(bm.uid||(B.myUids&&B.myUids[i])); if(!m) return null; return {m, r:giveXp(m,xp)}; }).filter(Boolean);
+  const res=teamXp(xp);
   persist(); closeBattle();
   rewardPopup({title:win?'VICTORY!':'DEFEAT', lose:!win, cash, xp, mush, mons:res, onClose:showLevelUps});
 }
@@ -474,3 +474,6 @@ async function boot(){
   await splash();
   if(!S.name) onboarding();
 }
+
+// every monster on your team gets the XP (the one that did the mission or fought listed first)
+function teamXp(xp,first){ const tm=teamMons(); const list=first?[first].concat(tm.filter(x=>x.uid!==first.uid)):tm; return list.map(m=>({m,r:giveXp(m,xp)})); }
