@@ -1342,6 +1342,37 @@ html,body{touch-action:manipulation}
 .nb em{right:18px!important;top:4px!important;left:auto!important;z-index:6}.nb{isolation:auto}
 
 #battle.busy #swapb,#battle.busy .swapper{pointer-events:none;opacity:.55}
+
+/* knocked out */
+.fighter.ko2 .fart svg,.fighter.r.ko2 .fart svg{animation:none!important;filter:none!important;opacity:1!important}
+.fighter.l.ko2 .fart svg{transform:rotate(-24deg) translateY(6%) scale(1.04,.92)!important;transform-origin:50% 90%}
+.fighter.r.ko2 .fart svg{transform:scaleX(-1) rotate(-24deg) translateY(6%) scale(1.04,.92)!important;transform-origin:50% 90%}
+.fighter.ko2 .fname,.fighter.ko2 .fsts{display:none}
+.kotext{display:flex;flex-direction:column;align-items:center;line-height:.82;pointer-events:none;z-index:40}
+.kotext b{font:min(calc(13*var(--vh)),62px) "Lilita One",system-ui;font-weight:400;color:#fff;-webkit-text-stroke:min(calc(1.4*var(--vh)),6px) #d8261c;paint-order:stroke fill;text-shadow:0 0 10px rgba(255,190,120,.9),0 4px 0 #8a1208;white-space:nowrap}
+.kotext b+b{margin-left:-6%}
+.kotext i{position:absolute;font-style:normal;color:#fff;font-size:min(calc(7*var(--vh)),32px);text-shadow:0 0 8px #ffd27a}
+.kotext .ks1{left:-12%;top:8%}.kotext .ks2{left:6%;bottom:-6%}.kotext .ks3{right:-8%;bottom:4%}
+
+/* battle menu */
+.bm-wrap{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.55);animation:fadein .15s}
+.bm-col{position:absolute;transform:translateX(-50%);display:flex;flex-direction:column;gap:min(calc(3*var(--vh)),14px);min-width:min(calc(30*var(--vh)),170px)}
+.bm-b{position:relative;display:flex;align-items:center;height:min(calc(12*var(--vh)),54px);padding:0 16px;border-radius:6px;background:linear-gradient(#5aa8ff 0,#2f6fd8 48%,#1d4fb0 52%,#2a5fc8 100%);box-shadow:0 0 0 3px #fff,0 0 0 4px #10284e,0 4px 8px rgba(0,0,0,.4);font:min(calc(8*var(--vh)),34px) "Lilita One",system-ui;color:#fff;text-shadow:0 2px 0 #0a2a6a;overflow:visible}
+.bm-b span{position:relative;z-index:1}
+.bm-b i{position:absolute;pointer-events:none}.bm-b svg{width:100%;height:100%;display:block}
+.bm-w{right:-14%;top:-30%;width:58%;height:120%;transform:rotate(-12deg)}
+.bm-g{right:-10%;top:-12%;width:42%;height:150%}
+.bm-b:active{transform:scale(.96)}
+
+.bm-b{justify-content:flex-start;padding-right:38%!important}.bm-w{right:-10%;width:50%}.bm-g{right:-6%;width:36%}
+
+/* ability frame always runs to the bottom of the screen, even when lifted */
+.ab-slot{bottom:-60vh!important;bottom:-60vmax!important}
+/* no status icons under monsters (they're in the top bar) */
+#battle .fsts{display:none!important}
+/* MENU badge sits on the tab's top-right corner, above the neighbouring tab */
+.nb em{right:-9px!important;top:-9px!important;left:auto!important;z-index:6}
+.nb:has(em:not(:empty)){z-index:3}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -5486,6 +5517,45 @@ setInterval(()=>{ if(!B||!B.b) return; const root=$('#battle'); const busy=busyL
   else if(B.wasBusy){ B.wasBusy=false; B.abT=Date.now(); if(root){ root.classList.remove('busy'); const ab=root.querySelector('.abil'); if(ab){ ab.classList.remove('abin'); void ab.offsetWidth; ab.classList.add('abin'); ab.style.animationDelay='0s'; } } }
   else if(root) root.classList.remove('busy'); },80);
 openPick=(function(prev){ return function(side,swap){ if(swap&&busyLeft()>0) return; return prev(side,swap); }; })(openPick);
+
+// ---------- KNOCKED OUT!: thrown-back pose + big text, then the monster slowly slides off its side ----------
+const KO_MS=3400;
+function koCheck(){ if(!B||!B.b) return; B.koT=B.koT||{}; const now=Date.now();
+  document.querySelectorAll('#battle .fighter').forEach(el=>{ const k=el.dataset.s+'-'+el.dataset.i, f=el.querySelector('.fart'); if(!f) return;
+    const m=B.b.sides[+el.dataset.s]&&B.b.sides[+el.dataset.s].mons[+el.dataset.i]; const out=el.classList.contains('ko')||(m&&m.hp<=0);
+    if(!out){ if(B.koT[k]&&m&&m.hp>0) delete B.koT[k]; return; }
+    if(!B.koT[k]){ B.koT[k]=now; const [x,y]=fCenter(el); const r=localRect(f);
+      const t=fxAt(x,y-r.height*.62,'kotext','<b>KNOCKED</b><b>OUT!</b><i class="ks1">★</i><i class="ks2">★</i><i class="ks3">★</i>');
+      fxGo(t,[{transform:'translate(-50%,-50%) scale(.3) rotate(-14deg)',opacity:0},{transform:'translate(-50%,-50%) scale(1.15) rotate(-8deg)',opacity:1,offset:.08},{transform:'translate(-50%,-50%) scale(1) rotate(-8deg)',opacity:1,offset:.14},{transform:'translate(-50%,-50%) scale(1) rotate(-8deg)',opacity:1,offset:.8},{transform:'translate(-50%,-60%) scale(1) rotate(-8deg)',opacity:0}],{duration:2600,easing:'ease-out'}); }
+    el.classList.add('ko2'); const e=now-B.koT[k];
+    if(!f._koA){ const L=el.classList.contains('l'), d=L?-1:1, W=document.body.clientWidth*.7;
+      f._koA=f.animate([{transform:'none',opacity:1},{transform:'none',opacity:1,offset:.35,easing:'cubic-bezier(.45,0,.7,1)'},{transform:`translateX(${d*W}px)`,opacity:1,offset:.92},{transform:`translateX(${d*W}px)`,opacity:0}],{duration:KO_MS,fill:'forwards'});
+      f._koA.currentTime=Math.min(e,KO_MS); } }); }
+syncFighter=(function(prev){ return function(b,s,i){ const r=prev(b,s,i); koCheck(); return r; }; })(syncFighter);
+renderBattle=(function(prev){ return function(){ prev(); koCheck(); }; })(renderBattle);
+busyLeft=(function(prev){ return function(){ let m=prev(); if(B&&B.koT) Object.values(B.koT).forEach(t=>{ m=Math.max(m,t+KO_MS+150-Date.now()); }); return Math.max(0,m); }; })(busyLeft);
+pickWaitLeft=busyLeft;
+finishBattle=(function(prev){ return function(){ const w=busyLeft(); if(w>0&&B){ setTimeout(()=>finishBattle(),w+100); return; } return prev(); }; })(finishBattle);
+
+// ---------- battle MENU: Flee / Self / Enemy stacked under the MENU button, screen dimmed ----------
+const BM_WING='<svg viewBox="0 0 60 40"><path d="M4 30 Q18 6 56 4 Q46 10 50 12 Q40 14 44 18 Q32 18 36 23 Q24 22 26 27 Q16 26 4 30Z" fill="#fff6d0" stroke="#b8902a" stroke-width="2" stroke-linejoin="round"/></svg>';
+const BM_GLASS='<svg viewBox="0 0 40 40"><circle cx="17" cy="16" r="11" fill="#9fd4ff" stroke="#fff" stroke-width="4"/><circle cx="17" cy="16" r="11" fill="none" stroke="#7a8aa0" stroke-width="1.5"/><path d="M25 25 L36 37" stroke="#8a96a8" stroke-width="5" stroke-linecap="round"/><path d="M12 11 q3-3 7-2" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>';
+battleMenu=function(){
+  if(!B||!B.b) return; const b=B.b; document.querySelectorAll('.bm-wrap').forEach(x=>x.remove());
+  const mb=document.querySelector('#bmenu'); const r=mb?localRect(mb):{left:0,top:0,width:160,height:44};
+  const w=document.createElement('div'); w.className='bm-wrap';
+  w.innerHTML=`<div class="bm-col" style="left:${r.left+r.width/2}px;top:${r.top+r.height+10}px;width:${Math.max(r.width*1.3,190)}px">
+    <button class="bm-b" data-bm="flee"><span>FLEE</span><i class="bm-w">${BM_WING}</i></button>
+    <button class="bm-b" data-bm="self"><span>SELF</span><i class="bm-g">${BM_GLASS}</i></button>
+    <button class="bm-b" data-bm="enemy"><span>ENEMY</span><i class="bm-g">${BM_GLASS}</i></button></div>`;
+  document.body.appendChild(w);
+  const close=()=>w.remove();
+  w.addEventListener('click',e=>{ const bt=e.target.closest('[data-bm]'); if(!bt){ close(); return; } const k=bt.dataset.bm; close();
+    const mine=B.mySide, foe=1-mine, act=s=>{ const sd=b.sides[s]; return sd.active!=null?sd.active:(typeof focusMon==='function'?focusMon(b,s):0); };
+    if(k==='self') monInfo(b,mine,act(mine)); else if(k==='enemy') monInfo(b,foe,act(foe));
+    else { if(b.over) return finishBattle(); if(B.net) NET.forfeit(); else { const back=B.mode==='campaign'&&B.meta?B.meta.zi:null; closeBattle(); if(back!=null) openTasks(back); } } });
+};
+closeBattle=(function(prev){ return function(){ document.querySelectorAll('.bm-wrap').forEach(x=>x.remove()); return prev.apply(this,arguments); }; })(closeBattle);
 
 </script>
 </body></html>
