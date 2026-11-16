@@ -566,3 +566,25 @@ skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1;
   if(id==='purge'&&s&&s.healFlat) return `Heals ${Math.round(lv(s.healFlat,L))} life and removes all negative effects.`;
   if(id==='camelback'&&s) return `Regenerates ${Math.round(lv(s.v,L))} mana every turn.`;
   return prev(id,L); }; })(skillDesc);
+
+// Trisaurus / arena screenshots (lv 10): Trample, Arc Lightning, Berserk, Nature Shield, Ember Spit, Poison
+Object.assign(ICON,{
+  mkpoison:'<path d="M12 3.5 C7 3.5 4.5 7 4.5 10.8 C4.5 13.6 6 15.4 7.6 16.2 V19.5 H16.4 V16.2 C18 15.4 19.5 13.6 19.5 10.8 C19.5 7 17 3.5 12 3.5Z" fill="#fff"/><circle cx="9" cy="11" r="2.2" fill="#2f9e44"/><circle cx="15" cy="11" r="2.2" fill="#2f9e44"/><path d="M12 13.3 L13.4 15.6 H10.6Z" fill="#2f9e44"/><path d="M10 17.2 V19.5 M12 17.2 V19.5 M14 17.2 V19.5" stroke="#2f9e44" stroke-width="1"/>',
+  mknshield:'<path d="M5 4.5 H19 V12 Q19 18 12 21 Q5 18 5 12Z" fill="#fff"/><path d="M12 17.5 Q8.2 14.5 9.6 10.5 Q10.8 8 13.8 7 Q16 11.5 13.2 14.6 Q12.5 15.4 12 17.5Z M12 17.5 Q12.2 13 13.4 9.6" fill="#2f9e44" stroke="#fff" stroke-width=".6"/>',
+  mkember:'<path d="M10 3 H15.5 L13.5 9.5 L16.5 9.5 L13.8 14.2 H17 L12 21 L7 14.2 H10.4 L9 9.5 H11.6Z" fill="#fff"/>',
+  mkarc:'<path d="M12.5 3 L8.5 10.5 H11.5 L9 16 L15 8.5 H12 L14.5 3Z" fill="#fff"/><path d="M6 13 Q5.5 18.5 11 20 Q8 17.5 8.2 14.5Z" fill="#fff"/><path d="M17.5 12 L18.2 13.6 L19.8 14.2 L18.2 14.8 L17.5 16.4 L16.8 14.8 L15.2 14.2 L16.8 13.6Z M15.5 18.5 L15.9 19.3 L16.7 19.6 L15.9 19.9 L15.5 20.7 L15.1 19.9 L14.3 19.6 L15.1 19.3Z" fill="#fff"/>'});
+Object.assign(MK_ICON,{poison:'mkpoison',nshield:'mknshield',emberspit:'mkember',arclightning:'mkarc'});
+Object.assign(SK.trample,{el:'neutral',mp:[14,4],m:[1.5,0],desc:'Physical attack that does your regular attack damage plus an additional 50% damage.'}); delete SK.trample.stun;
+Object.assign(SK.arclightning,{mp:[20,8],dmg:[18,11],zap:.35,zapTurns:6}); delete SK.arclightning.hits;
+Object.assign(SK.berserk,{el:'fire',mp:[13,8]});
+Object.assign(SK.nshield,{mp:[22,9]}); Object.assign(SK.emberspit,{mp:[20,8]});
+Object.assign(SK.poison,{mp:[17,7],tick:[11,8],turns:6});
+['trample','arclightning','berserk','nshield','emberspit','poison'].forEach(k=>{ DEFAULT_SK[k]=JSON.parse(JSON.stringify(SK[k])); });
+ST_ICON.zap=['mkarc','#f29a1f']; BUFF_N.zap='Charged';
+stDesc=(function(prev){ return function(m,k){ if(k==='zap') return `Takes ${Math.round((m.st.zapV||0)*100)}% more lightning damage (${m.st.zap} turn${m.st.zap>1?'s':''})`; return prev(m,k); }; })(stDesc);
+skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1;
+  if(id==='arclightning'&&s&&s.zap) return `Lightning zap that deals ${Math.round(lv(s.dmg,L))} damage and reduces enemy's lightning resistance by ${Math.round(s.zap*100)}%.`;
+  if(id==='poison'&&s) return `Inflicts poison for ${s.turns} turns, dealing ${Math.round(lv(s.tick,L))} damage each turn.  Penetrates shields.`;
+  if(id==='trample'&&s&&s.m) return `Physical attack that does your regular attack damage plus an additional ${Math.round((lv(s.m,L)-1)*100)}% damage.`;
+  return prev(id,L); }; })(skillDesc);
+ICON.mkclaw='<path d="M4 15 L15.5 5.5 L12.5 9.5 L17 7.5 Z M5 19 L18 8.5 L14.8 12.8 L19.8 10.5 Z M8 21.5 L19.5 12.5 L16.8 16.2 L20.8 14.5 Z" fill="#fff"/>';
