@@ -119,7 +119,7 @@ function drawTasks(){
       <div class="hrow"><div class="hbar cash"><span class="ico c">$</span><b>${S.cash|0}</b></div><div class="hbar shrooms"><span class="ico m">${mushroomSVG('#b04fd6')}</span><b>${S.mush}</b></div></div></div>
       <div class="thmon">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div></div>
     <div class="tlist">${tl.map((t,k)=>{
-      const done=pr[k]>=t.reps; const lockBoss=t.t==='boss'&&!nonBossDone; const lvOk=m.lvl>=t.lv, mpOk=!t.mp||st.mp>=t.mp, hpOk=!t.hp||st.hp>=t.hp;
+      const done=pr[k]>=t.reps; const lockBoss=t.t==='boss'&&!nonBossDone; const lvOk=teamMons().some(x=>x.lvl>=t.lv), mpOk=!t.mp||st.mp>=t.mp, hpOk=!t.hp||st.hp>=t.hp;
       const can=!lockBoss;
       const why = lockBoss?'Finish the other activities first':'';
       return `<div class="task ${done?'done':''} ${t.t} ${lockBoss?'lockedq':''}">
@@ -134,7 +134,7 @@ function drawTasks(){
     <div class="zfoot"><div class="zbar big"><i style="width:${zonePct(zi)}%"></i><em>${z.n} — ${zonePct(zi)}% complete</em></div></div>`;
   sh.body.querySelector('#tb').onclick=sh.close;
   sh.body.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{ const t=tl[+b.dataset.task];
-    if(m.lvl<t.lv) return alertBox("Your monster's level isn't high enough for this task!");
+    if(!teamMons().some(x=>x.lvl>=t.lv)) return alertBox(`You need a level ${t.lv} monster on your team for this task!`);
     if(t.mp&&st.mp<t.mp) return alertBox("Your mana isn't high enough for this task!");
     if(t.hp&&st.hp<t.hp) return alertBox("Your life isn't high enough for this task!");
     doTask(zi,+b.dataset.task); });
