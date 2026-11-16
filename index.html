@@ -1326,7 +1326,7 @@ html,body{touch-action:manipulation}
 
 /* battle sequencing */
 .fighter .fname.fn2{animation:fn2 4.3s linear both!important}
-@keyframes fn2{0%,69.7%{opacity:0;transform:translateX(-50%) scale(.6)}74%{opacity:1;transform:translateX(-50%) scale(1.1)}77%{opacity:1;transform:translateX(-50%) scale(1)}93%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%)}}
+@keyframes fn2{0%,47.4%{opacity:0;transform:translateX(-50%) scale(.6)}50.5%{opacity:1;transform:translateX(-50%) scale(1.1)}53%{opacity:1;transform:translateX(-50%) scale(1)}71%{opacity:1;transform:translateX(-50%) scale(1)}78%,100%{opacity:0;transform:translateX(-50%)}}
 #battle.busy .abil{visibility:hidden;pointer-events:none}
 #battle .abil.abin{animation:abup .6s cubic-bezier(.2,1.25,.4,1) both}
 @keyframes abup{0%{transform:translateY(130%);opacity:0}40%{opacity:1}100%{transform:none;opacity:1}}
@@ -5371,7 +5371,7 @@ openPick=(function(prev){ return function(side, swap){
     setTimeout(()=>{ w.classList.add('out'); if(PICKEL===w) PICKEL=null; setTimeout(()=>w.remove(),260); if(!B) return; B.going=false;
       if(swap){ if(B.net&&B.net.role==='guest'){ NET.sendAction({swap:i}); renderBattle(); return; } act(b,{swap:i}); afterAct(); }
       else { const s=b.pickSide; if(B.net&&B.net.role==='guest'){ NET.sendAction({pick:i}); renderBattle(); return; } pick(b,s,i); afterAct(); }
-    },300);
+    },0);
   });
 }; })(openPick);
 
@@ -5511,7 +5511,7 @@ openPick=(function(prev){ return function(side,swap){ const w=swap?0:pickWaitLef
 setInterval(()=>{ if(B&&B.b&&B.b.phase==='pick'&&!PICKEL&&pickWaitLeft()>0) B.stamp=Date.now(); },100);
 
 // ---------- battle sequencing: pick -> 3s entrance -> name on landing for 1s -> next pick -> ... -> abilities slide up ----------
-const ENT_MS=3000, NAME_MS=1000, BUSY_MS=ENT_MS+NAME_MS+250;
+const ENT_MS=3000, LAND_MS=2040, NAME_MS=1000, BUSY_MS=LAND_MS+NAME_MS+400;
 function busyLeft(){ if(!B||!B.enT) return 0; let m=0; Object.values(B.enT).forEach(e=>{ m=Math.max(m,e.t+BUSY_MS-Date.now()); }); return Math.max(0,m); }
 pickWaitLeft=busyLeft;
 drive=(function(prev){ return function(){ const r=prev(); if(!B||!B.b||B.b.over||B.paused) return r; const w=busyLeft();
@@ -5519,7 +5519,7 @@ drive=(function(prev){ return function(){ const r=prev(); if(!B||!B.b||B.b.over|
 humanAct=(function(prev){ return function(skill,target){ if(busyLeft()>0) return; return prev(skill,target); }; })(humanAct);
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b||!B.enT) return; const now=Date.now(), root=$('#battle'); if(!root) return;
   root.querySelectorAll('.fighter').forEach(el=>{ const f=el.querySelector('.fname'), e=B.enT[el.dataset.s]; if(!f) return; f.classList.remove('fnon');
-    const t=e?(now-e.t):1e9; if(t<ENT_MS+NAME_MS+300){ f.classList.add('fn2'); f.style.animationDelay=(-t/1000)+'s'; } else { f.classList.remove('fn2'); f.style.animationDelay=''; } });
+    const t=e?(now-e.t):1e9; if(t<4300){ f.classList.add('fn2'); f.style.animationDelay=(-t/1000)+'s'; } else { f.classList.remove('fn2'); f.style.animationDelay=''; } });
   const busy=busyLeft()>0; root.classList.toggle('busy',busy);
   const ab=root.querySelector('.abil'); if(ab&&!busy&&B.abT&&now-B.abT<700){ ab.classList.add('abin'); ab.style.animationDelay=(-(now-B.abT)/1000)+'s'; } }; })(renderBattle);
 setInterval(()=>{ if(!B||!B.b) return; const root=$('#battle'); const busy=busyLeft()>0;
