@@ -1441,8 +1441,9 @@ body.kb-open .sheet{transform:translateY(calc(-1 * min(calc(26*var(--vh)),150px)
 .kbd{gap:5px!important;padding-top:5px!important}
 .aneed{display:inline-flex;align-items:center;gap:3px;justify-content:center;min-width:34px;height:24px;padding:0 6px;border-radius:12px;background:linear-gradient(#ffa63d,#d96a0c);color:#fff;font:12px "Lilita One",system-ui}.aneed::before{content:"⚔"}.aneed.bad{background:linear-gradient(#aaa,#777)}
 .pbtn{position:relative}.pbtn::after{content:"";position:absolute;inset:-7px -2px}
-body.auto-on .castname,body.auto-on .float2.buff{display:none!important}
+body.auto-on .float2.buff{display:none!important}
 .pet.roam{pointer-events:none}.pet.roam svg *{pointer-events:visiblePainted}.pet.roam .roam-alert{pointer-events:auto}
+#battle .tring{opacity:0;transition:opacity .25s;pointer-events:none}#battle .tring.show{opacity:1}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -5605,7 +5606,7 @@ renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b||!B.enT) re
   const busy=busyLeft()>0; root.classList.toggle('busy',busy);
   const ab=root.querySelector('.abil'); if(ab&&!busy&&B.abT&&now-B.abT<700){ ab.classList.add('abin'); ab.style.animationDelay=(-(now-B.abT)/1000)+'s'; } }; })(renderBattle);
 setInterval(()=>{ if(!B||!B.b) return; const root=$('#battle'); const busy=busyLeft()>0;
-  if(busy){ if(B.swapLeft==null) B.stamp=Date.now(); B.wasBusy=true; }
+  if(busy){ if(B.swapStamp==null) B.stamp=Date.now(); B.wasBusy=true; }
   else if(B.wasBusy){ B.wasBusy=false; B.abT=Date.now(); if(root){ root.classList.remove('busy'); const ab=root.querySelector('.abil'); if(ab){ ab.classList.remove('abin'); void ab.offsetWidth; ab.classList.add('abin'); ab.style.animationDelay='0s'; } } }
   else if(root) root.classList.remove('busy'); },80);
 openPick=(function(prev){ return function(side,swap){ if(swap&&busyLeft()>0) return; return prev(side,swap); }; })(openPick);
@@ -5929,7 +5930,7 @@ renderBattle=(function(prev){ return function(){
   let n=0; const iv=setInterval(()=>{ if(give()||++n>40) clearInterval(iv); },1500); })();
 
 // home yard: a tap opens the monster actually drawn under your finger (overlapping monsters no longer steal taps)
-document.addEventListener('click',e=>{ if(!e.isTrusted) return; const t=e.target; if(t.closest&&t.closest('.pet.roam')) return;
+document.addEventListener('click',e=>{ if(!e.isTrusted) return; const t=e.target; if(t.closest&&t.closest('.pet.roam')) return; if(!(t.closest&&t.closest('#view'))||document.querySelector('#battle')||document.querySelector('.sheet')) return;
   if(t.closest&&t.closest('button,a,input,.sheet,.hbar,[data-go]')) return;
   const x=e.clientX, y=e.clientY; let best=null, bd=1e9;
   document.querySelectorAll('.pet.roam').forEach(p=>{ const r=p.getBoundingClientRect(); const pad=8;
@@ -5963,10 +5964,25 @@ syncHud=(function(prev){ return function(b){ prev(b); if(!B||!B.pend) return;
     l[1].querySelector('i').style.width=(mp/m.maxmp*100)+'%'; l[1].querySelector('b').textContent=`${mp} / ${m.maxmp} mana`; });
   document.querySelectorAll('#battle .fighter').forEach(el=>{ const p=B.pend[el.dataset.s+'-'+el.dataset.i]; if(!p||!p.hp) return; const m=b.sides[+el.dataset.s].mons[+el.dataset.i]; const bar=el.querySelector('.fhp i'); if(bar) bar.style.width=Math.max(0,(m.hp-p.hp)/m.maxhp*100)+'%'; }); }; })(syncHud);
 
-// ---------- swapping keeps the turn timer where it was ----------
-act=(function(prev){ return function(b,action){ if(B&&B.b===b&&action&&action.swap!=null){ const ti=timerInfo(); B.swapLeft=ti?ti.left:null; B.swapKey=turnKey(b); } return prev(b,action); }; })(act);
-setInterval(()=>{ if(!B||!B.b||B.swapLeft==null) return; if(turnKey(B.b)!==B.swapKey){ B.swapLeft=null; return; }
-  const tot=B.b.phase==='pick'?PICK_SECS:TURN_SECS; if(busyLeft()>0){ B.stamp=Date.now()-(tot-B.swapLeft)*1000; } else { B.stamp=Date.now()-(tot-B.swapLeft)*1000; B.swapLeft=null; } },60);
+// ---------- swapping doesn't touch the turn clock: it keeps running through the swap ----------
+act=(function(prev){ return function(b,action){ if(B&&B.b===b&&action&&action.swap!=null){ B.swapStamp=B.stamp; B.swapKey=turnKey(b); } return prev(b,action); }; })(act);
+setInterval(()=>{ if(!B||!B.b||B.swapStamp==null) return; if(turnKey(B.b)!==B.swapKey){ B.swapStamp=null; return; } B.stamp=B.swapStamp; },40);
+
+// ---------- a short breather after monsters land, before the first move ----------
+busyLeft=(function(prev){ return function(){ const base=prev(); if(!B) return base;
+  if(base>0){ B._hadBusy=true; B._settleAt=null; return base; }
+  if(B._hadBusy){ B._hadBusy=false; if(B.b&&B.b.phase==='fight'&&B.swapStamp==null) B._settleAt=Date.now()+400; }
+  const s=B._settleAt?B._settleAt-Date.now():0; return s>0?s:0; }; })(busyLeft);
+pickWaitLeft=busyLeft;
+
+// ---------- turn timer only shows while it is actually counting down ----------
+function timerRunning(){ if(!B||!B.b||B.paused||B.b.over) return false; const ti=timerInfo(); if(!ti) return false;
+  if(B.swapStamp==null && busyLeft()>0) return false;
+  const b=B.b; if(b.phase==='pick') return B.ctl[b.pickSide]==='human' || B.ctl[b.pickSide]==='remote';
+  const a=actor(b); if(!a) return false; const c=B.ctl[a.s]; return (c==='human'&&!B.auto) || c==='remote'; }
+function syncRing(){ const r=document.querySelector('#battle .tring'); if(r) r.classList.toggle('show',timerRunning()); }
+renderBattle=(function(prev){ return function(){ const x=prev.apply(this,arguments); syncRing(); return x; }; })(renderBattle);
+setInterval(syncRing,80);
 
 </script>
 </body></html>
