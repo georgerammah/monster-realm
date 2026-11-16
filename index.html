@@ -1402,6 +1402,10 @@ html,body{touch-action:manipulation}
 /* studio intro fades out cleanly: no shadow layers left behind on iPhone */
 #splash.tt-out .tt-name b{text-shadow:none!important;-webkit-text-stroke:0 transparent}
 #splash.tt-out .tt-name,#splash.tt-out .tt-ele{opacity:0!important;transition:opacity .3s!important;animation:none!important}
+
+/* studio intro ends with a blue cover fading in over the logo (the logo itself never fades) */
+.tt-cover{position:absolute;inset:0;z-index:5;background:radial-gradient(circle at 50% 48%,#c8f0ff 0,#4cc3ff 38%,#0aa2f0 75%,#0788d6 100%);animation:ttcov .38s ease-out both}
+@keyframes ttcov{from{opacity:0}to{opacity:1}}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -4556,7 +4560,7 @@ function splash(){
     const el=$('#splash');
     el.classList.add('studio');
     el.innerHTML=`<div class="tt-wrap"><div class="tt-ele">${TT_ELE()}</div><div class="tt-name"><b>Tiny Tusk</b><span>STUDIOS</span></div></div>`;
-    setTimeout(()=>{ el.classList.add('tt-out'); setTimeout(()=>{ el.innerHTML=''; el.classList.remove('studio','tt-out'); loading(); },420); },2300);
+    setTimeout(()=>{ el.insertAdjacentHTML('beforeend','<div class="tt-cover"></div>'); setTimeout(()=>{ el.innerHTML=''; el.classList.remove('studio'); loading(); },420); },2300);
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>

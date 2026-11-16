@@ -1393,6 +1393,10 @@ html,body{touch-action:manipulation}
 /* studio intro fades out cleanly: no shadow layers left behind on iPhone */
 #splash.tt-out .tt-name b{text-shadow:none!important;-webkit-text-stroke:0 transparent}
 #splash.tt-out .tt-name,#splash.tt-out .tt-ele{opacity:0!important;transition:opacity .3s!important;animation:none!important}
+
+/* studio intro ends with a blue cover fading in over the logo (the logo itself never fades) */
+.tt-cover{position:absolute;inset:0;z-index:5;background:radial-gradient(circle at 50% 48%,#c8f0ff 0,#4cc3ff 38%,#0aa2f0 75%,#0788d6 100%);animation:ttcov .38s ease-out both}
+@keyframes ttcov{from{opacity:0}to{opacity:1}}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

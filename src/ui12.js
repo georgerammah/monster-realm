@@ -15,7 +15,7 @@ function splash(){
     const el=$('#splash');
     el.classList.add('studio');
     el.innerHTML=`<div class="tt-wrap"><div class="tt-ele">${TT_ELE()}</div><div class="tt-name"><b>Tiny Tusk</b><span>STUDIOS</span></div></div>`;
-    setTimeout(()=>{ el.classList.add('tt-out'); setTimeout(()=>{ el.innerHTML=''; el.classList.remove('studio','tt-out'); loading(); },420); },2300);
+    setTimeout(()=>{ el.insertAdjacentHTML('beforeend','<div class="tt-cover"></div>'); setTimeout(()=>{ el.innerHTML=''; el.classList.remove('studio'); loading(); },420); },2300);
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
