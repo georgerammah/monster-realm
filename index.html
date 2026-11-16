@@ -5609,9 +5609,9 @@ drawTasks=(function(prev){ return function(){ prev(); if(!TASKSH) return; const 
 drawTasks=(function(prev){ return function(){ prev(); if(!TASKSH) return; const box=TASKSH.sh.body.querySelector('.thmon'); if(!box) return;
   const tm=teamMons(); if(tm.length<2) return; const cur=monBy(S.zoneMon)||tm[0];
   const wrap=document.createElement('div'); wrap.className='thteam';
-  wrap.innerHTML=tm.map(m=>`<div class="thmon ${m.uid===cur.uid?'on':''}" data-u="${m.uid}">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div>`).join('');
+  wrap.innerHTML=tm.map(m=>`<div class="thmon on" data-u="${m.uid}">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div>`).join('');
   box.replaceWith(wrap);
-  wrap.querySelectorAll('[data-u]').forEach(el=>el.onclick=e=>{ e.stopPropagation(); if(el.dataset.u===cur.uid) return openTeam(); S.zoneMon=el.dataset.u; persist(); drawTasks(); }); }; })(drawTasks);
+  wrap.onclick=e=>{ e.stopPropagation(); openTeam(); const iv=setInterval(()=>{ if(TEAMSH) return; clearInterval(iv); if(TASKSH) drawTasks(); },250); }; }; })(drawTasks);
 
 // ---------- energy bar: "17 / 20" fades into "+1 in 1:32" and back ----------
 function fmtEnergy(b){ if(!S||!b) return; tickEnergy(); const word=b.dataset.ew!=null?b.dataset.ew:(b.dataset.ew=/energy\s*$/.test(b.textContent)?' energy':'');
