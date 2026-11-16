@@ -7,7 +7,7 @@ const ZTASKS = {
   volcano:[['act','Toast snacks on cooling lava',16,0,95,130,2,3],['fight','Battle a wild dragon',16,0,120,160,3,3],['act','Soak in the hot springs',17,{mp:170},120,160,2,3],['fight','Face the crater leader',18,0,145,190,3,2],['boss','Ember Volcano Boss',20,0,330,400,5,1]],
   peaks:[['act','Ride the mountain updrafts',21,0,120,170,2,3],['fight','Battle a wild avian',21,0,150,200,3,3],['act','Deliver mail to the summit',22,{mp:210},150,200,2,3],['fight','Face the cloud nest leader',24,0,180,240,3,2],['boss','Sky Peaks Boss',26,0,420,520,5,1]]
 };
-function taskList(zi){ return ZTASKS[ZONES[zi].id].map(([t,n,lv,nd,cash,xp,en,reps,special])=>({t,n,lv,mp:(nd&&nd.mp)||0,hp:(nd&&nd.hp)||0,cash,xp,en,reps,special})); }
+function taskList(zi){ return ZTASKS[ZONES[zi].id].map(([t,n,lv,nd,cash,xp,en,reps,special])=>({t,n,lv,mp:(nd&&nd.mp)||0,hp:(nd&&nd.hp)||0,atk:(nd&&nd.atk)||0,cash,xp,en,reps,special})); }
 function taskProg(zi){ const id=ZONES[zi].id; S.tasks=S.tasks||{}; if(!S.tasks[id]) S.tasks[id]=taskList(zi).map(()=>0); if((S.zones[id]||0)>=4 && S.tasks[id].every(x=>x===0)) S.tasks[id]=taskList(zi).map(t=>t.reps); return S.tasks[id]; }
 function zonePct(zi){ const tl=taskList(zi), p=taskProg(zi); const tot=tl.reduce((a,t)=>a+t.reps,0), got=tl.reduce((a,t,k)=>a+(taskDone(zi,k)?t.reps:Math.min(p[k],t.reps)),0); return Math.round(got/tot*100); }
 function zoneUnlocked(i){ return i===0 || (S.zones[ZONES[i-1].id]||0)>=4; }
@@ -119,13 +119,13 @@ function drawTasks(){
       <div class="hrow"><div class="hbar cash"><span class="ico c">$</span><b>${S.cash|0}</b></div><div class="hbar shrooms"><span class="ico m">${mushroomSVG('#b04fd6')}</span><b>${S.mush}</b></div></div></div>
       <div class="thmon">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div></div>
     <div class="tlist">${tl.map((t,k)=>{
-      const done=pr[k]>=t.reps; const lockBoss=t.t==='boss'&&!nonBossDone; const lvOk=teamMons().some(x=>x.lvl>=t.lv), mpOk=!t.mp||st.mp>=t.mp, hpOk=!t.hp||st.hp>=t.hp;
+      const done=pr[k]>=t.reps; const lockBoss=t.t==='boss'&&!nonBossDone; const lvOk=teamMons().some(x=>x.lvl>=t.lv), mpOk=!t.mp||teamMons().some(x=>monStats(x).mp>=t.mp), hpOk=!t.hp||teamMons().some(x=>monStats(x).hp>=t.hp), atkOk=!t.atk||teamMons().some(x=>monStats(x).atk>=t.atk);
       const can=!lockBoss;
       const why = lockBoss?'Finish the other activities first':'';
       return `<div class="task ${done?'done':''} ${t.t} ${lockBoss?'lockedq':''}">
         <div class="t-h">${t.t!=='act'?`<span class="tkind">${t.t==='boss'?'BOSS':'BATTLE'}</span>`:''}${esc(t.n)}</div>
         <div class="t-grid">
-          <div class="t-needs"><span>Needs:</span><span class="lvb ${lvOk?'':'bad'}">${t.lv}</span>${t.mp?`<span class="mdrop ${mpOk?'':'bad'}">${t.mp}</span>`:''}${t.hp?`<span class="hneed ${hpOk?'':'bad'}">${t.hp}</span>`:''}</div>
+          <div class="t-needs"><span>Needs:</span><span class="lvb ${lvOk?'':'bad'}">${t.lv}</span>${t.mp?`<span class="mdrop ${mpOk?'':'bad'}">${t.mp}</span>`:''}${t.hp?`<span class="hneed ${hpOk?'':'bad'}">${t.hp}</span>`:''}${t.atk?`<span class="aneed ${atkOk?'':'bad'}">${t.atk}</span>`:''}</div>
           <div class="t-rew"><b class="g">$ +${t.cash}</b><b class="x">XP +${t.xp}</b></div>
           <div class="t-cost">⚡ <b>${t.en}</b></div>
           <div class="t-prog"><div><i style="width:${Math.min(1,pr[k]/t.reps)*100}%"></i></div><em>${Math.min(pr[k],t.reps)} / ${t.reps}</em></div>
@@ -135,8 +135,9 @@ function drawTasks(){
   sh.body.querySelector('#tb').onclick=sh.close;
   sh.body.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{ const t=tl[+b.dataset.task];
     if(!teamMons().some(x=>x.lvl>=t.lv)) return alertBox(`You need a level ${t.lv} monster on your team for this task!`);
-    if(t.mp&&st.mp<t.mp) return alertBox("Your mana isn't high enough for this task!");
-    if(t.hp&&st.hp<t.hp) return alertBox("Your life isn't high enough for this task!");
+    if(t.mp&&!teamMons().some(x=>monStats(x).mp>=t.mp)) return alertBox(`You need a monster with ${t.mp} mana on your team for this task!`);
+    if(t.hp&&!teamMons().some(x=>monStats(x).hp>=t.hp)) return alertBox(`You need a monster with ${t.hp} life on your team for this task!`);
+    if(t.atk&&!teamMons().some(x=>monStats(x).atk>=t.atk)) return alertBox(`You need a monster with ${t.atk} attack on your team for this task!`);
     doTask(zi,+b.dataset.task); });
 }
 function doTask(zi,k){
