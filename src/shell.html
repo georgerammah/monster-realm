@@ -1381,6 +1381,14 @@ html,body{touch-action:manipulation}
 .thteam{display:flex;gap:6px;align-items:flex-end;flex:none}
 .thteam .thmon{opacity:.55;transform:scale(.82);transform-origin:bottom center;transition:.15s}
 .thteam .thmon.on{opacity:1;transform:none}
+
+/* energy bar: count and refill timer take turns */
+.hbar.energy .ebar b{display:grid!important;place-items:center}
+.hbar.energy .ebar b>span{grid-area:1/1;white-space:nowrap}
+.hbar.energy .ebar b .ec{animation:ecA 6s linear infinite}
+.hbar.energy .ebar b .et{animation:etA 6s linear infinite}
+@keyframes ecA{0%,42%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
+@keyframes etA{0%,42%{opacity:0}50%,92%{opacity:1}100%{opacity:0}}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

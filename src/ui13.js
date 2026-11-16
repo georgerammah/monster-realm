@@ -384,3 +384,14 @@ drawTasks=(function(prev){ return function(){ prev(); if(!TASKSH) return; const 
   wrap.innerHTML=tm.map(m=>`<div class="thmon ${m.uid===cur.uid?'on':''}" data-u="${m.uid}">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div>`).join('');
   box.replaceWith(wrap);
   wrap.querySelectorAll('[data-u]').forEach(el=>el.onclick=e=>{ e.stopPropagation(); if(el.dataset.u===cur.uid) return openTeam(); S.zoneMon=el.dataset.u; persist(); drawTasks(); }); }; })(drawTasks);
+
+// ---------- energy bar: "17 / 20" fades into "+1 in 1:32" and back ----------
+function fmtEnergy(b){ if(!S||!b) return; tickEnergy(); const word=b.dataset.ew!=null?b.dataset.ew:(b.dataset.ew=/energy\s*$/.test(b.textContent)?' energy':'');
+  const cnt=`${S.energy} / ${S.maxEnergy}${word}`, full=S.energy>=S.maxEnergy;
+  if(full){ if(b.dataset.mode!=='full'){ b.dataset.mode='full'; b.innerHTML=`<span class="ec1">${cnt}</span>`; } else b.firstChild.textContent=cnt; return; }
+  const tm=`+1 in ${nextEnergyIn()}`;
+  if(b.dataset.mode!=='swap'){ b.dataset.mode='swap'; b.innerHTML=`<span class="ec">${cnt}</span><span class="et">${tm}</span>`; const d=-(Date.now()%6000)/1000+'s'; b.querySelectorAll('span').forEach(x=>x.style.animationDelay=d); }
+  else { b.children[0].textContent=cnt; b.children[1].textContent=tm; } }
+function fmtAllEnergy(){ document.querySelectorAll('.hbar.energy .ebar b').forEach(fmtEnergy); }
+setInterval(fmtAllEnergy,500);
+new MutationObserver(ms=>{ for(const m of ms) for(const n of m.addedNodes){ if(n.nodeType===1&&(n.matches&&n.matches('.hbar.energy, .ebar')||n.querySelector&&n.querySelector('.hbar.energy .ebar b'))){ fmtAllEnergy(); return; } } }).observe(document.body,{childList:true,subtree:true});

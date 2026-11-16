@@ -666,7 +666,7 @@ drawMon=(function(prev){ return function(){ prev(); if(!MONSH) return; const m=m
   MONSH.sh.body.querySelectorAll('.pbtns').forEach(x=>x.style.visibility=any?'':'hidden'); }; })(drawMon);
 // keep every energy timer ticking (hub, shop, zones, champions)
 setInterval(()=>{ if(!S) return; tickEnergy(); const pct=S.energy/S.maxEnergy*100, txt=`${S.energy<S.maxEnergy?`+1 in ${nextEnergyIn()} · `:''}${S.energy} / ${S.maxEnergy}`;
-  document.querySelectorAll('.thud .ebar').forEach(e=>{ const i=e.querySelector('i'), b=e.querySelector('b'); if(i) i.style.width=pct+'%'; if(b) b.textContent=txt; }); },1000);
+  document.querySelectorAll('.thud .ebar').forEach(e=>{ const i=e.querySelector('i'), b=e.querySelector('b'); if(i) i.style.width=pct+'%'; }); },1000);
 // monster name shows when it enters the field, then fades (survives re-renders)
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.fnT=B.fnT||{}; const now=Date.now();
   document.querySelectorAll('#battle .fighter').forEach(el=>{ const s=el.dataset.s, i=el.dataset.i, f=el.querySelector('.fname'); if(!f) return;

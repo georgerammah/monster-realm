@@ -1390,6 +1390,14 @@ html,body{touch-action:manipulation}
 .thteam{display:flex;gap:6px;align-items:flex-end;flex:none}
 .thteam .thmon{opacity:.55;transform:scale(.82);transform-origin:bottom center;transition:.15s}
 .thteam .thmon.on{opacity:1;transform:none}
+
+/* energy bar: count and refill timer take turns */
+.hbar.energy .ebar b{display:grid!important;place-items:center}
+.hbar.energy .ebar b>span{grid-area:1/1;white-space:nowrap}
+.hbar.energy .ebar b .ec{animation:ecA 6s linear infinite}
+.hbar.energy .ebar b .et{animation:etA 6s linear infinite}
+@keyframes ecA{0%,42%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
+@keyframes etA{0%,42%{opacity:0}50%,92%{opacity:1}100%{opacity:0}}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -5195,7 +5203,7 @@ drawMon=(function(prev){ return function(){ prev(); if(!MONSH) return; const m=m
   MONSH.sh.body.querySelectorAll('.pbtns').forEach(x=>x.style.visibility=any?'':'hidden'); }; })(drawMon);
 // keep every energy timer ticking (hub, shop, zones, champions)
 setInterval(()=>{ if(!S) return; tickEnergy(); const pct=S.energy/S.maxEnergy*100, txt=`${S.energy<S.maxEnergy?`+1 in ${nextEnergyIn()} · `:''}${S.energy} / ${S.maxEnergy}`;
-  document.querySelectorAll('.thud .ebar').forEach(e=>{ const i=e.querySelector('i'), b=e.querySelector('b'); if(i) i.style.width=pct+'%'; if(b) b.textContent=txt; }); },1000);
+  document.querySelectorAll('.thud .ebar').forEach(e=>{ const i=e.querySelector('i'), b=e.querySelector('b'); if(i) i.style.width=pct+'%'; }); },1000);
 // monster name shows when it enters the field, then fades (survives re-renders)
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.fnT=B.fnT||{}; const now=Date.now();
   document.querySelectorAll('#battle .fighter').forEach(el=>{ const s=el.dataset.s, i=el.dataset.i, f=el.querySelector('.fname'); if(!f) return;
@@ -5591,6 +5599,17 @@ drawTasks=(function(prev){ return function(){ prev(); if(!TASKSH) return; const 
   wrap.innerHTML=tm.map(m=>`<div class="thmon ${m.uid===cur.uid?'on':''}" data-u="${m.uid}">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div>`).join('');
   box.replaceWith(wrap);
   wrap.querySelectorAll('[data-u]').forEach(el=>el.onclick=e=>{ e.stopPropagation(); if(el.dataset.u===cur.uid) return openTeam(); S.zoneMon=el.dataset.u; persist(); drawTasks(); }); }; })(drawTasks);
+
+// ---------- energy bar: "17 / 20" fades into "+1 in 1:32" and back ----------
+function fmtEnergy(b){ if(!S||!b) return; tickEnergy(); const word=b.dataset.ew!=null?b.dataset.ew:(b.dataset.ew=/energy\s*$/.test(b.textContent)?' energy':'');
+  const cnt=`${S.energy} / ${S.maxEnergy}${word}`, full=S.energy>=S.maxEnergy;
+  if(full){ if(b.dataset.mode!=='full'){ b.dataset.mode='full'; b.innerHTML=`<span class="ec1">${cnt}</span>`; } else b.firstChild.textContent=cnt; return; }
+  const tm=`+1 in ${nextEnergyIn()}`;
+  if(b.dataset.mode!=='swap'){ b.dataset.mode='swap'; b.innerHTML=`<span class="ec">${cnt}</span><span class="et">${tm}</span>`; const d=-(Date.now()%6000)/1000+'s'; b.querySelectorAll('span').forEach(x=>x.style.animationDelay=d); }
+  else { b.children[0].textContent=cnt; b.children[1].textContent=tm; } }
+function fmtAllEnergy(){ document.querySelectorAll('.hbar.energy .ebar b').forEach(fmtEnergy); }
+setInterval(fmtAllEnergy,500);
+new MutationObserver(ms=>{ for(const m of ms) for(const n of m.addedNodes){ if(n.nodeType===1&&(n.matches&&n.matches('.hbar.energy, .ebar')||n.querySelector&&n.querySelector('.hbar.energy .ebar b'))){ fmtAllEnergy(); return; } } }).observe(document.body,{childList:true,subtree:true});
 
 </script>
 </body></html>
