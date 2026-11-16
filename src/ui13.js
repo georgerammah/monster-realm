@@ -323,7 +323,7 @@ renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b||!B.enT) re
   const busy=busyLeft()>0; root.classList.toggle('busy',busy);
   const ab=root.querySelector('.abil'); if(ab&&!busy&&B.abT&&now-B.abT<700){ ab.classList.add('abin'); ab.style.animationDelay=(-(now-B.abT)/1000)+'s'; } }; })(renderBattle);
 setInterval(()=>{ if(!B||!B.b) return; const root=$('#battle'); const busy=busyLeft()>0;
-  if(busy){ B.stamp=Date.now(); B.wasBusy=true; }
+  if(busy){ if(B.swapLeft==null) B.stamp=Date.now(); B.wasBusy=true; }
   else if(B.wasBusy){ B.wasBusy=false; B.abT=Date.now(); if(root){ root.classList.remove('busy'); const ab=root.querySelector('.abil'); if(ab){ ab.classList.remove('abin'); void ab.offsetWidth; ab.classList.add('abin'); ab.style.animationDelay='0s'; } } }
   else if(root) root.classList.remove('busy'); },80);
 openPick=(function(prev){ return function(side,swap){ if(swap&&busyLeft()>0) return; return prev(side,swap); }; })(openPick);
@@ -654,3 +654,34 @@ document.addEventListener('click',e=>{ if(!e.isTrusted) return; const t=e.target
     if(x<r.left-pad||x>r.right+pad||y<r.top-pad||y>r.bottom+pad) return;
     const d=Math.hypot(x-(r.left+r.right)/2,y-(r.top+r.bottom)/2); if(d<bd){ bd=d; best=p; } });
   if(best){ e.stopPropagation(); best.click(); } },true);
+
+// ---------- only one Mana Bowl and one Life Bowl per monster ----------
+const ONE_EACH=['manabowl','lifebowl'];
+function dupEquip(m,slot,id){ return !!id&&ONE_EACH.includes(id)&&Object.entries(m.eq||{}).some(([k,v])=>v===id&&String(k)!==String(slot)); }
+(function(){ setTimeout(()=>{ try{ let ch=0; (S.mons||[]).forEach(m=>{ const seen={}; Object.keys(m.eq||{}).forEach(k=>{ const id=m.eq[k]; if(ONE_EACH.includes(id)){ if(seen[id]){ m.eq[k]=null; S.inv[id]=(S.inv[id]|0)+1; ch=1; } seen[id]=1; } }); }); if(ch) persist(); }catch(_){} },1500); })();
+let PICKCTX=null;
+pickItem=(function(prev){ return function(m,slot){ PICKCTX={m,slot}; return prev(m,slot); }; })(pickItem);
+document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('#psel,#s2eq'); if(!b) return; let m,slot,id;
+  if(b.id==='s2eq'){ if(!SHOPCTX) return; m=SHOPCTX.m; slot=SHOPCTX.slot; id=SHOPSEL||Object.keys(ITEMS)[0]; }
+  else { if(!PICKCTX) return; m=PICKCTX.m; slot=PICKCTX.slot; const s=b.closest('.sheet')&&b.closest('.sheet').querySelector('[data-pi].sel'); id=s?s.dataset.pi:null; }
+  if(m&&dupEquip(m,slot,id)){ e.stopImmediatePropagation(); e.preventDefault(); alertBox(`${SPI[m.sp].n} already has a ${ITEMS[id].n} equipped. Only one per monster.`); } },true);
+
+// ---------- life/mana bars rise when the end-of-turn "+16" pops, not before ----------
+animateBattle=(function(prev){ return function(root,b,animating){ B.pend={}; if(b.ev) b.ev=b.ev.filter(e=>!(e.end&&(e.k==='heal'||e.k==='mana')&&!(e.v>0)));
+  if(animating) (b.ev||[]).forEach(e=>{ if(e.end&&(e.k==='heal'||e.k==='mana')&&e.v>0){ const k=e.s+'-'+e.i; const p=B.pend[k]=B.pend[k]||{hp:0,mp:0}; p[e.k==='heal'?'hp':'mp']+=e.v; } });
+  const r=prev(root,b,animating); setTimeout(()=>{ if(B&&B.b===b&&B.pend&&Object.keys(B.pend).length){ B.pend={}; syncHud(b); } },7000); return r; }; })(animateBattle);
+syncFighter=(function(prev){ return function(b,s,i){ const el=fEl(s,i), k=s+'-'+i, p=B&&B.pend&&B.pend[k];
+  if(p&&el) el.querySelectorAll('.float2:not([data-pc])').forEach(f=>{ f.dataset.pc=1; const kind=f.classList.contains('heal')?'hp':f.classList.contains('mana')?'mp':null; if(!kind||!p[kind]) return;
+    const v=parseInt(f.textContent.replace('+',''),10); if(v>0&&v<=p[kind]) p[kind]-=v; if(!p.hp&&!p.mp) delete B.pend[k]; });
+  return prev(b,s,i); }; })(syncFighter);
+syncHud=(function(prev){ return function(b){ prev(b); if(!B||!B.pend) return;
+  document.querySelectorAll('#battle .bhp').forEach(el=>{ const s=+el.dataset.hs, i=+el.dataset.hi, p=B.pend[s+'-'+i]; if(!p) return; const m=b.sides[s].mons[i]; const l=el.querySelectorAll('.lb');
+    const hp=Math.max(0,m.hp-p.hp), mp=Math.max(0,m.mp-p.mp);
+    l[0].querySelector('i').style.width=(hp/m.maxhp*100)+'%'; l[0].querySelector('b').textContent=`${hp} / ${m.maxhp} life`;
+    l[1].querySelector('i').style.width=(mp/m.maxmp*100)+'%'; l[1].querySelector('b').textContent=`${mp} / ${m.maxmp} mana`; });
+  document.querySelectorAll('#battle .fighter').forEach(el=>{ const p=B.pend[el.dataset.s+'-'+el.dataset.i]; if(!p||!p.hp) return; const m=b.sides[+el.dataset.s].mons[+el.dataset.i]; const bar=el.querySelector('.fhp i'); if(bar) bar.style.width=Math.max(0,(m.hp-p.hp)/m.maxhp*100)+'%'; }); }; })(syncHud);
+
+// ---------- swapping keeps the turn timer where it was ----------
+act=(function(prev){ return function(b,action){ if(B&&B.b===b&&action&&action.swap!=null){ const ti=timerInfo(); B.swapLeft=ti?ti.left:null; B.swapKey=turnKey(b); } return prev(b,action); }; })(act);
+setInterval(()=>{ if(!B||!B.b||B.swapLeft==null) return; if(turnKey(B.b)!==B.swapKey){ B.swapLeft=null; return; }
+  const tot=B.b.phase==='pick'?PICK_SECS:TURN_SECS; if(busyLeft()>0){ B.stamp=Date.now()-(tot-B.swapLeft)*1000; } else { B.stamp=Date.now()-(tot-B.swapLeft)*1000; B.swapLeft=null; } },60);
