@@ -5889,7 +5889,7 @@ ICON.mkclaw='<path d="M4 15 L15.5 5.5 L12.5 9.5 L17 7.5 Z M5 19 L18 8.5 L14.8 12
 newBattle=(function(prev){ return function(a,b,o){
   if(o&&o.mode==='campaign'&&a&&a.name===S.name&&a.mons&&a.mons.length===1){
     const tm=teamMons(); if(tm.length>1){ const first=a.mons[0];
-      const rest=tm.filter(m=>m.uid!==first.uid).map(snapOf); a=Object.assign({},a,{mons:[first].concat(rest)}); o=Object.assign({},o,{single:true}); } }
+      const mons=tm.map(m=>m.uid===first.uid?first:snapOf(m)); if(!tm.some(m=>m.uid===first.uid)) mons.unshift(first); a=Object.assign({},a,{mons}); o=Object.assign({},o,{single:true}); } }
   return prev(a,b,o); }; })(newBattle);
 drive=(function(prev){ let introFor=null; return function(){
   if(B&&B.mode==='campaign'&&B.b&&B.b.single&&introFor!==B.b){ introFor=B.b; B.stamp=Date.now(); B.tkey=turnKey(B.b); }
