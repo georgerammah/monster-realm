@@ -836,3 +836,90 @@ TRACKS.arena={bpm:176,type:'square',ld:.9,lv:.36,
 playMusic=(function(prev){ return function(n){ if(n==='battle'&&B){ n=(B.mode==='campaign'&&B.meta&&B.meta.zi!=null)?'z_'+ZONES[B.meta.zi].id:'arena'; } return prev(n); }; })(playMusic);
 // start the music as early as the phone allows (iPhone needs the first touch; anything else plays right away)
 setTimeout(()=>{ try{ audioInit(); }catch(_){} },400);
+// ===== ART v4: four zone-exclusive families (penguin, ram, frog, lizard) in the v3 style =====
+function penguinNew(c1,c2,c3,st,id){
+  const G=id+'a'; let d=`<defs>${grad(G,c1)}</defs>`, g='';
+  g+=`<ellipse cx="44" cy="91" rx="8" ry="2.6" fill="#f2a33a" ${s3}/><ellipse cx="58" cy="91" rx="8" ry="2.6" fill="#f2a33a" ${s3}/>`;
+  g+=`<path d="M50 30 Q30 32 30 62 Q30 88 50 89 Q70 88 70 62 Q70 32 50 30Z" fill="url(#${G})" ${s3}/>`;
+  g+=`<path d="M50 44 Q38 48 39 66 Q40 84 51 85 Q63 84 63 66 Q63 48 50 44Z" fill="${c3}"/>`;
+  g+=`<path d="M31 52 Q20 62 24 76 Q30 70 33 60Z" fill="${shade(c1,-18)}" ${s3}/><path d="M69 52 Q80 62 76 76 Q70 70 67 60Z" fill="${shade(c1,-18)}" ${s3}/>`;
+  if(st>=1) g+=`<path d="M42 31 l3 -9 l3 7 l3 -10 l3 9 l3 -6 l1 9" fill="${c2}" ${s3} stroke-width="1.5"/>`;
+  if(st>=2) g+=`<path d="M30 50 l-7 -6 l9 0z M70 50 l7 -6 l-9 0z" fill="${c2}" ${s3} stroke-width="1.5"/>`;
+  g+=`<path d="M58 42 L72 45 L58 49Z" fill="#f2a33a" ${s3}/>`;
+  g+=eye3(56,38,st===0?4.4:3.9,'#4fb3ff',st,-4);
+  return d+g;
+}
+function ramNew(c1,c2,c3,st,id){
+  const G=id+'a', H=id+'b'; const dk=shade(c1,-30); let d=`<defs>${grad(G,c1)}${grad(H,c3)}</defs>`, g='';
+  g+=leg3(34,66,32,78,33,90,5,dk)+leg3(60,66,61,78,60,90,5,dk);
+  g+=q3body(G,c3,22,66,50,72);
+  for(let k=0;k<6;k++){ const x=26+k*7; g+=`<circle cx="${x}" cy="${51+(k%2)*2}" r="${5+st*.6}" fill="url(#${H})" ${s3} stroke-width="1.4"/>`; }
+  g+=`<path d="M20 58 q-6 -2 -7 -8 q5 1 8 4" fill="${c3}" ${s3} stroke-width="1.4"/>`;
+  g+=leg3(30,66,27,78,29,91,5.5,`url(#${G})`)+leg3(57,66,58,78,57,91,5.5,`url(#${G})`);
+  const hx=74, hy=st===0?46:43;
+  g+=`<path d="M60 60 Q64 ${hy+6} ${hx-6} ${hy+4} L${hx+2} ${hy+12} Q68 62 66 68Z" fill="url(#${G})" ${s3}/>`;
+  g+=`<path d="M${hx-9} ${hy+2} Q${hx-8} ${hy-9} ${hx+2} ${hy-9} Q${hx+12} ${hy-8} ${hx+16} ${hy+3} Q${hx+16} ${hy+11} ${hx+6} ${hy+12} Q${hx-6} ${hy+12} ${hx-9} ${hy+2}Z" fill="url(#${G})" ${s3}/>`;
+  const R=5+st*2.2; g+=`<path d="M${hx-4} ${hy-7} q${-R} ${-R*.9} ${-R*1.5} ${R*.3} q${R*.2} ${R*1.4} ${R*1.3} ${R*.9}" fill="none" stroke="${OL3}" stroke-width="${4.8+st}" stroke-linecap="round"/><path d="M${hx-4} ${hy-7} q${-R} ${-R*.9} ${-R*1.5} ${R*.3} q${R*.2} ${R*1.4} ${R*1.3} ${R*.9}" fill="none" stroke="${c2}" stroke-width="${2.8+st}" stroke-linecap="round"/>`;
+  if(st>=1) g+=`<path d="M${hx-14} ${hy-12} l-4 6 h3 l-3 6" fill="none" stroke="#ffe066" stroke-width="1.8" stroke-linejoin="round"/>`;
+  g+=`<ellipse cx="${hx+14}" cy="${hy+6}" rx="1.5" ry="1.1" fill="${OL3}"/><path d="M${hx+8} ${hy+9} q3 1.4 6 -.4" fill="none" stroke="${OL3}" stroke-width="1.2"/>`;
+  g+=eye3(hx+5,hy-1,st===0?4.4:3.9,'#f5c542',st,-6);
+  return d+g;
+}
+function frogNew(c1,c2,c3,st,id){
+  const G=id+'a'; let d=`<defs>${grad(G,c1)}</defs>`, g='';
+  g+=`<path d="M24 86 Q14 84 16 74 Q22 70 30 76Z" fill="${shade(c1,-20)}" ${s3}/><path d="M76 86 Q86 84 84 74 Q78 70 70 76Z" fill="${shade(c1,-20)}" ${s3}/>`;
+  g+=`<path d="M22 78 Q20 52 50 50 Q80 52 78 78 Q76 90 50 90 Q24 90 22 78Z" fill="url(#${G})" ${s3}/>`;
+  g+=`<path d="M32 80 Q50 92 68 80 Q60 72 50 72 Q40 72 32 80Z" fill="${c3}" opacity=".95"/>`;
+  if(st>=1) [[34,60],[62,58],[48,57],[70,68]].forEach(([x,y])=>{ g+=`<circle cx="${x}" cy="${y}" r="2.6" fill="${c2}" opacity=".85"/>`; });
+  if(st>=2) g+=`<path d="M38 52 l-4 -9 l7 5 l1 -10 l5 9 l3 -8 l2 10" fill="${c2}" ${s3} stroke-width="1.4"/>`;
+  g+=`<path d="M36 88 q-3 2 -8 2 M64 88 q3 2 8 2" stroke="${OL3}" stroke-width="2.2" stroke-linecap="round"/>`;
+  g+=`<circle cx="38" cy="50" r="9" fill="url(#${G})" ${s3}/><circle cx="62" cy="50" r="9" fill="url(#${G})" ${s3}/>`;
+  g+=`<path d="M36 70 Q50 78 66 69" fill="none" stroke="${OL3}" stroke-width="1.8" stroke-linecap="round"/>`;
+  g+=eye3(38,50,5.2,'#ffd23a',st,-4)+eye3(62,50,5.2,'#ffd23a',st,4);
+  return d+g;
+}
+function lizardNew(c1,c2,c3,st,id){
+  const G=id+'a'; const dk=shade(c1,-28); let d=`<defs>${grad(G,c1)}</defs>`, g='';
+  g+=tail3(`M24 74 Q8 76 6 64 Q5 56 12 54`,5.5,c1);
+  g+=leg3(30,76,27,84,28,91,4.6,dk)+leg3(58,76,60,84,60,91,4.6,dk);
+  g+=`<path d="M22 76 Q22 62 40 61 Q60 60 68 66 Q70 76 60 80 Q40 84 22 76Z" fill="url(#${G})" ${s3}/>`;
+  g+=`<path d="M28 78 Q44 84 60 78 Q46 74 28 78Z" fill="${c3}" opacity=".9"/>`;
+  const n=3+st*2; for(let k=0;k<n;k++){ const x=26+k*(38/n); g+=`<path d="M${x} ${63-k%2} l3 ${-5-st*1.5} l3 ${5+st*1.5}z" fill="${c2}" ${s3} stroke-width="1.3"/>`; }
+  g+=leg3(34,77,31,84,33,91,5,`url(#${G})`,1)+leg3(62,76,64,84,64,91,5,`url(#${G})`,1);
+  const hx=76, hy=st===0?62:60;
+  g+=`<path d="M64 66 Q68 ${hy-8} ${hx} ${hy-7} Q${hx+12} ${hy-6} ${hx+18} ${hy+1} Q${hx+16} ${hy+7} ${hx+4} ${hy+8} Q68 ${hy+10} 64 72Z" fill="url(#${G})" ${s3}/>`;
+  g+=`<path d="M${hx+3} ${hy+4} Q${hx+10} ${hy+5} ${hx+17} ${hy+2}" fill="none" stroke="${OL3}" stroke-width="1.3"/><ellipse cx="${hx+15}" cy="${hy-2}" rx="1.3" ry="1" fill="${OL3}"/>`;
+  if(st>=1) g+=`<path d="M${hx-2} ${hy-6} l-3 -7 l6 4z" fill="${c2}" ${s3} stroke-width="1.3"/>`;
+  g+=eye3(hx+4,hy-3,st===0?4:3.6,'#ff9a2a',st,-4);
+  return d+g;
+}
+
+// zone-exclusive families and their monsters
+Object.assign(FAM,{
+  pengu:{n:'Penguin', el:'water', shape:'penguin', base:{hp:78,atk:15,mp:47,spd:9}},
+  ram:{n:'Ram', el:'bolt', shape:'ram', base:{hp:80,atk:16,mp:43,spd:12}},
+  frog:{n:'Frog', el:'nature', shape:'frog', base:{hp:76,atk:15,mp:48,spd:13}},
+  lizard:{n:'Lizard', el:'fire', shape:'lizard', base:{hp:75,atk:17,mp:44,spd:14}}});
+[['frostbill','Frostbill','pengu',['#4a6fa5','#bfe8ff','#f4fbff'],['blizzard','hydrate','bubble','camelback']],
+ ['glacirk','Glacirk','pengu',['#2f3e66','#7fd6ff','#eef8ff'],['wave','mshield','manashards','thickskin']],
+ ['slushy','Slushy','pengu',['#6fa8d8','#e8f6ff','#ffffff'],['splash','absorb','purge','sweaty']],
+ ['tundrake','Tundrake','pengu',['#3b4a5e','#9fd8f6','#f0f6fb'],['blizzard','wave','hydrate','grounded']],
+ ['zapram','Zapram','ram',['#e8e0c8','#f2c400','#fffbe8'],['bolt','charge','lshield','pounce']],
+ ['thunderhorn','Thunderhorn','ram',['#8f86b8','#ffd84d','#f3f0ff'],['arclightning','staticd','spark','thickskin']],
+ ['voltwool','Voltwool','ram',['#fff3c4','#6b5ab0','#ffffff'],['shock','cripple','nshield','sweaty']],
+ ['stormbleat','Stormbleat','ram',['#5d6578','#9be3ff','#eef3f7'],['stormcloud','bolt','charge','grounded']],
+ ['bogloon','Bogloon','frog',['#5e8a4a','#c8ff9a','#e9f5df'],['acidbite','poison','leech','roots']],
+ ['croakshade','Croakshade','frog',['#3a4a3e','#9b6bd6','#e6efe4'],['feedback','emeraldshift','feed','thickskin']],
+ ['mirefang','Mirefang','frog',['#7a8a3a','#e05a3a','#f3f6df'],['acidbite','toxicfumes','naturespower','pounce']],
+ ['lilyhop','Lilyhop','frog',['#6fcf8a','#ff8ac0','#f2fff6'],['regrowth','leech','nshield','sweaty']],
+ ['cindrel','Cindrel','lizard',['#d2503a','#ffcf4a','#ffe8dc'],['emberspit','burn','flicker','pounce']],
+ ['scarscale','Scarscale','lizard',['#8a3226','#ff8a2a','#f6dcd4'],['moltencore','blast','fshield','thickskin']],
+ ['pyrotail','Pyrotail','lizard',['#ff8a4a','#5a1a2a','#fff1dc'],['flame','berserk','firefocus','double']],
+ ['ashcrawl','Ashcrawl','lizard',['#5a5560','#e3262d','#ecebf2'],['firewall','emberspit','furyfist','grounded']]
+].forEach(([id,n,fam,col,sk])=>{ const sp={id,n,fam,col,tw:{},sk:sk.filter(k=>SK[k])}; SP.push(sp); SPI[id]=sp; });
+Object.assign(ZONES.find(z=>z.id==='lagoon'),{fam:'pengu'}); Object.assign(ZONES.find(z=>z.id==='stormplains'),{fam:'ram'});
+Object.assign(ZONES.find(z=>z.id==='bog'),{fam:'frog'}); Object.assign(ZONES.find(z=>z.id==='crags'),{fam:'lizard'});
+Object.assign(ATK_MOUTH,{penguin:[1.3,1.9,.9],ram:[1.6,2.0,1.0],frog:[1.2,2.2,1.1],lizard:[1.6,1.9,.9]});
+monSVG=(function(prev){ const F={penguin:penguinNew,ram:ramNew,frog:frogNew,lizard:lizardNew}; return function(spId,lvl,cls){ const sp=SPI[spId]; const shape=sp&&FAM[sp.fam]&&FAM[sp.fam].shape; if(!F[shape]||(typeof CUSTOM_ART!=='undefined'&&CUSTOM_ART[spId])) return prev(spId,lvl,cls);
+  const st=stageOf(lvl); const c1=mute(sp.col[0],22), c2=mute(sp.col[1],12), c3=mute(sp.col[2],10); const id='m'+(GID++); const sc=[0.8,0.92,1][st];
+  return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${sc}) translate(-50 -92)">${F[shape](c1,c2,c3,st,id)}</g></svg>`; }; })(monSVG);
