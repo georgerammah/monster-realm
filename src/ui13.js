@@ -84,7 +84,14 @@ function askNewName(msg){ return new Promise(res=>{
 document.addEventListener('click',async e=>{ const go=e.target.closest&&e.target.closest('#go'); if(!go||!window.MR_ACCT||go.dataset.ok) return; const nm=document.querySelector('#nm'); if(!nm) return;
   e.stopImmediatePropagation(); e.preventDefault(); const v=nm.value.trim(); if(!v) return;
   go.disabled=true; const old=go.textContent; go.textContent='Checking name…'; const r=await claimName(v); go.textContent=old; go.disabled=false;
-  if(!r.ok&&(r.err==='taken'||r.err==='invalid')){ nameMsg(nameError(r.err)); return; } go.dataset.ok=1; go.click(); },true);
+  if(!r.ok&&(r.err==='taken'||r.err==='invalid')){ nameMsg(nameError(r.err)); if(r.err==='taken') nameTaken(v); return; } go.dataset.ok=1; go.click(); },true);
+function nameTaken(v){ try{ kbClose(); }catch(_){}
+  const w=document.createElement('div'); w.className='abox-wrap';
+  w.innerHTML=`<div class="abox"><p><b>"${esc(v)}" is already taken.</b><br>If it's yours, restore your game with your transfer code.</p><div class="abox-row"><button class="abox-ok" id="ntn">New name</button><button class="abox-ok" id="nty">Restore</button></div></div>`;
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add('on'));
+  const close=()=>{ w.classList.remove('on'); setTimeout(()=>w.remove(),200); };
+  w.querySelector('#ntn').onclick=()=>{ close(); const nm=document.querySelector('#nm'); if(nm){ nm.value=''; nm.dispatchEvent(new Event('input',{bubbles:true})); } };
+  w.querySelector('#nty').onclick=()=>{ close(); openRestore(); }; }
 // onboarding name: say what's wrong right under the box (never a hidden popup)
 const NAME_OK=v=>{ const k=v.trim().toLowerCase(); return k.length>=2&&k.length<=16&&/^[a-z0-9 _.-]+$/.test(k); };
 function nameMsg(t){ const nm=document.querySelector('#nm'); if(!nm) return alertBox(t); let e=document.querySelector('.nm-err'); if(!e){ e=document.createElement('p'); e.className='nm-err'; nm.insertAdjacentElement('afterend',e); } e.textContent=t||''; }
@@ -944,3 +951,20 @@ PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const go=document.querySelector('#go'); if(!go||!document.querySelector('#nm')||document.querySelector('#onbrst')) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
+
+// rotated play: our own keyboard only — the iPhone keyboard must never open (it shrinks home-screen apps for the session)
+(function(){ const lock=el=>{ if(!el||el.readOnly) return; if(el.type&&/checkbox|radio|range|file|button|submit/.test(el.type)) return; el.readOnly=true; el.dataset.ro='1'; };
+  const unlock=()=>document.querySelectorAll('[data-ro]').forEach(el=>{ el.readOnly=false; delete el.dataset.ro; });
+  const sweep=()=>{ if(isRot()) document.querySelectorAll('input,textarea').forEach(lock); else unlock(); };
+  new MutationObserver(sweep).observe(document.documentElement,{childList:true,subtree:true});
+  ['touchstart','pointerdown'].forEach(ev=>document.addEventListener(ev,e=>{ if(!isRot()) return; const el=e.target&&e.target.closest&&e.target.closest('input,textarea'); if(el) lock(el); },{capture:true,passive:true}));
+  document.addEventListener('click',e=>{ if(!isRot()) return; const el=e.target&&e.target.closest&&e.target.closest('input,textarea'); if(el&&el.dataset.ro&&!KB) kbOpen(el); },true);
+  addEventListener('resize',sweep); })();
+// home-screen app: if iOS left the screen shrunk (black band), force it to re-measure
+(function(){ const SA=navigator.standalone||matchMedia('(display-mode: standalone)').matches; if(!SA) return;
+  const mx={}; const key=()=>innerWidth>innerHeight?'l':'p';
+  const note=()=>{ const k=key(), v=Math.max(innerHeight,innerWidth); mx[k]=Math.max(mx[k]||0,v); };
+  const heal=()=>{ const k=key(); if(!mx[k]||mx[k]-Math.max(innerHeight,innerWidth)<=4) return; const b=document.body; b.style.display='none'; void b.offsetHeight; b.style.display=''; setTimeout(()=>{ try{ updRot(); window.scrollTo(0,0); }catch(_){} },60); };
+  note(); addEventListener('resize',()=>{ note(); setTimeout(heal,150); }); document.addEventListener('focusout',()=>setTimeout(heal,160));
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') setTimeout(heal,200); });
+  kbClose=(function(prev){ return function(){ const r=prev.apply(this,arguments); setTimeout(heal,160); return r; }; })(kbClose); })();
