@@ -4,14 +4,32 @@ let _probe=null;
 function insets(){ if(!_probe){ _probe=document.createElement('div'); _probe.style.cssText='position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)'; document.documentElement.appendChild(_probe); }
   const c=getComputedStyle(_probe); return {t:parseFloat(c.paddingTop)||0,b:parseFloat(c.paddingBottom)||0}; }
 function updRot(){
-  const r=matchMedia('(orientation:portrait)').matches && matchMedia('(pointer:coarse)').matches;
-  const bs=document.body.style; document.body.classList.toggle('rot',r);
-  if(r){ const SA=(navigator.standalone||matchMedia('(display-mode: standalone)').matches)?Math.max(screen.height,screen.width):0; const VHP=(()=>{ let p=document.getElementById('vhprobe'); if(!p){ p=document.createElement('div'); p.id='vhprobe'; p.style.cssText='position:fixed;left:-9px;top:0;width:1px;height:100vh;visibility:hidden;pointer-events:none'; document.documentElement.appendChild(p); } return Math.max(p.getBoundingClientRect().height, (()=>{ p.style.height='100lvh'; const h=p.getBoundingClientRect().height; p.style.height='100vh'; return h||0; })()); })(); const FX=(()=>{ let p=document.getElementById('fxprobe'); if(!p){ p=document.createElement('div'); p.id='fxprobe'; p.style.cssText='position:fixed;top:0;left:-2px;width:1px;bottom:0;visibility:hidden;pointer-events:none'; document.documentElement.appendChild(p); } return p.getBoundingClientRect().height||0; })(); const i=insets(); const H=SA?Math.max(FX, innerHeight, i.t>0?Math.max(screen.height,screen.width):0):Math.max((window.visualViewport&&visualViewport.height)||innerHeight, innerHeight, document.documentElement.clientHeight), W=(window.visualViewport&&visualViewport.width)||innerWidth;
-    const gw=Math.round(H-i.t-i.b), gh=Math.round(W);
-    bs.width=Math.round(H)+'px'; bs.height=gh+'px'; bs.top='0px';
+  // One sizing rule for every case. Phone upright with rotation lock -> we turn the page; phone in landscape -> iPhone turns it.
+  const de=document.documentElement, bs=document.body.style;
+  const coarse=matchMedia('(pointer:coarse)').matches;
+  const SA=!!(navigator.standalone||matchMedia('(display-mode: standalone)').matches);
+  const vw=(window.visualViewport&&visualViewport.width)||innerWidth, vh=(window.visualViewport&&visualViewport.height)||innerHeight;
+  const port=coarse && innerHeight>innerWidth;
+  const i=insets();
+  const sL=Math.max(screen.width,screen.height), sS=Math.min(screen.width,screen.height);
+  // Home-screen app: iOS can report a viewport shorter than the glass (gap above the home bar). When the page is drawn
+  // under the status bar (top inset > 0) the page starts at the top of the glass, so the full screen length is safe to fill.
+  const fillGlass=SA && (port ? i.t>0 : true);
+  document.body.classList.toggle('rot',port);
+  let longPx, shortPx;
+  if(port){ longPx=fillGlass?Math.max(sL,innerHeight):Math.max(vh,innerHeight); shortPx=Math.min(vw,innerWidth)||innerWidth; }
+  else { longPx=Math.max(vw,innerWidth); shortPx=fillGlass?Math.max(Math.min(sS,innerHeight+40),innerHeight):vh; }
+  longPx=Math.round(longPx); shortPx=Math.round(shortPx);
+  window.__lay={port,SA,iw:innerWidth,ih:innerHeight,sw:screen.width,sh:screen.height,t:Math.round(i.t),b:Math.round(i.b),L:longPx,S:shortPx};
+  if(port){
+    bs.width=longPx+'px'; bs.height=shortPx+'px'; bs.top='0px';
     bs.setProperty('--sa-top','0px'); bs.setProperty('--sa-bottom','4px'); bs.setProperty('--sa-left',i.t+'px'); bs.setProperty('--sa-right',i.b+'px');
-    document.documentElement.style.setProperty('--vw',(gw/100)+'px'); document.documentElement.style.setProperty('--vh',(gh/100)+'px');
-  } else { bs.width=''; bs.height=''; bs.top=''; ['--sa-top','--sa-bottom','--sa-left','--sa-right'].forEach(k=>bs.removeProperty(k)); document.documentElement.style.removeProperty('--vw'); document.documentElement.style.removeProperty('--vh'); }
+    de.style.setProperty('--vw',(Math.round(longPx-i.t-i.b)/100)+'px'); de.style.setProperty('--vh',(shortPx/100)+'px');
+  } else {
+    bs.width=''; bs.top=''; ['--sa-top','--sa-bottom','--sa-left','--sa-right'].forEach(k=>bs.removeProperty(k));
+    if(coarse){ bs.height=shortPx+'px'; de.style.setProperty('--vh',(shortPx/100)+'px'); de.style.removeProperty('--vw'); }
+    else { bs.height=''; de.style.removeProperty('--vw'); de.style.removeProperty('--vh'); }
+  }
 }
 updRot(); addEventListener('resize',updRot); if(window.visualViewport) visualViewport.addEventListener('resize',updRot); setTimeout(updRot,300); setTimeout(updRot,1200); addEventListener('orientationchange',()=>setTimeout(updRot,120));
 function localRect(el){
