@@ -768,7 +768,7 @@ setInterval(()=>{ if(!B||!B.b||!B.b.over) return; B.overAt=B.overAt||Date.now();
   document.querySelectorAll('#battle .fighter:not(.ko)').forEach(f=>{ f.classList.remove('cast','casting','lunge-l','lunge-r','dash-l','dash-r','pose-atk','tackling','acting','shake','hitflash'); }); },150);
 
 // mission SUCCESS! in the Monster Kingdom layout: title, wide $ bar, the team, then the XP pill (close with the ✕)
-rewardPopup=(function(prev){ return function(o){ const r=prev(o); try{ if(o&&o.title==='SUCCESS!'){ const s=r.body.closest('.sheet')||r.body; s.classList.add('mksucc');
+rewardPopup=(function(prev){ return function(o){ const r=prev(o); try{ if(o&&(o.title==='SUCCESS!'||o.title==='DEFEAT'||o.title==='VICTORY!')){ const s=r.body.closest('.sheet')||r.body; s.classList.add('mksucc'); if(o.title==='DEFEAT') s.classList.add('mkdef'); if(!(o.cash>0)){ const cc=r.body.querySelector('.rw-cash:not(.m)'); if(cc) cc.remove(); }
   const c=r.body.querySelector('.rw-cash:not(.m)'); if(c){ const n=(o.cash|0); c.innerHTML=`<div class="mkc"><i>$</i><b>+${n}</b></div><span>dollars</span>`; }
   const x=r.body.querySelector('.rw-xp'); if(x) x.innerHTML=`+${o.xp} <b>XP</b>`; } }catch(_){} return r; }; })(rewardPopup);
 // the in-game keyboard closes itself when the box it was typing into goes away (e.g. after Let's go!)

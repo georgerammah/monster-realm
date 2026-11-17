@@ -230,7 +230,7 @@ function beginTurn(b){
     return;
   }
 }
-function needPicks(b){ const q=[]; b.sides.forEach((sd,s)=>{ const m=sd.mons[sd.active]; if(!m||m.hp<=0) q.push(s); }); if(q.length){ b.phase='pick'; b.pickQ=q; b.pickSide=q[0]; return true; } return false; }
+function needPicks(b){ const q=[]; b.sides.forEach((sd,s)=>{ const m=sd.mons[sd.active]; if(!m||m.hp<=0) q.push(s); }); if(q.length){ b.phase='pick'; b.pickQ=q; b.pickSide=q[0]; b.koPick=q.slice(); return true; } return false; }
 function benchOf(b,s){ const sd=b.sides[s]; return sd.mons.map((m,i)=>i).filter(i=>i!==sd.active&&sd.mons[i].hp>0); }
 function pick(b,s,idx){
   if(b.over||b.phase!=='pick'||b.pickSide!==s) return false;
@@ -239,6 +239,7 @@ function pick(b,s,idx){
   sd.active=idx; b.ev=[{k:'enter',s,i:idx}]; log(b,`${sd.name} sent out ${sd.mons[idx].n}!`);
   b.pickQ.shift(); b.seq++;
   if(b.pickQ.length){ b.pickSide=b.pickQ[0]; return true; }
+  if(b.round>0&&b.koPick&&b.koPick.length===1) b.first=b.koPick[0]; b.koPick=null;
   b.phase='fight'; b.pickSide=null; startRound(b); beginTurn(b); return true;
 }
 function aiPick(b,s){ const foe=b.sides[1-s].mons[b.sides[1-s].active]; let best=null,bs=-1; benchOf(b,s).forEach(i=>{ const m=b.sides[s].mons[i]; let sc=m.hp/m.maxhp+ (foe?elemMult(m.el,foe.el)-elemMult(foe.el,m.el):0)+Math.random()*.3; if(sc>bs){bs=sc;best=i;} }); return best; }

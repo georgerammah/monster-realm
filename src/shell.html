@@ -1491,6 +1491,12 @@ body.auto-on .float2.buff{display:none!important}
 .pk-m.ko svg{animation:none!important;transform:translateX(-7%) rotate(-13deg) scaleY(.9);transform-origin:50% 90%;filter:grayscale(.55) brightness(1.55) contrast(.6)!important;opacity:.5}
 .pk-m.ko em,.pk-m.ko i{display:none!important}
 .pk-m.ko span{opacity:.5}
+/* DEFEAT: same Monster Kingdom layout, in red; monsters stand in their neutral pose */
+.sheet.mksucc.mkdef{background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 2px,transparent 2px 7px),linear-gradient(#b81d1d,#d8362e 70%,#e04a3a)!important}
+.mkdef .rw-t{-webkit-text-stroke:3px #8a1010!important;text-shadow:0 4px 0 #5a0a0a,0 6px 10px rgba(0,0,0,.25)!important}
+.mkdef .rw-xp{background:#7a1414!important}
+.mkdef .runner svg{animation:none!important;transform:none!important}
+.mksucc .rw-mons{margin-top:calc(2*var(--vh))}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
