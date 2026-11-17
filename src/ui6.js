@@ -14,7 +14,7 @@ function updRot(){
   const sL=Math.max(screen.width,screen.height), sS=Math.min(screen.width,screen.height);
   // Home-screen app: iOS can report a viewport shorter than the glass (gap above the home bar). When the page is drawn
   // under the status bar (top inset > 0) the page starts at the top of the glass, so the full screen length is safe to fill.
-  const fillGlass=SA && (port ? i.t>0 : true);
+  const fillGlass=SA;
   document.body.classList.toggle('rot',port);
   let longPx, shortPx;
   if(port){ longPx=fillGlass?Math.max(sL,innerHeight):Math.max(vh,innerHeight); shortPx=Math.min(vw,innerWidth)||innerWidth; }
@@ -23,8 +23,13 @@ function updRot(){
   window.__lay={port,SA,iw:innerWidth,ih:innerHeight,sw:screen.width,sh:screen.height,t:Math.round(i.t),b:Math.round(i.b),L:longPx,S:shortPx};
   if(port){
     bs.width=longPx+'px'; bs.height=shortPx+'px'; bs.top='0px';
-    bs.setProperty('--sa-top','0px'); bs.setProperty('--sa-bottom','4px'); bs.setProperty('--sa-left',i.t+'px'); bs.setProperty('--sa-right',i.b+'px');
-    de.style.setProperty('--vw',(Math.round(longPx-i.t-i.b)/100)+'px'); de.style.setProperty('--vh',(shortPx/100)+'px');
+    // iOS may report a viewport shorter than the glass. Paint to the glass, but keep buttons/text inside what it reported,
+    // so it looks right whether the extra strip is visible (home-bar gap) or hidden (status-bar overlap).
+    const seen=Math.round(Math.max(vh,innerHeight)), extra=Math.max(0,longPx-seen);
+    const padL=i.t>0?i.t:(SA?47:0), padR=Math.max(i.b, extra);
+    bs.setProperty('--sa-top','0px'); bs.setProperty('--sa-bottom','4px'); bs.setProperty('--sa-left',padL+'px'); bs.setProperty('--sa-right',padR+'px');
+    window.__lay.pl=padL; window.__lay.pr=padR;
+    de.style.setProperty('--vw',(Math.round(longPx-padL-padR)/100)+'px'); de.style.setProperty('--vh',(shortPx/100)+'px');
   } else {
     bs.width=''; bs.top=''; ['--sa-top','--sa-bottom','--sa-left','--sa-right'].forEach(k=>bs.removeProperty(k));
     if(coarse){ bs.height=shortPx+'px'; de.style.setProperty('--vh',(shortPx/100)+'px'); de.style.removeProperty('--vw'); }

@@ -81,7 +81,7 @@ function askNewName(msg){ return new Promise(res=>{
   if(S&&S.name&&S.tut>=0){ const r=await claimName(S.name); if(!r.ok&&r.err==='taken') await askNewName(`Someone already has the name "${esc(S.name)}". Pick a new trainer name:`); }
 }catch(_){} })();
 // onboarding: the name must be free before you can start
-document.addEventListener('click',async e=>{ const go=e.target.closest&&e.target.closest('#go'); if(!go||!window.MR_ACCT||go.dataset.ok) return; const nm=document.querySelector('#nm'); if(!nm) return;
+document.addEventListener('click',async e=>{ const go=e.target.closest&&e.target.closest('#go'); if(!go||!window.MR_ACCT||go.dataset.ok) return; const box=go.closest('.onb')||document; const nm=box.querySelector('#nm'); if(!nm) return;
   e.stopImmediatePropagation(); e.preventDefault(); const v=nm.value.trim(); if(!v) return;
   go.disabled=true; const old=go.textContent; go.textContent='Checking name…'; const r=await claimName(v); go.textContent=old; go.disabled=false;
   if(!r.ok&&(r.err==='taken'||r.err==='invalid')){ nameMsg(nameError(r.err)); if(r.err==='taken') nameTaken(v); return; } go.dataset.ok=1; go.click(); },true);
@@ -98,7 +98,7 @@ function nameMsg(t){ const nm=document.querySelector('#nm'); if(!nm) return aler
 document.addEventListener('input',e=>{ if(e.target.id!=='nm') return; const v=e.target.value; const go=document.querySelector('#go');
   nameMsg(v.trim()&&!NAME_OK(v)?'Names can be 2–16 letters, numbers, spaces, - _ or .':'');
   if(go&&!NAME_OK(v)) go.disabled=true; },true);
-document.addEventListener('click',e=>{ const go=e.target.closest&&e.target.closest('#go'); if(!go) return; const nm=document.querySelector('#nm'); if(!nm||NAME_OK(nm.value)) return;
+document.addEventListener('click',e=>{ const go=e.target.closest&&e.target.closest('#go'); if(!go) return; const nm=(go.closest('.onb')||document).querySelector('#nm'); if(!nm||NAME_OK(nm.value)) return;
   e.stopImmediatePropagation(); e.preventDefault(); nameMsg('Names can be 2–16 letters, numbers, spaces, - _ or .'); },true);
 
 // ---------- the studio ----------
@@ -948,10 +948,10 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v140 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v141 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
-new MutationObserver(()=>{ const go=document.querySelector('#go'); if(!go||!document.querySelector('#nm')||document.querySelector('#onbrst')) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
+new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
 
 // rotated play: tapping a text box never focuses it (no iPhone AutoFill bar), our keyboard types into it directly
 document.addEventListener('touchstart',e=>{ if(!isRot()) return; const el=e.target&&e.target.closest&&e.target.closest('input,textarea'); if(!el) return; if(el.type&&/checkbox|radio|range|file|button|submit/.test(el.type)) return;
@@ -962,3 +962,8 @@ kbClose=(function(prev){ return function(){ document.querySelectorAll('.kbf').fo
 // show unexpected errors on screen so a screenshot tells us what broke on a real phone
 (function(){ let last=0; const show=m=>{ const n=Date.now(); if(n-last<3000) return; last=n; try{ toast('⚠ '+String(m).slice(0,90)); }catch(_){} };
   addEventListener('error',e=>show(e.message||'error')); addEventListener('unhandledrejection',e=>show((e.reason&&(e.reason.message||e.reason))||'error')); })();
+
+// only one partner screen at a time, even when the cloud save arrives mid-intro
+onboarding=(function(prev){ let busy=false; return function(){ if(S&&S.name) return; if(busy||document.querySelector('.onb')) return; busy=true;
+  const t=setInterval(()=>{ if(S&&S.name){ busy=false; clearInterval(t); } },500);
+  try{ return prev.apply(this,arguments); }catch(e){ busy=false; clearInterval(t); throw e; } }; })(onboarding);
