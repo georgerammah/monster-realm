@@ -17,9 +17,9 @@ openPick=function(side, swap){
   const list=benchOf(b,side);
   const first=b.phase==='pick' && !sd.mons.some(x=>x.hp<x.maxhp) && sd.active==null;
   const w=document.createElement('div'); w.className='pk-wrap';
-  w.innerHTML=`<div class="pk"><div class="pk-t">${B.mode==='local'?esc(sd.name)+': ':''}${first?'Pick Your Monster!':'Choose Your Next Monster!'}</div>
-    <div class="pk-row n${list.length}">${list.map(i=>{ const m=sd.mons[i];
-      return `<button class="pk-m" data-pk="${i}">${monSVG(m.sp,m.lvl)}<span>${m.n}</span><i style="width:${m.hp/m.maxhp*100}%"></i></button>`; }).join('')}</div>
+  w.innerHTML=`<div class="pk"><div class="pk-t">${B.mode==='local'?esc(sd.name)+': ':''}${swap?'Swap Monster':'Pick Your Monster!'}</div>
+    ${(()=>{ const show=sd.mons.map((m,i)=>i).filter(i=>list.includes(i)||(sd.mons[i].hp<=0&&!swap)); return `<div class="pk-row n${show.length}">${show.map(i=>{ const m=sd.mons[i]; const ok=list.includes(i);
+      return `<button class="pk-m ${m.hp<=0?'ko':''}" ${ok?`data-pk="${i}"`:'disabled'}>${monSVG(m.sp,m.lvl)}<span>${m.n}</span><i style="width:${m.hp/m.maxhp*100}%"></i></button>`; }).join('')}</div>`; })()}
     ${swap?'<button class="pk-x" id="pkx">Cancel</button>':'<div class="pk-bar"><i></i></div>'}</div>`;
   document.body.appendChild(w); PICKEL=w;
   w.querySelectorAll('[data-pk]').forEach(btn=>btn.onclick=()=>{ const i=+btn.dataset.pk; closePick();
