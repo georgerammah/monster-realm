@@ -771,3 +771,24 @@ setInterval(()=>{ if(!B||!B.b||!B.b.over) return; B.overAt=B.overAt||Date.now();
 rewardPopup=(function(prev){ return function(o){ const r=prev(o); try{ if(o&&o.title==='SUCCESS!'){ const s=r.body.closest('.sheet')||r.body; s.classList.add('mksucc');
   const c=r.body.querySelector('.rw-cash:not(.m)'); if(c){ const n=(o.cash|0); c.innerHTML=`<div class="mkc"><i>$</i><b>+${n}</b></div><span>dollars</span>`; }
   const x=r.body.querySelector('.rw-xp'); if(x) x.innerHTML=`+${o.xp} <b>XP</b>`; } }catch(_){} return r; }; })(rewardPopup);
+// the in-game keyboard closes itself when the box it was typing into goes away (e.g. after Let's go!)
+setInterval(()=>{ if(KB&&(!KBIN||!KBIN.isConnected)) kbClose(); },200);
+// battle top bars: blank, not "0 / 0", while a side has no monster out yet
+renderBattle=(function(prev){ return function(){ const r=prev.apply(this,arguments); if(B&&B.b) document.querySelectorAll('#battle .bhp').forEach(p=>{ const sd=B.b.sides[+p.dataset.hs]; const empty=!sd||sd.active==null; p.classList.toggle('noact',empty); }); return r; }; })(renderBattle);
+// tutorial: the Mana Wood is already picked in the item list, the arrow points at Select
+pickItem=(function(prev){ return function(m,slot){ const r=prev(m,slot); if(S.tut===6) setTimeout(()=>{ const it=document.querySelector('[data-pi="manawood"]'); if(it){ it.click(); pointAt('#psel'); } },250); return r; }; })(pickItem);
+// tutorial step 8: arrows to LET'S GO! and then to a mission's GO!
+openZoneSelect=(function(prev){ return function(zi){ const r=prev(zi); if(S.tut===8) setTimeout(()=>pointAt('#lg'),400); return r; }; })(openZoneSelect);
+openTasks=(function(prev){ return function(zi){ const r=prev(zi); if(S.tut===8) setTimeout(()=>pointAt('.task:not(.done):not(.fight) .tgo:not([disabled])'),400); return r; }; })(openTasks);
+// names never cut off: shrink the text until it fits its card
+function fitText(sel,min){ document.querySelectorAll(sel).forEach(el=>{ el.style.fontSize=''; let fs=parseFloat(getComputedStyle(el).fontSize)||14; let n=0; while(el.scrollWidth>el.clientWidth+1&&fs>(min||8)&&n++<20){ fs-=0.5; el.style.fontSize=fs+'px'; } }); }
+drawTeam=(function(prev){ return function(){ const r=prev.apply(this,arguments); requestAnimationFrame(()=>fitText('.tcard .tname b, .tcard .tname span:not(.lvb)',8)); return r; }; })(drawTeam);
+
+// ---------- balance: Monster Kingdom numbers are the ability's level-10 values; level 1 stays at our early-game strength ----------
+(function(){ const L10=(a,t)=>[a,+((t-a)/9).toFixed(3)];
+  const R={ splash:{dmg:[25,193],mp:[15,114]}, feedback:{dmg:[13,174],burnmp:[12,109],mp:[12,137]}, moltencore:{dmg:[32,299],mp:[24,147]},
+    leech:{dmg:[16,126],mp:[14,99]}, wave:{dmg:[16,123],mp:[18,97]}, purge:{healFlat:[12,96],mp:[12,48]}, camelback:{v:[3,51]},
+    arclightning:{dmg:[20,117],mp:[18,92]}, poison:{tick:[7,83],mp:[16,80]}, manashards:{steal:[10,90],mp:[12,30]},
+    feed:{mp:[14,118]}, flame:{mp:[15,82]}, blizzard:{mp:[18,78]}, perseverance:{mp:[12,79]}, regrowth:{mp:[14,82]}, hydrate:{mp:[14,132]},
+    berserk:{mp:[16,85]}, nshield:{mp:[14,103]}, emberspit:{mp:[12,92]}, trample:{mp:[12,50]} };
+  Object.entries(R).forEach(([id,f])=>{ if(!SK[id]) return; Object.entries(f).forEach(([k,[a,t]])=>{ SK[id][k]=L10(a,t); }); DEFAULT_SK[id]=JSON.parse(JSON.stringify(SK[id])); }); })();

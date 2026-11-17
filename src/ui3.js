@@ -135,9 +135,9 @@ function drawTasks(){
   sh.body.querySelector('#tb').onclick=sh.close;
   sh.body.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{ const t=tl[+b.dataset.task];
     if(!teamMons().some(x=>x.lvl>=t.lv)) return alertBox(`You need a level ${t.lv} monster on your team for this task!`);
-    if(t.mp&&!teamMons().some(x=>monStats(x).mp>=t.mp)) return alertBox(`You need a monster with ${t.mp} mana on your team for this task!`);
-    if(t.hp&&!teamMons().some(x=>monStats(x).hp>=t.hp)) return alertBox(`You need a monster with ${t.hp} life on your team for this task!`);
-    if(t.atk&&!teamMons().some(x=>monStats(x).atk>=t.atk)) return alertBox(`You need a monster with ${t.atk} attack on your team for this task!`);
+    if(t.mp&&!teamMons().some(x=>monStats(x).mp>=t.mp)) return alertBox(`You need a monster with ${t.mp} mana on your team for this task!`+(teamMons().some(x=>x.free>0)?` Spend stat points on Mana in your monster's profile.`:''));
+    if(t.hp&&!teamMons().some(x=>monStats(x).hp>=t.hp)) return alertBox(`You need a monster with ${t.hp} life on your team for this task!`+(teamMons().some(x=>x.free>0)?` Spend stat points on Life in your monster's profile.`:''));
+    if(t.atk&&!teamMons().some(x=>monStats(x).atk>=t.atk)) return alertBox(`You need a monster with ${t.atk} attack on your team for this task!`+(teamMons().some(x=>x.free>0)?` Spend stat points on Attack in your monster's profile.`:''));
     doTask(zi,+b.dataset.task); });
 }
 function doTask(zi,k){
@@ -156,7 +156,7 @@ function doTask(zi,k){
   const z=ZONES[zi]; let foe;
   if(t.special==='dummy') foe={name:'Straw Dummy', mons:[{sp:'strawdum',lvl:1,hpMul:.8}]};
   else { const fam=SP.filter(s=>s.fam===z.fam); const pick=fam[Math.floor(Math.random()*fam.length)];
-    if(t.t==='boss'){ foe={name:zi===0?"Lila's Mossbug":`${z.n} Boss`, mons:[{sp: zi===0?'mossbug':fam[3].id, lvl:t.lv+1, hpMul: zi===0?.85:1.35}]}; }
+    if(t.t==='boss'){ foe={name:zi===0?"Lila's Mossbug":`${z.n} Boss`, mons:[{sp: zi===0?'mossbug':fam[3].id, lvl:t.lv+1, hpMul: zi===0?.85:1.35, skl: zi===0?{feedback:1,leech:1,feed:1,roots:1}:undefined}]}; }
     else foe={name:'Wild '+pick.n, mons:[{sp:pick.id, lvl:t.lv, hpMul: zi===0?.75:1}]}; }
   const b=newBattle({name:S.name, mons:[snapOf(m)]}, foe, {mode:'campaign'});
   B={b, mode:'campaign', meta:{zi, task:k, uid:m.uid}, mySide:0, ctl:['human','ai'], tgt:{}};

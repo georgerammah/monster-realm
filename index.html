@@ -1485,6 +1485,13 @@ body.auto-on .float2.buff{display:none!important}
 .mksucc .rw-xp{background:#2f5a22!important;box-shadow:inset 0 0 0 1px rgba(0,0,0,.3);border-radius:14px;padding:4px 34px!important;font:min(calc(8*var(--vh)),36px) "Lilita One",system-ui!important;color:#fff}
 .mksucc .rw-xp b{color:#6ef03a!important}
 .mksucc #rwok{display:none!important}
+#battle .bhp.noact .lb b{visibility:hidden}
+/* level up: art sized to the screen so the button always fits */
+.lvup .lvup-row{margin:4px 0 calc(2*var(--vh))}
+.lvup .lvup-mon{width:auto;max-width:40%;display:flex;justify-content:center}
+.lvup .lvup-mon svg{width:auto!important;max-width:100%;height:calc(42*var(--vh))!important;max-height:220px}
+.lvup .lvup-t{font-size:min(calc(11*var(--vh)),52px)!important;line-height:1.1}
+.lvup>.btn,.lvup button.btn{margin-top:0}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -3205,9 +3212,9 @@ function drawTasks(){
   sh.body.querySelector('#tb').onclick=sh.close;
   sh.body.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{ const t=tl[+b.dataset.task];
     if(!teamMons().some(x=>x.lvl>=t.lv)) return alertBox(`You need a level ${t.lv} monster on your team for this task!`);
-    if(t.mp&&!teamMons().some(x=>monStats(x).mp>=t.mp)) return alertBox(`You need a monster with ${t.mp} mana on your team for this task!`);
-    if(t.hp&&!teamMons().some(x=>monStats(x).hp>=t.hp)) return alertBox(`You need a monster with ${t.hp} life on your team for this task!`);
-    if(t.atk&&!teamMons().some(x=>monStats(x).atk>=t.atk)) return alertBox(`You need a monster with ${t.atk} attack on your team for this task!`);
+    if(t.mp&&!teamMons().some(x=>monStats(x).mp>=t.mp)) return alertBox(`You need a monster with ${t.mp} mana on your team for this task!`+(teamMons().some(x=>x.free>0)?` Spend stat points on Mana in your monster's profile.`:''));
+    if(t.hp&&!teamMons().some(x=>monStats(x).hp>=t.hp)) return alertBox(`You need a monster with ${t.hp} life on your team for this task!`+(teamMons().some(x=>x.free>0)?` Spend stat points on Life in your monster's profile.`:''));
+    if(t.atk&&!teamMons().some(x=>monStats(x).atk>=t.atk)) return alertBox(`You need a monster with ${t.atk} attack on your team for this task!`+(teamMons().some(x=>x.free>0)?` Spend stat points on Attack in your monster's profile.`:''));
     doTask(zi,+b.dataset.task); });
 }
 function doTask(zi,k){
@@ -3226,7 +3233,7 @@ function doTask(zi,k){
   const z=ZONES[zi]; let foe;
   if(t.special==='dummy') foe={name:'Straw Dummy', mons:[{sp:'strawdum',lvl:1,hpMul:.8}]};
   else { const fam=SP.filter(s=>s.fam===z.fam); const pick=fam[Math.floor(Math.random()*fam.length)];
-    if(t.t==='boss'){ foe={name:zi===0?"Lila's Mossbug":`${z.n} Boss`, mons:[{sp: zi===0?'mossbug':fam[3].id, lvl:t.lv+1, hpMul: zi===0?.85:1.35}]}; }
+    if(t.t==='boss'){ foe={name:zi===0?"Lila's Mossbug":`${z.n} Boss`, mons:[{sp: zi===0?'mossbug':fam[3].id, lvl:t.lv+1, hpMul: zi===0?.85:1.35, skl: zi===0?{feedback:1,leech:1,feed:1,roots:1}:undefined}]}; }
     else foe={name:'Wild '+pick.n, mons:[{sp:pick.id, lvl:t.lv, hpMul: zi===0?.75:1}]}; }
   const b=newBattle({name:S.name, mons:[snapOf(m)]}, foe, {mode:'campaign'});
   B={b, mode:'campaign', meta:{zi, task:k, uid:m.uid}, mySide:0, ctl:['human','ai'], tgt:{}};
@@ -5100,7 +5107,7 @@ function openSub(key,btn){
   btn.classList.add('subon'); SUBM=el;
   el.querySelectorAll('.subb').forEach(b=>b.onclick=e=>{ e.stopPropagation(); closeSub(); SUBMENUS[key][+b.dataset.i][1](); });
 }
-addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('#bar [data-p]'); if(b&&SUBMENUS[b.dataset.p]){ e.stopPropagation(); e.preventDefault(); openSub(b.dataset.p,b); return; }
+addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('#bar [data-p]'); if(b&&b.dataset.p==='shop'&&S.tut===5){ e.stopPropagation(); e.preventDefault(); closeSub(); SHOPTAB='items'; SHOPSEL='manawood'; openShop(); return; } if(b&&SUBMENUS[b.dataset.p]){ e.stopPropagation(); e.preventDefault(); openSub(b.dataset.p,b); return; }
   if(SUBM&&!e.target.closest('.submenu')) closeSub(); },true);
 function openPanelRaw(name){ closeSub(); if(PANEL) PANEL.sh.close(); const sh=sheet(PANELS[name](),{cls:'panel', onClose:()=>{ if(PANEL&&PANEL.sh===sh) PANEL=null; }}); PANEL={name, sh}; TAB=name; bindView(sh.body); }
 function openTopTrainers(){
@@ -6099,6 +6106,27 @@ setInterval(()=>{ if(!B||!B.b||!B.b.over) return; B.overAt=B.overAt||Date.now();
 rewardPopup=(function(prev){ return function(o){ const r=prev(o); try{ if(o&&o.title==='SUCCESS!'){ const s=r.body.closest('.sheet')||r.body; s.classList.add('mksucc');
   const c=r.body.querySelector('.rw-cash:not(.m)'); if(c){ const n=(o.cash|0); c.innerHTML=`<div class="mkc"><i>$</i><b>+${n}</b></div><span>dollars</span>`; }
   const x=r.body.querySelector('.rw-xp'); if(x) x.innerHTML=`+${o.xp} <b>XP</b>`; } }catch(_){} return r; }; })(rewardPopup);
+// the in-game keyboard closes itself when the box it was typing into goes away (e.g. after Let's go!)
+setInterval(()=>{ if(KB&&(!KBIN||!KBIN.isConnected)) kbClose(); },200);
+// battle top bars: blank, not "0 / 0", while a side has no monster out yet
+renderBattle=(function(prev){ return function(){ const r=prev.apply(this,arguments); if(B&&B.b) document.querySelectorAll('#battle .bhp').forEach(p=>{ const sd=B.b.sides[+p.dataset.hs]; const empty=!sd||sd.active==null; p.classList.toggle('noact',empty); }); return r; }; })(renderBattle);
+// tutorial: the Mana Wood is already picked in the item list, the arrow points at Select
+pickItem=(function(prev){ return function(m,slot){ const r=prev(m,slot); if(S.tut===6) setTimeout(()=>{ const it=document.querySelector('[data-pi="manawood"]'); if(it){ it.click(); pointAt('#psel'); } },250); return r; }; })(pickItem);
+// tutorial step 8: arrows to LET'S GO! and then to a mission's GO!
+openZoneSelect=(function(prev){ return function(zi){ const r=prev(zi); if(S.tut===8) setTimeout(()=>pointAt('#lg'),400); return r; }; })(openZoneSelect);
+openTasks=(function(prev){ return function(zi){ const r=prev(zi); if(S.tut===8) setTimeout(()=>pointAt('.task:not(.done):not(.fight) .tgo:not([disabled])'),400); return r; }; })(openTasks);
+// names never cut off: shrink the text until it fits its card
+function fitText(sel,min){ document.querySelectorAll(sel).forEach(el=>{ el.style.fontSize=''; let fs=parseFloat(getComputedStyle(el).fontSize)||14; let n=0; while(el.scrollWidth>el.clientWidth+1&&fs>(min||8)&&n++<20){ fs-=0.5; el.style.fontSize=fs+'px'; } }); }
+drawTeam=(function(prev){ return function(){ const r=prev.apply(this,arguments); requestAnimationFrame(()=>fitText('.tcard .tname b, .tcard .tname span:not(.lvb)',8)); return r; }; })(drawTeam);
+
+// ---------- balance: Monster Kingdom numbers are the ability's level-10 values; level 1 stays at our early-game strength ----------
+(function(){ const L10=(a,t)=>[a,+((t-a)/9).toFixed(3)];
+  const R={ splash:{dmg:[25,193],mp:[15,114]}, feedback:{dmg:[13,174],burnmp:[12,109],mp:[12,137]}, moltencore:{dmg:[32,299],mp:[24,147]},
+    leech:{dmg:[16,126],mp:[14,99]}, wave:{dmg:[16,123],mp:[18,97]}, purge:{healFlat:[12,96],mp:[12,48]}, camelback:{v:[3,51]},
+    arclightning:{dmg:[20,117],mp:[18,92]}, poison:{tick:[7,83],mp:[16,80]}, manashards:{steal:[10,90],mp:[12,30]},
+    feed:{mp:[14,118]}, flame:{mp:[15,82]}, blizzard:{mp:[18,78]}, perseverance:{mp:[12,79]}, regrowth:{mp:[14,82]}, hydrate:{mp:[14,132]},
+    berserk:{mp:[16,85]}, nshield:{mp:[14,103]}, emberspit:{mp:[12,92]}, trample:{mp:[12,50]} };
+  Object.entries(R).forEach(([id,f])=>{ if(!SK[id]) return; Object.entries(f).forEach(([k,[a,t]])=>{ SK[id][k]=L10(a,t); }); DEFAULT_SK[id]=JSON.parse(JSON.stringify(SK[id])); }); })();
 
 </script>
 </body></html>

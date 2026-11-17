@@ -1476,6 +1476,13 @@ body.auto-on .float2.buff{display:none!important}
 .mksucc .rw-xp{background:#2f5a22!important;box-shadow:inset 0 0 0 1px rgba(0,0,0,.3);border-radius:14px;padding:4px 34px!important;font:min(calc(8*var(--vh)),36px) "Lilita One",system-ui!important;color:#fff}
 .mksucc .rw-xp b{color:#6ef03a!important}
 .mksucc #rwok{display:none!important}
+#battle .bhp.noact .lb b{visibility:hidden}
+/* level up: art sized to the screen so the button always fits */
+.lvup .lvup-row{margin:4px 0 calc(2*var(--vh))}
+.lvup .lvup-mon{width:auto;max-width:40%;display:flex;justify-content:center}
+.lvup .lvup-mon svg{width:auto!important;max-width:100%;height:calc(42*var(--vh))!important;max-height:220px}
+.lvup .lvup-t{font-size:min(calc(11*var(--vh)),52px)!important;line-height:1.1}
+.lvup>.btn,.lvup button.btn{margin-top:0}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

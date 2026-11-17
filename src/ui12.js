@@ -461,7 +461,7 @@ function openSub(key,btn){
   btn.classList.add('subon'); SUBM=el;
   el.querySelectorAll('.subb').forEach(b=>b.onclick=e=>{ e.stopPropagation(); closeSub(); SUBMENUS[key][+b.dataset.i][1](); });
 }
-addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('#bar [data-p]'); if(b&&SUBMENUS[b.dataset.p]){ e.stopPropagation(); e.preventDefault(); openSub(b.dataset.p,b); return; }
+addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('#bar [data-p]'); if(b&&b.dataset.p==='shop'&&S.tut===5){ e.stopPropagation(); e.preventDefault(); closeSub(); SHOPTAB='items'; SHOPSEL='manawood'; openShop(); return; } if(b&&SUBMENUS[b.dataset.p]){ e.stopPropagation(); e.preventDefault(); openSub(b.dataset.p,b); return; }
   if(SUBM&&!e.target.closest('.submenu')) closeSub(); },true);
 function openPanelRaw(name){ closeSub(); if(PANEL) PANEL.sh.close(); const sh=sheet(PANELS[name](),{cls:'panel', onClose:()=>{ if(PANEL&&PANEL.sh===sh) PANEL=null; }}); PANEL={name, sh}; TAB=name; bindView(sh.body); }
 function openTopTrainers(){
