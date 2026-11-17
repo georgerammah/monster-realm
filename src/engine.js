@@ -170,7 +170,7 @@ function rnd(b){
 }
 
 // ===== BATTLE =====
-function freshSt(){ return {burn:0,burnD:0,poison:0,poisonD:0,storm:0,stormD:0,stun:0,bubble:0,bubbleHp:0,lsh:0,lshHp:0,fsh:0,fshHp:0,nsh:0,nshHp:0,mshield:0,mshieldV:0,pers:0,persV:0,focus:0,focusV:0,charge:0,chargeV:0,evade:0,evadeV:0,cripple:0,crippleV:0,roots:0,rootsV:0}; }
+function freshSt(){ return {burn:0,burnD:0,poison:0,poisonD:0,storm:0,stormD:0,frost:0,frostD:0,stun:0,bubble:0,bubbleHp:0,lsh:0,lshHp:0,fsh:0,fshHp:0,nsh:0,nshHp:0,mshield:0,mshieldV:0,pers:0,persV:0,focus:0,focusV:0,charge:0,chargeV:0,evade:0,evadeV:0,cripple:0,crippleV:0,roots:0,rootsV:0}; }
 function makeMon(spId, lvl, extra){
   lvl = Math.max(1, Math.min(MAXLVL, lvl|0));
   const sp = SPI[spId]; const s = statsOf(spId,lvl);
@@ -219,7 +219,7 @@ function beginTurn(b){
     const st=m.st;
     ['bubble','lsh','fsh','nsh','mshield','absorb','crit','focus','evade','cripple','pers','soak','zap','acid','eshift'].forEach(k=>{ if(st[k]>0){ st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } });
     if(m.pas.camel){ const g=Math.min(m.maxmp-m.mp, Math.round(m.pas.camel)); if(g>0){ m.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,end:1}); } }
-    for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm']]){
+    for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm'],['frost','water','the blizzard']]){
       if(st[k]>0 && m.hp>0){ const d=Math.max(1,Math.round(st[k+'D'])); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el}); log(b,`${m.n} is hurt by ${nm}.`); }
     }
     if(st.roots>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*st.rootsV)); m.hp=Math.min(m.maxhp,m.hp+h); st.roots--; b.ev.push({k:'heal',s:a.s,i:a.i,v:h}); }
@@ -270,7 +270,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   if(el==='bolt' && d.pas.grounded) dmg*=1-d.pas.grounded;
   if((el==='fire'||el==='water') && d.pas.sweaty) dmg*=1-d.pas.sweaty;
   if(a.pas.fury && b._sk==='basic') dmg+=a.pas.fury;
-  if(a.st.pers>0) dmg*=1+a.st.persV*(a.hp/a.maxhp<0.4?2:1);
+  if(d.st.pers>0) dmg*=1-d.st.persV;
   dmg += (a.fx&&a.fx.dflat||0) + (d.fx&&d.fx.tflat||0);
   if(el==='neutral' && d.pas.hard) dmg*=1-d.pas.hard;
   dmg = Math.max(1, Math.round(dmg));
@@ -326,7 +326,7 @@ function act(b, action){
       if(d0.hp>0 && sk.drainFrac){ const x=Math.min(d0.mp, Math.round(tot*sk.drainFrac)); d0.mp-=x; }
       if(d0.hp>0 && sk.acid){ d0.st.acid=sk.acidTurns||4; d0.st.acidV=lv(sk.acid,L); b.ev.push({k:'buff',s:foe,i:ti,b:'acid'}); }
       if(d0.hp>0 && sk.zap){ d0.st.zap=sk.zapTurns||6; d0.st.zapV=sk.zap; b.ev.push({k:'buff',s:foe,i:ti,b:'zap'}); }
-      if(d0.hp>0 && sk.soak){ d0.st.soak=sk.soakTurns||6; d0.st.soakV=sk.soak; b.ev.push({k:'buff',s:foe,i:ti,b:'soak'}); }
+      if(d0.hp>0 && sk.soak){ d0.st.soak=sk.soakTurns||6; d0.st.soakV=Array.isArray(sk.soak)?lv(sk.soak,L):sk.soak; b.ev.push({k:'buff',s:foe,i:ti,b:'soak'}); }
       if(d0.hp>0 && sk.weaken){ d0.st.cripple=2; d0.st.crippleV=Math.max(d0.st.crippleV||0, lv(sk.weaken,L)); b.ev.push({k:'buff',s:foe,i:ti,b:'cripple'}); }
       const d=b.sides[foe].mons[ti]; if(d.hp<=0) return;
       if(sk.burn && rnd(b)<lv(sk.burn,L) && !(d.pas.sweaty && rnd(b)<0.5)){ d.st.burn=3; d.st.burnD=sk.btick?lv(sk.btick,L):8; log(b,`${d.n} was burned!`); }
@@ -339,6 +339,7 @@ function act(b, action){
     if(sk.mpLeech && tot>0 && me.hp>0){ const d1=b.sides[foe].mons[tgt]; const x=Math.min(d1.mp, Math.round(tot*sk.mpLeech)); d1.mp-=x; me.mp=Math.min(me.maxmp,me.mp+x); }
     if(sk.recoil && tot>0 && me.hp>0){ const r=Math.max(1,Math.round(tot*sk.recoil)); me.hp=Math.max(0,me.hp-r); b.ev.push({k:'hit',s:a.s,i:a.i,v:r,el:'fire',recoil:1}); log(b,`${me.n} is hurt by the recoil!`); if(me.hp<=0) log(b,`${me.n} fainted.`); }
     if(sk.selfCleanse){ me.st.burn=0; me.st.poison=0; }
+    if(sk.selfStun && me.hp>0){ me.st.stun=1; log(b,`${me.n} is stunned by the effort!`); b.ev.push({k:'buff',s:a.s,i:a.i,b:'stun'}); }
     if(sk.selfShield && me.hp>0){ me.st.fsh=3; me.st.fshHp=Math.round(lv(sk.selfShield,L)); b.ev.push({k:'buff',s:a.s,i:a.i,b:'fsh'}); }
     if(sk.selfevade){ me.st.evade=2; me.st.evadeV=lv(sk.selfevade,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'evade'}); }
   } else if(sk.k==='dot'){
@@ -356,7 +357,7 @@ function act(b, action){
     if(sk.hot){ me.st.roots=sk.turns; me.st.rootsV=lv(sk.hot,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
     if(sk.heal){ const hv=Math.round(me.maxhp*lv(sk.heal,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.healFlat){ const hv=Math.round(lv(sk.healFlat,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
-    if(sk.cleanse){ ['burn','poison','storm','cripple','stun','soak','zap','acid','eshift'].forEach(k=>me.st[k]=0); }
+    if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','zap','acid','eshift'].forEach(k=>me.st[k]=0); }
   } else if(sk.k==='drain' && sk.stealHp){
     const d=b.sides[foe].mons[tgt];
     if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:foe,i:tgt}); log(b,`${d.n} dodged!`); }

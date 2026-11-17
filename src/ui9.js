@@ -79,7 +79,7 @@ function openProfile(p){
         <div class="row"><div><b>Kinds discovered</b></div><b>${st.kinds|0} / ${SP.length}</b></div><div class="row"><div><b>Rank</b></div><b>${P.rank} · ${rankOf(P.rank)[1]}</b></div></div>`);
       else if(k==='awards'){ const done=me?QUESTS.filter(q=>S.quests[q.id]):null; const n=me?done.length:(st.quests|0);
         sheet(`<h2 class="game-h">Awards</h2><p class="muted">${n} of ${QUESTS.length} earned</p>${me?`<div class="list">${QUESTS.map(q=>`<div class="row ${S.quests[q.id]?'':'done'}"><div><b>${q.n}</b></div>${S.quests[q.id]?'<span class="ok">🏆</span>':'<span class="muted small">Locked</span>'}</div>`).join('')}</div>`:''}`); }
-      else if(k==='spar'){ sh.close(); NET.challenge(P.cid); }
+      else if(k==='spar'){ sh.close(); NET.challenge(P.cid, true); }
     });
   };
   draw();

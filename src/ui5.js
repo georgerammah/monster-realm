@@ -31,7 +31,7 @@ function showIntro(done){
   const pr=s=>`<div class="iv-por">${avatarSVG(avatarFor(b,s))}</div>`;
   const myR=myRank(), opR=B.mode==='local'?myR:B.oppRank;
   const w=document.createElement('div'); w.className='intro';
-  w.innerHTML=`<div class="iv-band top"><div class="iv-title">${B.mode==='pvp'?'<span class="g">LIVE</span> <span class="o">BATTLE!</span>':B.mode==='rival'?'<span class="g">RIVAL</span> <span class="o">BATTLE!</span>':'<span class="g">FRIENDLY</span> <span class="o">BATTLE!</span>'}</div></div>
+  w.innerHTML=`<div class="iv-band top"><div class="iv-title">${B.mode==='pvp'?(B.spar?'<span class="g">FRIENDLY</span> <span class="o">SPAR!</span>':'<span class="g">LIVE</span> <span class="o">BATTLE!</span>'):B.mode==='rival'?'<span class="g">RIVAL</span> <span class="o">BATTLE!</span>':'<span class="g">FRIENDLY</span> <span class="o">BATTLE!</span>'}</div></div>
     <div class="iv-band mid">
       <div class="iv-side l">${pr(L)}<div class="iv-nm"><b>${esc(b.sides[L].name)}</b><span>${rankBadge(myR)}${B.mode==='local'?'':myR}</span></div></div>
       <div class="iv-vs">VS</div>
@@ -201,7 +201,7 @@ closeBattle=function(){ closePick(); _closeBattleV5(); };
 // ---- rank + results ----
 const _finishV5 = finishBattle;
 finishBattle = function(){
-  if(B && B.mode==='pvp' && B.b && B.b.over){
+  if(B && B.mode==='pvp' && !B.spar && B.b && B.b.over){
     const win=B.b.winner===B.mySide; const me=myRank(), op=B.oppRank||200;
     const exp=1/(1+Math.pow(10,(op-me)/400)); const d=Math.round(32*((win?1:0)-exp));
     S.rank=Math.max(0,me+d); S.lastRankD=d;
@@ -232,21 +232,21 @@ function viewArena(){
 }
 NET.updatePresence = function(){ if(!NET.room||!S) return; try{ NET.room.presence({cid:NET.cid, name:S.name||'Trainer', power:teamPower(), rank:myRank(), busy:!!B}); }catch(e){} };
 const teamMsg=()=>mySnap().map(({sp,lvl,bonus,skl})=>({sp,lvl,bonus,skl}));
-NET.challenge = function(cid){
+NET.challenge = function(cid, spar){
   if(!S.team.length) return toast('Add a monster to your team');
   const matchId=uidGen()+uidGen();
-  NET.pending={matchId,to:cid,t:setTimeout(()=>{ NET.pending=null; toast('No answer'); render(); },30000)};
-  NET.room.emit('challenge',Object.assign({to:cid, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId, team:teamMsg()}, typeof myProfile==='function'?{motto:S.motto||'',stats:myProfile().stats,cid:NET.cid}:{}));
-  toast('Challenge sent'); render();
+  NET.pending={matchId,to:cid,spar:!!spar,t:setTimeout(()=>{ NET.pending=null; toast('No answer'); render(); },30000)};
+  NET.room.emit('challenge',Object.assign({to:cid, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId, team:teamMsg(), spar:!!spar}, typeof myProfile==='function'?{motto:S.motto||'',stats:myProfile().stats,cid:NET.cid}:{}));
+  toast(spar?'Spar request sent':'Challenge sent'); render();
 };
 NET.showIncoming = function(d){
   const team=sanitizeTeam(d.team); NET.incoming=d;
-  const sh=sheet(`<h2>Live battle!</h2><p class="muted"><b>${esc(d.name||'A trainer')}</b> ${rankBadge(d.rank||200,16)} ${d.rank|0||200} wants to battle.</p><div class="stage-mons big">${team.map(m=>monSVG(m.sp,m.lvl)).join('')}</div>
+  const sh=sheet(`<h2>${d.spar?'Spar':'Live battle!'}</h2><p class="muted"><b>${esc(d.name||'A trainer')}</b> ${rankBadge(d.rank||200,16)} ${d.rank|0||200} wants to ${d.spar?'spar. Rank is not affected.':'battle.'}</p><div class="stage-mons big">${team.map(m=>monSVG(m.sp,m.lvl)).join('')}</div>
     <div class="actions"><button class="btn gbtn" id="acc">Accept</button><button class="btn ghost" id="dec">Decline</button></div>`, {onClose:()=>{ if(NET.incoming===d){ NET.incoming=null; NET.room.emit('decline',{to:d.from, matchId:d.matchId}); } }});
   const t=setTimeout(()=>sh.close(),28000);
   sh.body.querySelector('#acc').onclick=()=>{ clearTimeout(t); NET.incoming=null; sh.close();
     if(!S.team.length){ toast('Add a monster to your team'); return; }
-    NET.room.emit('accept',Object.assign({to:d.from, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId:d.matchId, team:teamMsg()}, typeof myProfile==='function'?{motto:S.motto||'',stats:myProfile().stats,cid:NET.cid}:{}));
+    NET.room.emit('accept',Object.assign({to:d.from, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId:d.matchId, team:teamMsg(), spar:!!d.spar}, typeof myProfile==='function'?{motto:S.motto||'',stats:myProfile().stats,cid:NET.cid}:{}));
     NET.startGuest(d); };
   sh.body.querySelector('#dec').onclick=()=>{ clearTimeout(t); sh.close(); };
 };
@@ -254,7 +254,7 @@ NET.startHost = async function(d){
   closeAllSheets(); PANEL=null;
   const mr=await joinMatch(d.matchId); NET.mr=mr;
   const b=newBattle({name:S.name, mons:mySnap()}, {name:d.name||'Opponent', mons:sanitizeTeam(d.team)}, {mode:'pvp', single:true});
-  B={b, mode:'pvp', meta:{}, mySide:0, ctl:['human','remote'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, oppAvatar:sanitizeAv(d.avatar), stamp:Date.now(), paused:true,
+  B={b, mode:'pvp', spar:!!(d.spar||(NET.pending&&NET.pending.matchId===d.matchId&&NET.pending.spar)), meta:{}, mySide:0, ctl:['human','remote'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, oppAvatar:sanitizeAv(d.avatar), stamp:Date.now(), paused:true,
      net:{role:'host', matchId:d.matchId, last:Date.now(), lastSeq:b.seq}};
   mr.on('action', a=>{
     if(!B||!B.net||a.matchId!==B.net.matchId||B.b.over||B.paused&&false) return;
@@ -278,7 +278,7 @@ NET.startHost = async function(d){
 NET.broadcast = function(){ if(!NET.mr||!B||!B.b||!B.net) return; const b=Object.assign({},B.b,{log:B.b.log.slice(-6)}); try{ NET.mr.emit('state',{matchId:B.net.matchId, b, intro:!!B.paused, rank:myRank()}); }catch(e){} const k=turnKey(B.b); if(B.net.lastKey!==k){ B.net.last=Date.now(); B.net.lastKey=k; } };
 NET.startGuest = async function(d){
   closeAllSheets(); PANEL=null;
-  B={b:null, mode:'pvp', meta:{}, mySide:1, myUids:teamMons().map(m=>m.uid), ctl:['remote','human'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, oppAvatar:sanitizeAv(d.avatar), stamp:Date.now(), paused:true,
+  B={b:null, mode:'pvp', spar:!!d.spar, meta:{}, mySide:1, myUids:teamMons().map(m=>m.uid), ctl:['remote','human'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, oppAvatar:sanitizeAv(d.avatar), stamp:Date.now(), paused:true,
      net:{role:'guest', matchId:d.matchId, heard:Date.now()}};
   openBattle(); renderBattle();
   const mr=await joinMatch(d.matchId); NET.mr=mr;

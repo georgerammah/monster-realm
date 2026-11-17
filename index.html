@@ -1726,7 +1726,7 @@ function rnd(b){
 }
 
 // ===== BATTLE =====
-function freshSt(){ return {burn:0,burnD:0,poison:0,poisonD:0,storm:0,stormD:0,stun:0,bubble:0,bubbleHp:0,lsh:0,lshHp:0,fsh:0,fshHp:0,nsh:0,nshHp:0,mshield:0,mshieldV:0,pers:0,persV:0,focus:0,focusV:0,charge:0,chargeV:0,evade:0,evadeV:0,cripple:0,crippleV:0,roots:0,rootsV:0}; }
+function freshSt(){ return {burn:0,burnD:0,poison:0,poisonD:0,storm:0,stormD:0,frost:0,frostD:0,stun:0,bubble:0,bubbleHp:0,lsh:0,lshHp:0,fsh:0,fshHp:0,nsh:0,nshHp:0,mshield:0,mshieldV:0,pers:0,persV:0,focus:0,focusV:0,charge:0,chargeV:0,evade:0,evadeV:0,cripple:0,crippleV:0,roots:0,rootsV:0}; }
 function makeMon(spId, lvl, extra){
   lvl = Math.max(1, Math.min(MAXLVL, lvl|0));
   const sp = SPI[spId]; const s = statsOf(spId,lvl);
@@ -1775,7 +1775,7 @@ function beginTurn(b){
     const st=m.st;
     ['bubble','lsh','fsh','nsh','mshield','absorb','crit','focus','evade','cripple','pers','soak','zap','acid','eshift'].forEach(k=>{ if(st[k]>0){ st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } });
     if(m.pas.camel){ const g=Math.min(m.maxmp-m.mp, Math.round(m.pas.camel)); if(g>0){ m.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,end:1}); } }
-    for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm']]){
+    for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm'],['frost','water','the blizzard']]){
       if(st[k]>0 && m.hp>0){ const d=Math.max(1,Math.round(st[k+'D'])); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el}); log(b,`${m.n} is hurt by ${nm}.`); }
     }
     if(st.roots>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*st.rootsV)); m.hp=Math.min(m.maxhp,m.hp+h); st.roots--; b.ev.push({k:'heal',s:a.s,i:a.i,v:h}); }
@@ -1826,7 +1826,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   if(el==='bolt' && d.pas.grounded) dmg*=1-d.pas.grounded;
   if((el==='fire'||el==='water') && d.pas.sweaty) dmg*=1-d.pas.sweaty;
   if(a.pas.fury && b._sk==='basic') dmg+=a.pas.fury;
-  if(a.st.pers>0) dmg*=1+a.st.persV*(a.hp/a.maxhp<0.4?2:1);
+  if(d.st.pers>0) dmg*=1-d.st.persV;
   dmg += (a.fx&&a.fx.dflat||0) + (d.fx&&d.fx.tflat||0);
   if(el==='neutral' && d.pas.hard) dmg*=1-d.pas.hard;
   dmg = Math.max(1, Math.round(dmg));
@@ -1882,7 +1882,7 @@ function act(b, action){
       if(d0.hp>0 && sk.drainFrac){ const x=Math.min(d0.mp, Math.round(tot*sk.drainFrac)); d0.mp-=x; }
       if(d0.hp>0 && sk.acid){ d0.st.acid=sk.acidTurns||4; d0.st.acidV=lv(sk.acid,L); b.ev.push({k:'buff',s:foe,i:ti,b:'acid'}); }
       if(d0.hp>0 && sk.zap){ d0.st.zap=sk.zapTurns||6; d0.st.zapV=sk.zap; b.ev.push({k:'buff',s:foe,i:ti,b:'zap'}); }
-      if(d0.hp>0 && sk.soak){ d0.st.soak=sk.soakTurns||6; d0.st.soakV=sk.soak; b.ev.push({k:'buff',s:foe,i:ti,b:'soak'}); }
+      if(d0.hp>0 && sk.soak){ d0.st.soak=sk.soakTurns||6; d0.st.soakV=Array.isArray(sk.soak)?lv(sk.soak,L):sk.soak; b.ev.push({k:'buff',s:foe,i:ti,b:'soak'}); }
       if(d0.hp>0 && sk.weaken){ d0.st.cripple=2; d0.st.crippleV=Math.max(d0.st.crippleV||0, lv(sk.weaken,L)); b.ev.push({k:'buff',s:foe,i:ti,b:'cripple'}); }
       const d=b.sides[foe].mons[ti]; if(d.hp<=0) return;
       if(sk.burn && rnd(b)<lv(sk.burn,L) && !(d.pas.sweaty && rnd(b)<0.5)){ d.st.burn=3; d.st.burnD=sk.btick?lv(sk.btick,L):8; log(b,`${d.n} was burned!`); }
@@ -1895,6 +1895,7 @@ function act(b, action){
     if(sk.mpLeech && tot>0 && me.hp>0){ const d1=b.sides[foe].mons[tgt]; const x=Math.min(d1.mp, Math.round(tot*sk.mpLeech)); d1.mp-=x; me.mp=Math.min(me.maxmp,me.mp+x); }
     if(sk.recoil && tot>0 && me.hp>0){ const r=Math.max(1,Math.round(tot*sk.recoil)); me.hp=Math.max(0,me.hp-r); b.ev.push({k:'hit',s:a.s,i:a.i,v:r,el:'fire',recoil:1}); log(b,`${me.n} is hurt by the recoil!`); if(me.hp<=0) log(b,`${me.n} fainted.`); }
     if(sk.selfCleanse){ me.st.burn=0; me.st.poison=0; }
+    if(sk.selfStun && me.hp>0){ me.st.stun=1; log(b,`${me.n} is stunned by the effort!`); b.ev.push({k:'buff',s:a.s,i:a.i,b:'stun'}); }
     if(sk.selfShield && me.hp>0){ me.st.fsh=3; me.st.fshHp=Math.round(lv(sk.selfShield,L)); b.ev.push({k:'buff',s:a.s,i:a.i,b:'fsh'}); }
     if(sk.selfevade){ me.st.evade=2; me.st.evadeV=lv(sk.selfevade,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'evade'}); }
   } else if(sk.k==='dot'){
@@ -1912,7 +1913,7 @@ function act(b, action){
     if(sk.hot){ me.st.roots=sk.turns; me.st.rootsV=lv(sk.hot,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
     if(sk.heal){ const hv=Math.round(me.maxhp*lv(sk.heal,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.healFlat){ const hv=Math.round(lv(sk.healFlat,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
-    if(sk.cleanse){ ['burn','poison','storm','cripple','stun','soak','zap','acid','eshift'].forEach(k=>me.st[k]=0); }
+    if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','zap','acid','eshift'].forEach(k=>me.st[k]=0); }
   } else if(sk.k==='drain' && sk.stealHp){
     const d=b.sides[foe].mons[tgt];
     if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:foe,i:tgt}); log(b,`${d.n} dodged!`); }
@@ -3170,7 +3171,7 @@ function skIconKey(id){
   return {fire:'fire',water:'water',bolt:'bolt',nature:'nature',neutral:'fist'}[s.el]||'fist';
 }
 function icon(key,bg,size){ return `<span class="ic" style="background:${bg};width:${size}px;height:${size}px"><svg viewBox="0 0 24 24">${ICON[key]}</svg></span>`; }
-const ST_ICON={pers:['up','#1fa03a'],burn:['fire','#e3262d'],poison:['drop','#1fa03a'],storm:['bolt','#7a6ad8'],stun:['star','#f7b500'],bubble:['bubble','#22a6e3'],lsh:['bolt','#f7b500'],fsh:['fire','#e0475b'],nsh:['nature','#1fa03a'],mshield:['shield','#5e8bff'],focus:['up','#ff9f0a'],charge:['up','#e0475b'],evade:['wind','#4fc3e8'],cripple:['drop','#8a5ad8'],roots:['heart','#1fa03a']};
+const ST_ICON={pers:['up','#1fa03a'],burn:['fire','#e3262d'],poison:['drop','#1fa03a'],storm:['bolt','#7a6ad8'],frost:['drop','#5fb8e8'],stun:['star','#f7b500'],bubble:['bubble','#22a6e3'],lsh:['bolt','#f7b500'],fsh:['fire','#e0475b'],nsh:['nature','#1fa03a'],mshield:['shield','#5e8bff'],focus:['up','#ff9f0a'],charge:['up','#e0475b'],evade:['wind','#4fc3e8'],cripple:['drop','#8a5ad8'],roots:['heart','#1fa03a']};
 
 // ===== HUD with dollars =====
 function renderHUD(){
@@ -3887,7 +3888,7 @@ function showIntro(done){
   const pr=s=>`<div class="iv-por">${avatarSVG(avatarFor(b,s))}</div>`;
   const myR=myRank(), opR=B.mode==='local'?myR:B.oppRank;
   const w=document.createElement('div'); w.className='intro';
-  w.innerHTML=`<div class="iv-band top"><div class="iv-title">${B.mode==='pvp'?'<span class="g">LIVE</span> <span class="o">BATTLE!</span>':B.mode==='rival'?'<span class="g">RIVAL</span> <span class="o">BATTLE!</span>':'<span class="g">FRIENDLY</span> <span class="o">BATTLE!</span>'}</div></div>
+  w.innerHTML=`<div class="iv-band top"><div class="iv-title">${B.mode==='pvp'?(B.spar?'<span class="g">FRIENDLY</span> <span class="o">SPAR!</span>':'<span class="g">LIVE</span> <span class="o">BATTLE!</span>'):B.mode==='rival'?'<span class="g">RIVAL</span> <span class="o">BATTLE!</span>':'<span class="g">FRIENDLY</span> <span class="o">BATTLE!</span>'}</div></div>
     <div class="iv-band mid">
       <div class="iv-side l">${pr(L)}<div class="iv-nm"><b>${esc(b.sides[L].name)}</b><span>${rankBadge(myR)}${B.mode==='local'?'':myR}</span></div></div>
       <div class="iv-vs">VS</div>
@@ -4057,7 +4058,7 @@ closeBattle=function(){ closePick(); _closeBattleV5(); };
 // ---- rank + results ----
 const _finishV5 = finishBattle;
 finishBattle = function(){
-  if(B && B.mode==='pvp' && B.b && B.b.over){
+  if(B && B.mode==='pvp' && !B.spar && B.b && B.b.over){
     const win=B.b.winner===B.mySide; const me=myRank(), op=B.oppRank||200;
     const exp=1/(1+Math.pow(10,(op-me)/400)); const d=Math.round(32*((win?1:0)-exp));
     S.rank=Math.max(0,me+d); S.lastRankD=d;
@@ -4088,21 +4089,21 @@ function viewArena(){
 }
 NET.updatePresence = function(){ if(!NET.room||!S) return; try{ NET.room.presence({cid:NET.cid, name:S.name||'Trainer', power:teamPower(), rank:myRank(), busy:!!B}); }catch(e){} };
 const teamMsg=()=>mySnap().map(({sp,lvl,bonus,skl})=>({sp,lvl,bonus,skl}));
-NET.challenge = function(cid){
+NET.challenge = function(cid, spar){
   if(!S.team.length) return toast('Add a monster to your team');
   const matchId=uidGen()+uidGen();
-  NET.pending={matchId,to:cid,t:setTimeout(()=>{ NET.pending=null; toast('No answer'); render(); },30000)};
-  NET.room.emit('challenge',Object.assign({to:cid, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId, team:teamMsg()}, typeof myProfile==='function'?{motto:S.motto||'',stats:myProfile().stats,cid:NET.cid}:{}));
-  toast('Challenge sent'); render();
+  NET.pending={matchId,to:cid,spar:!!spar,t:setTimeout(()=>{ NET.pending=null; toast('No answer'); render(); },30000)};
+  NET.room.emit('challenge',Object.assign({to:cid, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId, team:teamMsg(), spar:!!spar}, typeof myProfile==='function'?{motto:S.motto||'',stats:myProfile().stats,cid:NET.cid}:{}));
+  toast(spar?'Spar request sent':'Challenge sent'); render();
 };
 NET.showIncoming = function(d){
   const team=sanitizeTeam(d.team); NET.incoming=d;
-  const sh=sheet(`<h2>Live battle!</h2><p class="muted"><b>${esc(d.name||'A trainer')}</b> ${rankBadge(d.rank||200,16)} ${d.rank|0||200} wants to battle.</p><div class="stage-mons big">${team.map(m=>monSVG(m.sp,m.lvl)).join('')}</div>
+  const sh=sheet(`<h2>${d.spar?'Spar':'Live battle!'}</h2><p class="muted"><b>${esc(d.name||'A trainer')}</b> ${rankBadge(d.rank||200,16)} ${d.rank|0||200} wants to ${d.spar?'spar. Rank is not affected.':'battle.'}</p><div class="stage-mons big">${team.map(m=>monSVG(m.sp,m.lvl)).join('')}</div>
     <div class="actions"><button class="btn gbtn" id="acc">Accept</button><button class="btn ghost" id="dec">Decline</button></div>`, {onClose:()=>{ if(NET.incoming===d){ NET.incoming=null; NET.room.emit('decline',{to:d.from, matchId:d.matchId}); } }});
   const t=setTimeout(()=>sh.close(),28000);
   sh.body.querySelector('#acc').onclick=()=>{ clearTimeout(t); NET.incoming=null; sh.close();
     if(!S.team.length){ toast('Add a monster to your team'); return; }
-    NET.room.emit('accept',Object.assign({to:d.from, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId:d.matchId, team:teamMsg()}, typeof myProfile==='function'?{motto:S.motto||'',stats:myProfile().stats,cid:NET.cid}:{}));
+    NET.room.emit('accept',Object.assign({to:d.from, from:NET.cid, name:S.name, rank:myRank(), avatar:myAvatar(), matchId:d.matchId, team:teamMsg(), spar:!!d.spar}, typeof myProfile==='function'?{motto:S.motto||'',stats:myProfile().stats,cid:NET.cid}:{}));
     NET.startGuest(d); };
   sh.body.querySelector('#dec').onclick=()=>{ clearTimeout(t); sh.close(); };
 };
@@ -4110,7 +4111,7 @@ NET.startHost = async function(d){
   closeAllSheets(); PANEL=null;
   const mr=await joinMatch(d.matchId); NET.mr=mr;
   const b=newBattle({name:S.name, mons:mySnap()}, {name:d.name||'Opponent', mons:sanitizeTeam(d.team)}, {mode:'pvp', single:true});
-  B={b, mode:'pvp', meta:{}, mySide:0, ctl:['human','remote'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, oppAvatar:sanitizeAv(d.avatar), stamp:Date.now(), paused:true,
+  B={b, mode:'pvp', spar:!!(d.spar||(NET.pending&&NET.pending.matchId===d.matchId&&NET.pending.spar)), meta:{}, mySide:0, ctl:['human','remote'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, oppAvatar:sanitizeAv(d.avatar), stamp:Date.now(), paused:true,
      net:{role:'host', matchId:d.matchId, last:Date.now(), lastSeq:b.seq}};
   mr.on('action', a=>{
     if(!B||!B.net||a.matchId!==B.net.matchId||B.b.over||B.paused&&false) return;
@@ -4134,7 +4135,7 @@ NET.startHost = async function(d){
 NET.broadcast = function(){ if(!NET.mr||!B||!B.b||!B.net) return; const b=Object.assign({},B.b,{log:B.b.log.slice(-6)}); try{ NET.mr.emit('state',{matchId:B.net.matchId, b, intro:!!B.paused, rank:myRank()}); }catch(e){} const k=turnKey(B.b); if(B.net.lastKey!==k){ B.net.last=Date.now(); B.net.lastKey=k; } };
 NET.startGuest = async function(d){
   closeAllSheets(); PANEL=null;
-  B={b:null, mode:'pvp', meta:{}, mySide:1, myUids:teamMons().map(m=>m.uid), ctl:['remote','human'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, oppAvatar:sanitizeAv(d.avatar), stamp:Date.now(), paused:true,
+  B={b:null, mode:'pvp', spar:!!d.spar, meta:{}, mySide:1, myUids:teamMons().map(m=>m.uid), ctl:['remote','human'], tgt:{}, oppRank:Math.max(0,Math.min(9999,d.rank|0))||1000, oppAvatar:sanitizeAv(d.avatar), stamp:Date.now(), paused:true,
      net:{role:'guest', matchId:d.matchId, heard:Date.now()}};
   openBattle(); renderBattle();
   const mr=await joinMatch(d.matchId); NET.mr=mr;
@@ -4606,7 +4607,7 @@ function openProfile(p){
         <div class="row"><div><b>Kinds discovered</b></div><b>${st.kinds|0} / ${SP.length}</b></div><div class="row"><div><b>Rank</b></div><b>${P.rank} · ${rankOf(P.rank)[1]}</b></div></div>`);
       else if(k==='awards'){ const done=me?QUESTS.filter(q=>S.quests[q.id]):null; const n=me?done.length:(st.quests|0);
         sheet(`<h2 class="game-h">Awards</h2><p class="muted">${n} of ${QUESTS.length} earned</p>${me?`<div class="list">${QUESTS.map(q=>`<div class="row ${S.quests[q.id]?'':'done'}"><div><b>${q.n}</b></div>${S.quests[q.id]?'<span class="ok">🏆</span>':'<span class="muted small">Locked</span>'}</div>`).join('')}</div>`:''}`); }
-      else if(k==='spar'){ sh.close(); NET.challenge(P.cid); }
+      else if(k==='spar'){ sh.close(); NET.challenge(P.cid, true); }
     });
   };
   draw();
@@ -4739,7 +4740,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (145).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (146).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -5464,9 +5465,9 @@ try{ applyMoveOverrides(JSON.parse(localStorage.getItem('mr-moves')||'{}')); }ca
 skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; if(!s) return '';
   if(s.desc){ const f=x=>Math.round(x), P=x=>Math.round(x*100)+'%';
     const map={dmg:s.dmg?f(lv(s.dmg,L)):'', pct:s.m?P(lv(s.m,L)):'', cost:skCost(id,L), tick:s.tick?f(lv(s.tick,L)):s.stormTick?f(lv(s.stormTick,L)):'', turns:s.turns||s.stormTurns||'', hits:s.hits||1,
-      amt:s.amt?f(lv(s.amt,L)):'', v:s.v?(lv(s.v,L)<1?P(lv(s.v,L)):f(lv(s.v,L))):'', heal:s.heal?P(lv(s.heal,L)):s.hot?P(lv(s.hot,L)):'',
+      amt:s.amt?f(lv(s.amt,L)):s.healFlat?f(lv(s.healFlat,L)):'', v:s.v?(lv(s.v,L)<1?P(lv(s.v,L)):f(lv(s.v,L))):'', heal:s.heal?P(lv(s.heal,L)):s.hot?P(lv(s.hot,L)):'',
       steal:s.stealHp?f(lv(s.stealHp,L)):s.steal?f(lv(s.steal,L)):'', leech:s.leechL?P(lv(s.leechL,L)):'', mana:s.mpAtk?P(lv(s.mpAtk,L)):s.burnmp?f(lv(s.burnmp,L)):'',
-      stun:s.stun?P(lv(s.stun,L)):'', recoil:s.recoil?P(s.recoil):'', dbl:s.dbl?P(s.dbl):''};
+      stun:s.stun?P(lv(s.stun,L)):'', recoil:s.recoil?P(s.recoil):'', dbl:s.dbl?P(s.dbl):'', soak:s.soak?P(Array.isArray(s.soak)?lv(s.soak,L):s.soak):''};
     return s.desc.replace(/\{(\w+)\}/g,(a,k)=>k in map?map[k]:a); }
   if(MOVE_OVR[id] && (!DEFAULT_SK[id] || DEFAULT_SK[id].k!==s.k)) return skillDescBase(id,L);
   return prev(id,L); }; })(skillDesc);
@@ -5705,9 +5706,9 @@ renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.
 
 // ---------- Monster Kingdom style info bubble: description only, sits over the icon row with a tab down to the icon ----------
 function stDesc(m,k){ const s=m.st, P=v=>Math.round((v||0)*100)+'%';
-  const d={burn:`Takes ${s.burnD|0} damage each turn`, poison:`Takes ${s.poisonD|0} damage each turn`, storm:`Takes ${s.stormD|0} damage each turn`, stun:`Can't act`,
+  const d={burn:`Takes ${s.burnD|0} damage each turn`, poison:`Takes ${s.poisonD|0} damage each turn`, storm:`Takes ${s.stormD|0} damage each turn`, frost:`Takes ${s.frostD|0} damage each turn`, stun:`Can't act`,
     bubble:`Shield absorbs ${s.bubbleHp|0} damage`, lsh:`Shield absorbs ${s.lshHp|0} damage`, fsh:`Shield absorbs ${s.fshHp|0} damage`, nsh:`Shield absorbs ${s.nshHp|0} damage`,
-    focus:`Deals ${P(s.focusV)} more damage`, charge:`Deals ${P(s.chargeV)} more damage`, cripple:`Deals ${P(s.crippleV)} less damage`, evade:`${P(s.evadeV)} chance to dodge attacks`, absorb:`Turns ${P(s.absorbV)} of damage taken into mana`, crit:`${P(s.critV)} chance to deal double damage`, mshield:`Mana blocks ${P(s.mshieldV)} of damage taken`, pers:`Deals ${P(s.persV)} more damage, double when low on life`, roots:`Recovers ${P(s.rootsV)} of max life each turn`}[k];
+    focus:`Deals ${P(s.focusV)} more damage`, charge:`Deals ${P(s.chargeV)} more damage`, cripple:`Deals ${P(s.crippleV)} less damage`, evade:`${P(s.evadeV)} chance to dodge attacks`, absorb:`Turns ${P(s.absorbV)} of damage taken into mana`, crit:`${P(s.critV)} chance to deal double damage`, mshield:`Mana blocks ${P(s.mshieldV)} of damage taken`, pers:`Takes ${P(s.persV)} less damage`, roots:`Recovers ${P(s.rootsV)} of max life each turn`}[k];
   return `${d||BUFF_N[k]||k} (${s[k]} turn${s[k]>1?'s':''})`; }
 hudIcons=(function(prev){ return function(m){ if(!m) return ''; let h=prev(m).replace(/<span class="hi st"[\s\S]*?<\/span><\/span>/g,'');
   const add=Object.keys(ST_ICON).filter(k=>m.st[k]>0).map(k=>`<span class="hi st" data-tip="|${esc(stDesc(m,k))}">${icon(ST_ICON[k][0],ST_ICON[k][1],26)}</span>`).join('');
@@ -5872,7 +5873,7 @@ hudIcons=(function(prev){ return function(m){ let h=prev(m); if(!m) return h; Ob
 // ---------- rank ladder (season starts at 200; nothing below Bronze Stripe) ----------
 RANKS.length=0; [[0,'Bronze Stripe','#c07a3e','stripe'],[250,'Bronze Star','#c07a3e','star'],[300,'Silver Stripe','#c9d1db','stripe'],[500,'Silver Star','#c9d1db','star'],
   [700,'Gold Stripe','#f2c14e','stripe'],[1000,'Gold Star','#f2c14e','star'],[1400,'Cobalt Star','#2f6fd8','star'],[1900,'Emerald Stripe','#2fbf6a','stripe'],[2400,'Emerald Star','#2fbf6a','star']].forEach(r=>RANKS.push(r));
-const SEASON=1; if(S&&S.season!==SEASON){ S.season=SEASON; S.rank=200; S.lastRankD=null; try{ persist(); }catch(_){} }
+const SEASON=2; if(S&&S.season!==SEASON){ S.season=SEASON; S.rank=200; S.lastRankD=null; try{ persist(); }catch(_){} }
 rankBadge=(function(prev){ return function(r,size){ const [,n,c,k]=rankOf(r); if(k!=='stripe') return prev(r,size); size=size||26; const id='rb'+(GID++), lt=shade(c,45), dk=shade(c,-30);
   const chev=y=>`<path d="M2.5 ${y+6} L12 ${y} L21.5 ${y+6} L21.5 ${y+10.5} L12 ${y+4.5} L2.5 ${y+10.5}Z" fill="url(#${id})" stroke="${shade(c,-55)}" stroke-width=".6" stroke-linejoin="round"/>`;
   return `<svg class="rbadge" viewBox="0 0 24 24" width="${size}" height="${size}"><title>${n}</title><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${lt}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${dk}"/></linearGradient></defs>${chev(2.5)}${n==='Emerald Stripe'?chev(10).replace(`url(#${id})`,`url(#${id}p)`):chev(10)}</svg>`.replace('</defs>',n==='Emerald Stripe'?`<linearGradient id="${id}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b07ae0"/><stop offset="1" stop-color="#5a2a8c"/></linearGradient></defs>`:'</defs>'); }; })(rankBadge);
@@ -5987,7 +5988,7 @@ Object.assign(SK.camelback,{v:[6,5],desc:'Regenerates {v} mana every turn.'});
 ST_ICON.soak=['mkwave','#22a6e3']; BUFF_N.soak='Soaked';
 stDesc=(function(prev){ return function(m,k){ if(k==='soak') return `Takes ${Math.round((m.st.soakV||0)*100)}% more water damage (${m.st.soak} turn${m.st.soak>1?'s':''})`; return prev(m,k); }; })(stDesc);
 skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1;
-  if(id==='wave'&&s&&s.soak) return `Deals ${Math.round(lv(s.dmg,L))} water damage and reduces enemy's water resistance by ${Math.round(s.soak*100)}% for ${s.soakTurns||6} turns.`;
+  if(id==='wave'&&s&&s.soak) return `Deals ${Math.round(lv(s.dmg,L))} water damage and reduces enemy's water resistance by ${Math.round((Array.isArray(s.soak)?lv(s.soak,L):s.soak)*100)}% for ${s.soakTurns||6} turns.`;
   if(id==='purge'&&s&&s.healFlat) return `Heals ${Math.round(lv(s.healFlat,L))} life and removes all negative effects.`;
   if(id==='camelback'&&s) return `Regenerates ${Math.round(lv(s.v,L))} mana every turn.`;
   return prev(id,L); }; })(skillDesc);
@@ -6358,7 +6359,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v145 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v146 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -6428,6 +6429,31 @@ function openPlayers(){
   addEventListener('resize',sync); addEventListener('orientationchange',()=>setTimeout(sync,150));
   if(window.visualViewport) visualViewport.addEventListener('resize',sync);
   setInterval(sync,700); sync(); })();
+
+// ---------- ability numbers from the Monster Realm Abilities sheet (level 1 → level 10) ----------
+(function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
+  const SHEET={
+    bolt:{dmg:P(22,143)},
+    bubble:{amt:P(35,237), mp:P(14,95)},
+    blizzard:{k:'dot', dot:'frost', tick:P(16,84), turns:5, dmg:null, stun:null, mp:P(18,78),
+      desc:'Conjures a storm that deals {tick} damage each turn for {turns} turns. Penetrates shields.'},
+    charge:{v:P(.19,1.53), el:'bolt'},
+    cripple:{v:P(.16,.69), mp:P(14,59)},
+    feed:{k:'hit', dmg:P(18,141), leech:1, stealHp:null, desc:'Bites your opponent, dealing {dmg} nature damage and stealing 100% of damage dealt.'},
+    hydrate:{heal:null, healFlat:P(30,264), mp:P(15,132), desc:'Taps into the aquatic rejuvenation power, healing {amt} life.'},
+    perseverance:{v:P(.10,.46), turns:4, desc:'Adds {v} resistance to all damage for {turns} turns.'},
+    purge:{healFlat:P(60,96)},
+    shock:{dmg:P(42,307), stun:null, selfStun:1, desc:'Extremely powerful attack that deals {dmg} damage, but stuns yourself for one turn.'},
+    spark:{v:P(.13,.76), turns:4},
+    stormcloud:{tick:P(19,94), desc:'Hangs a storm cloud over your enemy, dealing {tick} damage each turn for {turns} turns. Penetrates shields.'},
+    wave:{dmg:P(20,123), soak:P(.06,.33), soakTurns:6, desc:"Deals {dmg} water damage and reduces enemy's water resistance by {soak} for 6 turns."},
+    souleater:{m:P(.8,.84), mpAtk:P(.4,.42), mp:P(8,16)},
+    mshield:{v:P(.13,.67), el:'water'},
+    aircurrent:{el:'bolt'}, flicker:{el:'fire'}, hardened:{el:'nature'}, invuln:{el:'nature'}, roots:{el:'neutral'}, sweaty:{el:'neutral'}
+  };
+  Object.entries(SHEET).forEach(([id,f])=>{ if(!SK[id]) return; Object.entries(f).forEach(([k,v])=>{ if(v===null) delete SK[id][k]; else SK[id][k]=v; });
+    DEFAULT_SK[id]=JSON.parse(JSON.stringify(SK[id])); });
+  try{ applyMoveOverrides(MOVE_OVR); }catch(_){} })();
 
 </script>
 </body></html>

@@ -55,9 +55,9 @@ try{ applyMoveOverrides(JSON.parse(localStorage.getItem('mr-moves')||'{}')); }ca
 skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; if(!s) return '';
   if(s.desc){ const f=x=>Math.round(x), P=x=>Math.round(x*100)+'%';
     const map={dmg:s.dmg?f(lv(s.dmg,L)):'', pct:s.m?P(lv(s.m,L)):'', cost:skCost(id,L), tick:s.tick?f(lv(s.tick,L)):s.stormTick?f(lv(s.stormTick,L)):'', turns:s.turns||s.stormTurns||'', hits:s.hits||1,
-      amt:s.amt?f(lv(s.amt,L)):'', v:s.v?(lv(s.v,L)<1?P(lv(s.v,L)):f(lv(s.v,L))):'', heal:s.heal?P(lv(s.heal,L)):s.hot?P(lv(s.hot,L)):'',
+      amt:s.amt?f(lv(s.amt,L)):s.healFlat?f(lv(s.healFlat,L)):'', v:s.v?(lv(s.v,L)<1?P(lv(s.v,L)):f(lv(s.v,L))):'', heal:s.heal?P(lv(s.heal,L)):s.hot?P(lv(s.hot,L)):'',
       steal:s.stealHp?f(lv(s.stealHp,L)):s.steal?f(lv(s.steal,L)):'', leech:s.leechL?P(lv(s.leechL,L)):'', mana:s.mpAtk?P(lv(s.mpAtk,L)):s.burnmp?f(lv(s.burnmp,L)):'',
-      stun:s.stun?P(lv(s.stun,L)):'', recoil:s.recoil?P(s.recoil):'', dbl:s.dbl?P(s.dbl):''};
+      stun:s.stun?P(lv(s.stun,L)):'', recoil:s.recoil?P(s.recoil):'', dbl:s.dbl?P(s.dbl):'', soak:s.soak?P(Array.isArray(s.soak)?lv(s.soak,L):s.soak):''};
     return s.desc.replace(/\{(\w+)\}/g,(a,k)=>k in map?map[k]:a); }
   if(MOVE_OVR[id] && (!DEFAULT_SK[id] || DEFAULT_SK[id].k!==s.k)) return skillDescBase(id,L);
   return prev(id,L); }; })(skillDesc);
@@ -296,9 +296,9 @@ renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.
 
 // ---------- Monster Kingdom style info bubble: description only, sits over the icon row with a tab down to the icon ----------
 function stDesc(m,k){ const s=m.st, P=v=>Math.round((v||0)*100)+'%';
-  const d={burn:`Takes ${s.burnD|0} damage each turn`, poison:`Takes ${s.poisonD|0} damage each turn`, storm:`Takes ${s.stormD|0} damage each turn`, stun:`Can't act`,
+  const d={burn:`Takes ${s.burnD|0} damage each turn`, poison:`Takes ${s.poisonD|0} damage each turn`, storm:`Takes ${s.stormD|0} damage each turn`, frost:`Takes ${s.frostD|0} damage each turn`, stun:`Can't act`,
     bubble:`Shield absorbs ${s.bubbleHp|0} damage`, lsh:`Shield absorbs ${s.lshHp|0} damage`, fsh:`Shield absorbs ${s.fshHp|0} damage`, nsh:`Shield absorbs ${s.nshHp|0} damage`,
-    focus:`Deals ${P(s.focusV)} more damage`, charge:`Deals ${P(s.chargeV)} more damage`, cripple:`Deals ${P(s.crippleV)} less damage`, evade:`${P(s.evadeV)} chance to dodge attacks`, absorb:`Turns ${P(s.absorbV)} of damage taken into mana`, crit:`${P(s.critV)} chance to deal double damage`, mshield:`Mana blocks ${P(s.mshieldV)} of damage taken`, pers:`Deals ${P(s.persV)} more damage, double when low on life`, roots:`Recovers ${P(s.rootsV)} of max life each turn`}[k];
+    focus:`Deals ${P(s.focusV)} more damage`, charge:`Deals ${P(s.chargeV)} more damage`, cripple:`Deals ${P(s.crippleV)} less damage`, evade:`${P(s.evadeV)} chance to dodge attacks`, absorb:`Turns ${P(s.absorbV)} of damage taken into mana`, crit:`${P(s.critV)} chance to deal double damage`, mshield:`Mana blocks ${P(s.mshieldV)} of damage taken`, pers:`Takes ${P(s.persV)} less damage`, roots:`Recovers ${P(s.rootsV)} of max life each turn`}[k];
   return `${d||BUFF_N[k]||k} (${s[k]} turn${s[k]>1?'s':''})`; }
 hudIcons=(function(prev){ return function(m){ if(!m) return ''; let h=prev(m).replace(/<span class="hi st"[\s\S]*?<\/span><\/span>/g,'');
   const add=Object.keys(ST_ICON).filter(k=>m.st[k]>0).map(k=>`<span class="hi st" data-tip="|${esc(stDesc(m,k))}">${icon(ST_ICON[k][0],ST_ICON[k][1],26)}</span>`).join('');
@@ -463,7 +463,7 @@ hudIcons=(function(prev){ return function(m){ let h=prev(m); if(!m) return h; Ob
 // ---------- rank ladder (season starts at 200; nothing below Bronze Stripe) ----------
 RANKS.length=0; [[0,'Bronze Stripe','#c07a3e','stripe'],[250,'Bronze Star','#c07a3e','star'],[300,'Silver Stripe','#c9d1db','stripe'],[500,'Silver Star','#c9d1db','star'],
   [700,'Gold Stripe','#f2c14e','stripe'],[1000,'Gold Star','#f2c14e','star'],[1400,'Cobalt Star','#2f6fd8','star'],[1900,'Emerald Stripe','#2fbf6a','stripe'],[2400,'Emerald Star','#2fbf6a','star']].forEach(r=>RANKS.push(r));
-const SEASON=1; if(S&&S.season!==SEASON){ S.season=SEASON; S.rank=200; S.lastRankD=null; try{ persist(); }catch(_){} }
+const SEASON=2; if(S&&S.season!==SEASON){ S.season=SEASON; S.rank=200; S.lastRankD=null; try{ persist(); }catch(_){} }
 rankBadge=(function(prev){ return function(r,size){ const [,n,c,k]=rankOf(r); if(k!=='stripe') return prev(r,size); size=size||26; const id='rb'+(GID++), lt=shade(c,45), dk=shade(c,-30);
   const chev=y=>`<path d="M2.5 ${y+6} L12 ${y} L21.5 ${y+6} L21.5 ${y+10.5} L12 ${y+4.5} L2.5 ${y+10.5}Z" fill="url(#${id})" stroke="${shade(c,-55)}" stroke-width=".6" stroke-linejoin="round"/>`;
   return `<svg class="rbadge" viewBox="0 0 24 24" width="${size}" height="${size}"><title>${n}</title><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${lt}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${dk}"/></linearGradient></defs>${chev(2.5)}${n==='Emerald Stripe'?chev(10).replace(`url(#${id})`,`url(#${id}p)`):chev(10)}</svg>`.replace('</defs>',n==='Emerald Stripe'?`<linearGradient id="${id}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b07ae0"/><stop offset="1" stop-color="#5a2a8c"/></linearGradient></defs>`:'</defs>'); }; })(rankBadge);
@@ -578,7 +578,7 @@ Object.assign(SK.camelback,{v:[6,5],desc:'Regenerates {v} mana every turn.'});
 ST_ICON.soak=['mkwave','#22a6e3']; BUFF_N.soak='Soaked';
 stDesc=(function(prev){ return function(m,k){ if(k==='soak') return `Takes ${Math.round((m.st.soakV||0)*100)}% more water damage (${m.st.soak} turn${m.st.soak>1?'s':''})`; return prev(m,k); }; })(stDesc);
 skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1;
-  if(id==='wave'&&s&&s.soak) return `Deals ${Math.round(lv(s.dmg,L))} water damage and reduces enemy's water resistance by ${Math.round(s.soak*100)}% for ${s.soakTurns||6} turns.`;
+  if(id==='wave'&&s&&s.soak) return `Deals ${Math.round(lv(s.dmg,L))} water damage and reduces enemy's water resistance by ${Math.round((Array.isArray(s.soak)?lv(s.soak,L):s.soak)*100)}% for ${s.soakTurns||6} turns.`;
   if(id==='purge'&&s&&s.healFlat) return `Heals ${Math.round(lv(s.healFlat,L))} life and removes all negative effects.`;
   if(id==='camelback'&&s) return `Regenerates ${Math.round(lv(s.v,L))} mana every turn.`;
   return prev(id,L); }; })(skillDesc);
@@ -949,7 +949,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v145 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v146 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1019,3 +1019,28 @@ function openPlayers(){
   addEventListener('resize',sync); addEventListener('orientationchange',()=>setTimeout(sync,150));
   if(window.visualViewport) visualViewport.addEventListener('resize',sync);
   setInterval(sync,700); sync(); })();
+
+// ---------- ability numbers from the Monster Realm Abilities sheet (level 1 → level 10) ----------
+(function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
+  const SHEET={
+    bolt:{dmg:P(22,143)},
+    bubble:{amt:P(35,237), mp:P(14,95)},
+    blizzard:{k:'dot', dot:'frost', tick:P(16,84), turns:5, dmg:null, stun:null, mp:P(18,78),
+      desc:'Conjures a storm that deals {tick} damage each turn for {turns} turns. Penetrates shields.'},
+    charge:{v:P(.19,1.53), el:'bolt'},
+    cripple:{v:P(.16,.69), mp:P(14,59)},
+    feed:{k:'hit', dmg:P(18,141), leech:1, stealHp:null, desc:'Bites your opponent, dealing {dmg} nature damage and stealing 100% of damage dealt.'},
+    hydrate:{heal:null, healFlat:P(30,264), mp:P(15,132), desc:'Taps into the aquatic rejuvenation power, healing {amt} life.'},
+    perseverance:{v:P(.10,.46), turns:4, desc:'Adds {v} resistance to all damage for {turns} turns.'},
+    purge:{healFlat:P(60,96)},
+    shock:{dmg:P(42,307), stun:null, selfStun:1, desc:'Extremely powerful attack that deals {dmg} damage, but stuns yourself for one turn.'},
+    spark:{v:P(.13,.76), turns:4},
+    stormcloud:{tick:P(19,94), desc:'Hangs a storm cloud over your enemy, dealing {tick} damage each turn for {turns} turns. Penetrates shields.'},
+    wave:{dmg:P(20,123), soak:P(.06,.33), soakTurns:6, desc:"Deals {dmg} water damage and reduces enemy's water resistance by {soak} for 6 turns."},
+    souleater:{m:P(.8,.84), mpAtk:P(.4,.42), mp:P(8,16)},
+    mshield:{v:P(.13,.67), el:'water'},
+    aircurrent:{el:'bolt'}, flicker:{el:'fire'}, hardened:{el:'nature'}, invuln:{el:'nature'}, roots:{el:'neutral'}, sweaty:{el:'neutral'}
+  };
+  Object.entries(SHEET).forEach(([id,f])=>{ if(!SK[id]) return; Object.entries(f).forEach(([k,v])=>{ if(v===null) delete SK[id][k]; else SK[id][k]=v; });
+    DEFAULT_SK[id]=JSON.parse(JSON.stringify(SK[id])); });
+  try{ applyMoveOverrides(MOVE_OVR); }catch(_){} })();
