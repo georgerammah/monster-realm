@@ -319,7 +319,7 @@ openPick=(function(prev){ return function(side,swap){ const w=swap?0:pickWaitLef
 setInterval(()=>{ if(B&&B.b&&B.b.phase==='pick'&&!PICKEL&&pickWaitLeft()>0) B.stamp=Date.now(); },100);
 
 // ---------- battle sequencing: pick -> 3s entrance -> name on landing for 1s -> next pick -> ... -> abilities slide up ----------
-const ENT_MS=3000, LAND_MS=2040, NAME_MS=1000, BUSY_MS=LAND_MS+NAME_MS+400;
+const ENT_MS=1600, LAND_MS=1100, NAME_MS=900, BUSY_MS=LAND_MS+350;
 function busyLeft(){ if(!B||!B.enT) return 0; let m=0; Object.values(B.enT).forEach(e=>{ m=Math.max(m,e.t+BUSY_MS-Date.now()); }); return Math.max(0,m); }
 pickWaitLeft=busyLeft;
 drive=(function(prev){ return function(){ const r=prev(); if(!B||!B.b||B.b.over||B.paused) return r; const w=busyLeft();
@@ -327,12 +327,12 @@ drive=(function(prev){ return function(){ const r=prev(); if(!B||!B.b||B.b.over|
 humanAct=(function(prev){ return function(skill,target){ if(busyLeft()>0) return; return prev(skill,target); }; })(humanAct);
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b||!B.enT) return; const now=Date.now(), root=$('#battle'); if(!root) return;
   root.querySelectorAll('.fighter').forEach(el=>{ const f=el.querySelector('.fname'), e=B.enT[el.dataset.s]; if(!f) return; f.classList.remove('fnon');
-    const t=e?(now-e.t):1e9; if(t<4300){ f.classList.add('fn2'); f.style.animationDelay=(-t/1000)+'s'; } else { f.classList.remove('fn2'); f.style.animationDelay=''; } });
+    const t=e?(now-e.t):1e9; if(t<2400){ f.classList.add('fn2'); f.style.animationDelay=(-t/1000)+'s'; } else { f.classList.remove('fn2'); f.style.animationDelay=''; } });
   const busy=busyLeft()>0; root.classList.toggle('busy',busy);
   const ab=root.querySelector('.abil'); if(ab&&!busy&&B.abT&&now-B.abT<700){ ab.classList.add('abin'); ab.style.animationDelay=(-(now-B.abT)/1000)+'s'; } }; })(renderBattle);
 setInterval(()=>{ if(!B||!B.b) return; const root=$('#battle'); const busy=busyLeft()>0;
   if(busy){ if(B.swapStamp==null) B.stamp=Date.now(); B.wasBusy=true; }
-  else if(B.wasBusy){ B.wasBusy=false; B.abT=Date.now(); if(root){ root.classList.remove('busy'); const ab=root.querySelector('.abil'); if(ab){ ab.classList.remove('abin'); void ab.offsetWidth; ab.classList.add('abin'); ab.style.animationDelay='0s'; } } }
+  else if(B.wasBusy){ B.wasBusy=false; B.abT=Date.now(); if(!B.b.over&&!B.paused&&!(B.net&&B.net.role==='guest')){ clearTimeout(B.timer); drive(); } if(root){ root.classList.remove('busy'); const ab=root.querySelector('.abil'); if(ab){ ab.classList.remove('abin'); void ab.offsetWidth; ab.classList.add('abin'); ab.style.animationDelay='0s'; } } }
   else if(root) root.classList.remove('busy'); },80);
 openPick=(function(prev){ return function(side,swap){ if(swap&&busyLeft()>0) return; return prev(side,swap); }; })(openPick);
 
@@ -696,7 +696,7 @@ setInterval(()=>{ if(!B||!B.b||B.swapStamp==null) return; if(turnKey(B.b)!==B.sw
 // ---------- a short breather after monsters land, before the first move ----------
 busyLeft=(function(prev){ return function(){ const base=prev(); if(!B) return base;
   if(base>0){ B._hadBusy=true; B._settleAt=null; return base; }
-  if(B._hadBusy){ B._hadBusy=false; if(B.b&&B.b.phase==='fight'&&B.swapStamp==null) B._settleAt=Date.now()+400; }
+  if(B._hadBusy){ B._hadBusy=false; if(B.b&&B.b.phase==='fight'&&B.swapStamp==null){ const a=actor(B.b); if(!(a&&B.ctl[a.s]==='human'&&!B.auto)) B._settleAt=Date.now()+600; } }
   const s=B._settleAt?B._settleAt-Date.now():0; return s>0?s:0; }; })(busyLeft);
 pickWaitLeft=busyLeft;
 
