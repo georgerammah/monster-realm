@@ -1,3 +1,4 @@
+function useKbd(){ return matchMedia('(pointer:coarse)').matches; }
 // ===== V13: Ability Studio (admin) — define every move without code =====
 const MOVE_KINDS=[['hit','Attack'],['dot','Damage over time'],['shield','Shield'],['buff','Buff (self)'],['debuff','Debuff (foe)'],['heal','Heal'],['drain','Steal (life/mana)'],['passive','Passive']];
 const BUFF_TYPES=[['crit','Critical chance (2x)'],['evade','Dodge chance'],['focus','Fire damage up'],['charge','All damage up'],['mshield','Mana soaks damage'],['absorb','Damage taken → mana'],['pers','Damage reduction']];
@@ -533,7 +534,7 @@ function kbOpen(el){ KBIN=el; KBSHIFT=!el.value; KBNUM=false; if(!KB){ KB=docume
     document.body.appendChild(KB); }
   document.body.classList.add('kb-open'); kbDraw(); setTimeout(()=>{ try{ el.scrollIntoView({block:'center'}); }catch(_){} },50); }
 document.addEventListener('focusin',e=>{ const el=e.target; if(!(el instanceof HTMLInputElement||el instanceof HTMLTextAreaElement)) return; if(el.type&&/checkbox|radio|range|file|button|submit/.test(el.type)) return;
-  if(!isRot()){ el.removeAttribute('inputmode'); return; } el.setAttribute('inputmode','none'); kbOpen(el); },true);
+  if(!useKbd()){ el.removeAttribute('inputmode'); return; } el.setAttribute('inputmode','none'); kbOpen(el); },true);
 document.addEventListener('pointerdown',e=>{ if(!KB) return; if(e.target.closest('.kbd')||e.target===KBIN) return; kbClose(); },true);
 
 // Mana Shards (MK screenshot: 30 mana, steals 90 at lv 10) and Hydrate cost (132 at lv 10)
@@ -932,10 +933,10 @@ monSVG=(function(prev){ const F={penguin:penguinNew,ram:ramNew,frog:frogNew,liza
   return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${sc}) translate(-50 -92)">${F[shape](c1,c2,c3,st,id)}</g></svg>`; }; })(monSVG);
 
 // ---------- no native keyboard in the rotated game: decide before the tap focuses the box ----------
-['touchstart','pointerdown'].forEach(ev=>document.addEventListener(ev,e=>{ const el=e.target&&e.target.closest&&e.target.closest('input,textarea'); if(!el||!isRot()) return; if(el.type&&/checkbox|radio|range|file|button|submit/.test(el.type)) return; el.setAttribute('inputmode','none'); },{capture:true,passive:true}));
-new MutationObserver(()=>{ if(!isRot()) return; document.querySelectorAll('input:not([inputmode="none"]):not([type=checkbox]):not([type=radio]):not([type=range]), textarea:not([inputmode="none"])').forEach(el=>el.setAttribute('inputmode','none')); }).observe(document.documentElement,{childList:true,subtree:true});
+['touchstart','pointerdown'].forEach(ev=>document.addEventListener(ev,e=>{ const el=e.target&&e.target.closest&&e.target.closest('input,textarea'); if(!el||!useKbd()) return; if(el.type&&/checkbox|radio|range|file|button|submit/.test(el.type)) return; el.setAttribute('inputmode','none'); },{capture:true,passive:true}));
+new MutationObserver(()=>{ if(!useKbd()) return; document.querySelectorAll('input:not([inputmode="none"]):not([type=checkbox]):not([type=radio]):not([type=range]), textarea:not([inputmode="none"])').forEach(el=>el.setAttribute('inputmode','none')); }).observe(document.documentElement,{childList:true,subtree:true});
 kbOpen=(function(prev){ return function(el){ const r=prev(el); setTimeout(()=>{ try{ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; }catch(_){} },60); return r; }; })(kbOpen);
-Element.prototype._siv=Element.prototype.scrollIntoView; Element.prototype.scrollIntoView=function(o){ if(isRot()&&this.closest&&this.closest('input,textarea,.sheet')) return; return this._siv(o); };
+Element.prototype._siv=Element.prototype.scrollIntoView; Element.prototype.scrollIntoView=function(o){ if(useKbd()&&this.closest&&this.closest('input,textarea,.sheet')) return; return this._siv(o); };
 
 // ---------- move your game between Safari and the home-screen app: a transfer code ----------
 function myCode(){ return window.MR_UID||localStorage.getItem('mr-uid')||''; }
@@ -948,13 +949,13 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v144 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v145 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
 
 // rotated play: tapping a text box never focuses it (no iPhone AutoFill bar), our keyboard types into it directly
-document.addEventListener('touchstart',e=>{ if(!isRot()) return; const el=e.target&&e.target.closest&&e.target.closest('input,textarea'); if(!el) return; if(el.type&&/checkbox|radio|range|file|button|submit/.test(el.type)) return;
+document.addEventListener('touchstart',e=>{ if(!useKbd()) return; const el=e.target&&e.target.closest&&e.target.closest('input,textarea'); if(!el) return; if(el.type&&/checkbox|radio|range|file|button|submit/.test(el.type)) return;
   e.preventDefault(); if(document.activeElement&&document.activeElement.blur) document.activeElement.blur(); if(KBIN!==el){ if(KB) kbClose(); kbOpen(el); } },{capture:true,passive:false});
 kbOpen=(function(prev){ return function(el){ document.querySelectorAll('.kbf').forEach(x=>x.classList.remove('kbf')); const r=prev.apply(this,arguments); if(el){ el.classList.add('kbf'); try{ const n=el.value.length; el.setSelectionRange(n,n); }catch(_){} if(document.activeElement===el) el.blur(); } return r; }; })(kbOpen);
 kbClose=(function(prev){ return function(){ document.querySelectorAll('.kbf').forEach(x=>x.classList.remove('kbf')); return prev.apply(this,arguments); }; })(kbClose);
@@ -1006,26 +1007,15 @@ function openPlayers(){
   let tq; $a('#aq').addEventListener('input',()=>{ clearTimeout(tq); tq=setTimeout(()=>{ q=$a('#aq').value.trim(); load(); },500); });
   load(); }
 
-// ---------- turn-your-phone prompt: stays until the phone is really sideways ----------
-(function(){
-  let w=null, sensor=false, lastUp=0, asked=false, tapOk=false;
-  const NEEDS_PERM=typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function';
-  const sub=t=>{ if(w) w.querySelector('.rh-sub').textContent=t; };
-  const hide=()=>{ if(!w) return; const x=w; w=null; x.classList.remove('on'); setTimeout(()=>x.remove(),250); };
-  const show=()=>{ if(w||!isRot()) return;
-    w=document.createElement('div'); w.className='rothint';
-    w.innerHTML=`<div class="rh-in"><svg viewBox="0 0 120 120" class="rh-ph"><g><rect x="38" y="14" width="44" height="92" rx="9" fill="none" stroke="#fff" stroke-width="5"/><rect x="53" y="20" width="14" height="4" rx="2" fill="#fff"/></g></svg><b>Turn your phone sideways</b><span class="rh-sub"></span></div>`;
-    document.documentElement.appendChild(w); requestAnimationFrame(()=>w&&w.classList.add('on'));
-    sub(sensor?'':NEEDS_PERM&&!asked?'Tap to continue':'');
-    tapOk=false; setTimeout(()=>{ if(w&&!sensor){ tapOk=true; if(!NEEDS_PERM||asked) sub('Tap to continue'); } },1500);
-    const me=w; let busyTap=0; const onTap=async e=>{ if(!me.isConnected){ removeEventListener('pointerdown',onTap,true); removeEventListener('touchstart',onTap,true); return; } if(e.cancelable) e.preventDefault(); e.stopPropagation(); if(Date.now()-busyTap<400) return; busyTap=Date.now();
-      if(NEEDS_PERM&&!asked&&!sensor){ asked=true; let r='denied'; try{ r=await DeviceOrientationEvent.requestPermission(); }catch(_){}
-        if(r==='granted'){ sub(''); setTimeout(()=>{ if(w&&!sensor) hide(); },2500); return; } hide(); return; }
-      if(!sensor&&tapOk) hide(); }; addEventListener('touchstart',onTap,{capture:true,passive:false}); addEventListener('pointerdown',onTap,true); };
-  addEventListener('deviceorientation',e=>{ if(e.gamma==null||e.beta==null) return; sensor=true;
-    const side=Math.abs(e.gamma)>55, up=Math.abs(e.beta)>55&&Math.abs(e.gamma)<30;
-    if(side){ lastUp=0; hide(); return; }
-    if(up&&isRot()){ if(!lastUp) lastUp=Date.now(); else if(Date.now()-lastUp>1500) show(); } else lastUp=0; });
-  addEventListener('resize',()=>{ if(!isRot()) hide(); });
-  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&isRot()&&!sensor) setTimeout(show,300); });
-  setTimeout(show,400); })();
+// ---------- rotate gate: upright phones must turn sideways (turn off Rotation Lock if needed) ----------
+(function(){ let w=null;
+  const upright=()=>matchMedia('(pointer:coarse)').matches && innerHeight>innerWidth;
+  const sync=()=>{ if(upright()){ if(w) return; try{ kbClose(); }catch(_){}
+      w=document.createElement('div'); w.className='rothint on';
+      w.innerHTML=`<div class="rh-in"><svg viewBox="0 0 120 120" class="rh-ph"><g><rect x="38" y="14" width="44" height="92" rx="9" fill="none" stroke="#fff" stroke-width="5"/><rect x="53" y="20" width="14" height="4" rx="2" fill="#fff"/></g></svg><b>Turn your phone sideways</b><span>Not rotating? Turn off Rotation Lock in Control Center.</span></div>`;
+      w.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); },true);
+      document.documentElement.appendChild(w); }
+    else if(w){ const x=w; w=null; x.classList.remove('on'); setTimeout(()=>x.remove(),250); } };
+  addEventListener('resize',sync); addEventListener('orientationchange',()=>setTimeout(sync,150));
+  if(window.visualViewport) visualViewport.addEventListener('resize',sync);
+  setInterval(sync,700); sync(); })();

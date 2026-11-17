@@ -9,7 +9,7 @@ function updRot(){
   const coarse=matchMedia('(pointer:coarse)').matches;
   const SA=!!(navigator.standalone||matchMedia('(display-mode: standalone)').matches);
   const vw=(window.visualViewport&&visualViewport.width)||innerWidth, vh=(window.visualViewport&&visualViewport.height)||innerHeight;
-  const port=coarse && innerHeight>innerWidth;
+  const port=false; // the game only runs in real landscape; upright phones get the rotate gate
   const i=insets();
   const sL=Math.max(screen.width,screen.height), sS=Math.min(screen.width,screen.height);
   // Home-screen app: iOS can report a viewport shorter than the glass (gap above the home bar). When the page is drawn
