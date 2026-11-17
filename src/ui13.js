@@ -923,3 +923,24 @@ Object.assign(ATK_MOUTH,{penguin:[1.3,1.9,.9],ram:[1.6,2.0,1.0],frog:[1.2,2.2,1.
 monSVG=(function(prev){ const F={penguin:penguinNew,ram:ramNew,frog:frogNew,lizard:lizardNew}; return function(spId,lvl,cls){ const sp=SPI[spId]; const shape=sp&&FAM[sp.fam]&&FAM[sp.fam].shape; if(!F[shape]||(typeof CUSTOM_ART!=='undefined'&&CUSTOM_ART[spId])) return prev(spId,lvl,cls);
   const st=stageOf(lvl); const c1=mute(sp.col[0],22), c2=mute(sp.col[1],12), c3=mute(sp.col[2],10); const id='m'+(GID++); const sc=[0.8,0.92,1][st];
   return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${sc}) translate(-50 -92)">${F[shape](c1,c2,c3,st,id)}</g></svg>`; }; })(monSVG);
+
+// ---------- no native keyboard in the rotated game: decide before the tap focuses the box ----------
+['touchstart','pointerdown'].forEach(ev=>document.addEventListener(ev,e=>{ const el=e.target&&e.target.closest&&e.target.closest('input,textarea'); if(!el||!isRot()) return; if(el.type&&/checkbox|radio|range|file|button|submit/.test(el.type)) return; el.setAttribute('inputmode','none'); },{capture:true,passive:true}));
+new MutationObserver(()=>{ if(!isRot()) return; document.querySelectorAll('input:not([inputmode="none"]):not([type=checkbox]):not([type=radio]):not([type=range]), textarea:not([inputmode="none"])').forEach(el=>el.setAttribute('inputmode','none')); }).observe(document.documentElement,{childList:true,subtree:true});
+kbOpen=(function(prev){ return function(el){ const r=prev(el); setTimeout(()=>{ try{ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; }catch(_){} },60); return r; }; })(kbOpen);
+Element.prototype._siv=Element.prototype.scrollIntoView; Element.prototype.scrollIntoView=function(o){ if(isRot()&&this.closest&&this.closest('input,textarea,.sheet')) return; return this._siv(o); };
+
+// ---------- move your game between Safari and the home-screen app: a transfer code ----------
+function myCode(){ return window.MR_UID||localStorage.getItem('mr-uid')||''; }
+function openRestore(){
+  const sh=sheet(`<div class="rst"><h2>Restore your game</h2><p>Enter the transfer code from Menu on your other device or browser.</p><div class="xrow"><input id="rcode" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Transfer code"><button class="btn sm" id="rpaste">Paste</button></div><p class="nm-err" id="rerr"></p><button class="btn" id="rgo">Restore</button></div>`);
+  sh.body.querySelector('#rpaste').onclick=async()=>{ try{ const t=await navigator.clipboard.readText(); sh.body.querySelector('#rcode').value=(t||'').trim(); }catch(_){ err('Allow paste, or type the code.'); } };
+  const err=t=>{ sh.body.querySelector('#rerr').textContent=t; };
+  sh.body.querySelector('#rgo').onclick=async()=>{ const code=sh.body.querySelector('#rcode').value.trim().replace(/\s+/g,''); if(!/^u[a-z0-9]{8,}$/i.test(code)) return err("That doesn't look like a transfer code.");
+    err('Checking…'); try{ const db=window.claude&&await window.claude.use('db'); const v=db&&await withTimeout(db.collection('data/users/'+code).doc('save').get(),10000); const save=parseDoc(v);
+      if(!save||!save.name) return err('No game found for that code.');
+      localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
+PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div>`; }; })(PANELS.menu);
+bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
+  const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
+new MutationObserver(()=>{ const go=document.querySelector('#go'); if(!go||!document.querySelector('#nm')||document.querySelector('#onbrst')) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});

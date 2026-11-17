@@ -1437,7 +1437,7 @@ html,body{touch-action:manipulation}
 .kb-k:active{background:#b8bcc4}
 .kb-shift,.kb-back,.kb-123,.kb-ABC{background:#aeb3bc;max-width:13%;flex:1.4 1 0}.kb-shift.on{background:#fff}
 .kb-space{flex:5 1 0;max-width:none}.kb-done{flex:1.6 1 0;max-width:18%;background:#2f7bf6;color:#fff;font-weight:600}
-body.kb-open .sheet{transform:translateY(calc(-1 * min(calc(26*var(--vh)),150px)))!important;transition:transform .2s}
+body.kb-open .sheet{translate:0 calc(-1 * min(calc(12*var(--vh)),60px));transition:translate .2s}
 .kbd{gap:5px!important;padding-top:5px!important}
 .aneed{display:inline-flex;align-items:center;gap:3px;justify-content:center;min-width:34px;height:24px;padding:0 6px;border-radius:12px;background:linear-gradient(#ffa63d,#d96a0c);color:#fff;font:12px "Lilita One",system-ui}.aneed::before{content:"⚔"}.aneed.bad{background:linear-gradient(#aaa,#777)}
 .pbtn{position:relative}.pbtn::after{content:"";position:absolute;inset:-7px -2px}
@@ -1506,6 +1506,12 @@ body.auto-on .float2.buff{display:none!important}
 .mkdef .rw-xp{background:#7a1414!important}
 .mkdef .runner svg{animation:none!important;transform:none!important}
 .mksucc .rw-mons{margin-top:calc(2*var(--vh))}
+.xfer{margin:12px 0 0;padding:12px;border-radius:14px;background:rgba(0,0,0,.06);display:flex;flex-direction:column;gap:6px}
+.xfer b{font:16px "Lilita One",system-ui}.xfer span{font-size:12.5px;opacity:.75}
+.xrow{display:flex;gap:8px;align-items:center}.xrow code{flex:1;min-width:0;overflow-wrap:anywhere;font:600 14px ui-monospace,Menlo,monospace;background:#fff;border-radius:8px;padding:6px 8px}
+.rst{display:flex;flex-direction:column;gap:8px;padding:6px 4px}.rst h2{margin:0}.rst p{margin:0;font-size:13.5px}.rst input{font:600 16px ui-monospace,Menlo,monospace;padding:10px 12px;border-radius:10px;border:2px solid #c9c1a8}
+#onbrst{margin-top:6px;width:100%}
+.rst .xrow input{flex:1;min-width:0}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -4680,7 +4686,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (135).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (136).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6273,6 +6279,27 @@ Object.assign(ATK_MOUTH,{penguin:[1.3,1.9,.9],ram:[1.6,2.0,1.0],frog:[1.2,2.2,1.
 monSVG=(function(prev){ const F={penguin:penguinNew,ram:ramNew,frog:frogNew,lizard:lizardNew}; return function(spId,lvl,cls){ const sp=SPI[spId]; const shape=sp&&FAM[sp.fam]&&FAM[sp.fam].shape; if(!F[shape]||(typeof CUSTOM_ART!=='undefined'&&CUSTOM_ART[spId])) return prev(spId,lvl,cls);
   const st=stageOf(lvl); const c1=mute(sp.col[0],22), c2=mute(sp.col[1],12), c3=mute(sp.col[2],10); const id='m'+(GID++); const sc=[0.8,0.92,1][st];
   return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${sc}) translate(-50 -92)">${F[shape](c1,c2,c3,st,id)}</g></svg>`; }; })(monSVG);
+
+// ---------- no native keyboard in the rotated game: decide before the tap focuses the box ----------
+['touchstart','pointerdown'].forEach(ev=>document.addEventListener(ev,e=>{ const el=e.target&&e.target.closest&&e.target.closest('input,textarea'); if(!el||!isRot()) return; if(el.type&&/checkbox|radio|range|file|button|submit/.test(el.type)) return; el.setAttribute('inputmode','none'); },{capture:true,passive:true}));
+new MutationObserver(()=>{ if(!isRot()) return; document.querySelectorAll('input:not([inputmode="none"]):not([type=checkbox]):not([type=radio]):not([type=range]), textarea:not([inputmode="none"])').forEach(el=>el.setAttribute('inputmode','none')); }).observe(document.documentElement,{childList:true,subtree:true});
+kbOpen=(function(prev){ return function(el){ const r=prev(el); setTimeout(()=>{ try{ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; }catch(_){} },60); return r; }; })(kbOpen);
+Element.prototype._siv=Element.prototype.scrollIntoView; Element.prototype.scrollIntoView=function(o){ if(isRot()&&this.closest&&this.closest('input,textarea,.sheet')) return; return this._siv(o); };
+
+// ---------- move your game between Safari and the home-screen app: a transfer code ----------
+function myCode(){ return window.MR_UID||localStorage.getItem('mr-uid')||''; }
+function openRestore(){
+  const sh=sheet(`<div class="rst"><h2>Restore your game</h2><p>Enter the transfer code from Menu on your other device or browser.</p><div class="xrow"><input id="rcode" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Transfer code"><button class="btn sm" id="rpaste">Paste</button></div><p class="nm-err" id="rerr"></p><button class="btn" id="rgo">Restore</button></div>`);
+  sh.body.querySelector('#rpaste').onclick=async()=>{ try{ const t=await navigator.clipboard.readText(); sh.body.querySelector('#rcode').value=(t||'').trim(); }catch(_){ err('Allow paste, or type the code.'); } };
+  const err=t=>{ sh.body.querySelector('#rerr').textContent=t; };
+  sh.body.querySelector('#rgo').onclick=async()=>{ const code=sh.body.querySelector('#rcode').value.trim().replace(/\s+/g,''); if(!/^u[a-z0-9]{8,}$/i.test(code)) return err("That doesn't look like a transfer code.");
+    err('Checking…'); try{ const db=window.claude&&await window.claude.use('db'); const v=db&&await withTimeout(db.collection('data/users/'+code).doc('save').get(),10000); const save=parseDoc(v);
+      if(!save||!save.name) return err('No game found for that code.');
+      localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
+PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div>`; }; })(PANELS.menu);
+bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
+  const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
+new MutationObserver(()=>{ const go=document.querySelector('#go'); if(!go||!document.querySelector('#nm')||document.querySelector('#onbrst')) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
 
 </script>
 </body></html>
