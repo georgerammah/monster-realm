@@ -34,11 +34,11 @@ finishBattle=function(){
 const _reward9=rewardPopup;
 rewardPopup=function(o){
   if(!ARENA_CTX) return _reward9(o);
-  const c=ARENA_CTX; ARENA_CTX=null; const d=c.mode==='pvp'?myRank()-c.rank0:null;
-  S.lastRankD=null; persist();
+  const c=ARENA_CTX; ARENA_CTX=null; const d=c.mode==='pvp'?myRank()-c.rank0:null; const dx=c.mode==='pvp'&&S.lastRankX!=null&&S.lastRankD!=null?S.lastRankX:null;
+  S.lastRankD=null; S.lastRankX=null; persist();
   const sh=sheet(`<div class="ares">
     <div class="ares-ban ${c.win?'':'lose'}"><div class="ares-t">${c.win?'VICTORY!':'DEFEAT'}</div>
-      <div class="ares-r">${rankBadge(myRank(),34)}<b>${myRank()}</b>${d!=null&&d!==0?`<em class="${d>0?'up':'dn'}">${d>0?'+':''}${d}</em>`:''}</div>
+      <div class="ares-r">${rankBadge(myRank(),34)}<b>${myRank()}</b>${dx!=null?`<em class="${dx>=0?'up':'dn'}">${dx>=0?'+':''}${dx.toFixed(2)}</em>`:d!=null&&d!==0?`<em class="${d>0?'up':'dn'}">${d>0?'+':''}${d}</em>`:''}</div>
       <div class="ares-c"><span>$</span> ${o.cash|0} won${o.mush?` · 🍄 +${o.mush}`:''} · +${o.xp} XP</div></div>
     <div class="ares-opp"><div class="ares-lab">you battled against:</div>
       <div class="ares-row"><div class="ares-av">${avatarSVG(c.opp.avatar)}</div><div class="ares-nm"><b>${esc(c.opp.name)}</b><span>${rankBadge(c.opp.rank,20)} ${c.opp.rank}</span></div>

@@ -3865,6 +3865,9 @@ function rankBadge(r,size){ const [,n,c,k]=rankOf(r); size=size||26;
   let p=''; for(let i=0;i<k;i++){ const y=18-i*5; p+=`<path d="M3 ${y} L12 ${y-6} L21 ${y} L21 ${y+4} L12 ${y-2} L3 ${y+4}Z" fill="${c}" stroke="#1a1a1a" stroke-width="1"/>`; }
   return `<svg class="rbadge" viewBox="0 0 24 24" width="${size}" height="${size}" title="${n}">${p}</svg>`; }
 function myRank(){ return S.rank==null?200:S.rank; }
+// Arena rank (fit to Monster Kingdom results): K 15, 1700-point spread
+const RANK_K=15, RANK_SPREAD=1700;
+function rankChange(me,op,win){ const e=1/(1+Math.pow(10,(op-me)/RANK_SPREAD)); return RANK_K*((win?1:0)-e); }
 function isArena(mode){ return mode==='pvp'||mode==='rival'||mode==='local'||mode==='practice'||mode==='challenge'; }
 
 // ---- start arena battles ----
@@ -4060,15 +4063,15 @@ const _finishV5 = finishBattle;
 finishBattle = function(){
   if(B && B.mode==='pvp' && !B.spar && B.b && B.b.over){
     const win=B.b.winner===B.mySide; const me=myRank(), op=B.oppRank||200;
-    const exp=1/(1+Math.pow(10,(op-me)/400)); const d=Math.round(32*((win?1:0)-exp));
-    S.rank=Math.max(0,me+d); S.lastRankD=d;
+    const x=rankChange(me,op,win); const d=Math.ceil(x);  // MK rounding: wins round up, losses round toward zero
+    S.rank=Math.max(0,me+d); S.lastRankD=d; S.lastRankX=x;
   } else if(B) S.lastRankD=null;
   _finishV5();
 };
 const _rewardV5 = rewardPopup;
 rewardPopup = function(o){
   const sh=_rewardV5(o);
-  if(S.lastRankD!=null){ const d=S.lastRankD; const x=document.createElement('div'); x.className='rw-rank'; x.innerHTML=`${rankBadge(S.rank,28)} <b>${S.rank}</b> <span class="${d>=0?'up':'dn'}">${d>=0?'+':''}${d}</span>`; const t=sh.body.querySelector('.rw-xp'); t&&t.after(x); S.lastRankD=null; persist(); }
+  if(S.lastRankD!=null){ const d=S.lastRankD; const x=document.createElement('div'); x.className='rw-rank'; x.innerHTML=`${rankBadge(S.rank,28)} <b>${S.rank}</b> <span class="${d>=0?'up':'dn'}">${(S.lastRankX!=null?S.lastRankX:d)>=0?'+':''}${S.lastRankX!=null?S.lastRankX.toFixed(2):d}</span>`; const t=sh.body.querySelector('.rw-xp'); t&&t.after(x); S.lastRankD=null; persist(); }
   return sh;
 };
 
@@ -4562,11 +4565,11 @@ finishBattle=function(){
 const _reward9=rewardPopup;
 rewardPopup=function(o){
   if(!ARENA_CTX) return _reward9(o);
-  const c=ARENA_CTX; ARENA_CTX=null; const d=c.mode==='pvp'?myRank()-c.rank0:null;
-  S.lastRankD=null; persist();
+  const c=ARENA_CTX; ARENA_CTX=null; const d=c.mode==='pvp'?myRank()-c.rank0:null; const dx=c.mode==='pvp'&&S.lastRankX!=null&&S.lastRankD!=null?S.lastRankX:null;
+  S.lastRankD=null; S.lastRankX=null; persist();
   const sh=sheet(`<div class="ares">
     <div class="ares-ban ${c.win?'':'lose'}"><div class="ares-t">${c.win?'VICTORY!':'DEFEAT'}</div>
-      <div class="ares-r">${rankBadge(myRank(),34)}<b>${myRank()}</b>${d!=null&&d!==0?`<em class="${d>0?'up':'dn'}">${d>0?'+':''}${d}</em>`:''}</div>
+      <div class="ares-r">${rankBadge(myRank(),34)}<b>${myRank()}</b>${dx!=null?`<em class="${dx>=0?'up':'dn'}">${dx>=0?'+':''}${dx.toFixed(2)}</em>`:d!=null&&d!==0?`<em class="${d>0?'up':'dn'}">${d>0?'+':''}${d}</em>`:''}</div>
       <div class="ares-c"><span>$</span> ${o.cash|0} won${o.mush?` · 🍄 +${o.mush}`:''} · +${o.xp} XP</div></div>
     <div class="ares-opp"><div class="ares-lab">you battled against:</div>
       <div class="ares-row"><div class="ares-av">${avatarSVG(c.opp.avatar)}</div><div class="ares-nm"><b>${esc(c.opp.name)}</b><span>${rankBadge(c.opp.rank,20)} ${c.opp.rank}</span></div>
@@ -4740,7 +4743,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (146).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (147).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6359,7 +6362,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v146 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v147 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});

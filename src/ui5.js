@@ -8,6 +8,9 @@ function rankBadge(r,size){ const [,n,c,k]=rankOf(r); size=size||26;
   let p=''; for(let i=0;i<k;i++){ const y=18-i*5; p+=`<path d="M3 ${y} L12 ${y-6} L21 ${y} L21 ${y+4} L12 ${y-2} L3 ${y+4}Z" fill="${c}" stroke="#1a1a1a" stroke-width="1"/>`; }
   return `<svg class="rbadge" viewBox="0 0 24 24" width="${size}" height="${size}" title="${n}">${p}</svg>`; }
 function myRank(){ return S.rank==null?200:S.rank; }
+// Arena rank (fit to Monster Kingdom results): K 15, 1700-point spread
+const RANK_K=15, RANK_SPREAD=1700;
+function rankChange(me,op,win){ const e=1/(1+Math.pow(10,(op-me)/RANK_SPREAD)); return RANK_K*((win?1:0)-e); }
 function isArena(mode){ return mode==='pvp'||mode==='rival'||mode==='local'||mode==='practice'||mode==='challenge'; }
 
 // ---- start arena battles ----
@@ -203,15 +206,15 @@ const _finishV5 = finishBattle;
 finishBattle = function(){
   if(B && B.mode==='pvp' && !B.spar && B.b && B.b.over){
     const win=B.b.winner===B.mySide; const me=myRank(), op=B.oppRank||200;
-    const exp=1/(1+Math.pow(10,(op-me)/400)); const d=Math.round(32*((win?1:0)-exp));
-    S.rank=Math.max(0,me+d); S.lastRankD=d;
+    const x=rankChange(me,op,win); const d=Math.ceil(x);  // MK rounding: wins round up, losses round toward zero
+    S.rank=Math.max(0,me+d); S.lastRankD=d; S.lastRankX=x;
   } else if(B) S.lastRankD=null;
   _finishV5();
 };
 const _rewardV5 = rewardPopup;
 rewardPopup = function(o){
   const sh=_rewardV5(o);
-  if(S.lastRankD!=null){ const d=S.lastRankD; const x=document.createElement('div'); x.className='rw-rank'; x.innerHTML=`${rankBadge(S.rank,28)} <b>${S.rank}</b> <span class="${d>=0?'up':'dn'}">${d>=0?'+':''}${d}</span>`; const t=sh.body.querySelector('.rw-xp'); t&&t.after(x); S.lastRankD=null; persist(); }
+  if(S.lastRankD!=null){ const d=S.lastRankD; const x=document.createElement('div'); x.className='rw-rank'; x.innerHTML=`${rankBadge(S.rank,28)} <b>${S.rank}</b> <span class="${d>=0?'up':'dn'}">${(S.lastRankX!=null?S.lastRankX:d)>=0?'+':''}${S.lastRankX!=null?S.lastRankX.toFixed(2):d}</span>`; const t=sh.body.querySelector('.rw-xp'); t&&t.after(x); S.lastRankD=null; persist(); }
   return sh;
 };
 
