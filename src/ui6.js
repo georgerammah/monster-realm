@@ -6,7 +6,7 @@ function insets(){ if(!_probe){ _probe=document.createElement('div'); _probe.sty
 function updRot(){
   const r=matchMedia('(orientation:portrait)').matches && matchMedia('(pointer:coarse)').matches;
   const bs=document.body.style; document.body.classList.toggle('rot',r);
-  if(r){ const H=(window.visualViewport&&visualViewport.height)||innerHeight, W=(window.visualViewport&&visualViewport.width)||innerWidth, i=insets();
+  if(r){ const SA=(navigator.standalone||matchMedia('(display-mode: standalone)').matches)?Math.max(screen.height,screen.width):0; const H=Math.max((window.visualViewport&&visualViewport.height)||innerHeight, innerHeight, document.documentElement.clientHeight, SA), W=(window.visualViewport&&visualViewport.width)||innerWidth, i=insets();
     const gw=Math.round(H-i.t-i.b), gh=Math.round(W);
     bs.width=Math.round(H)+'px'; bs.height=gh+'px'; bs.top='0px';
     bs.setProperty('--sa-top','0px'); bs.setProperty('--sa-bottom','4px'); bs.setProperty('--sa-left',i.t+'px'); bs.setProperty('--sa-right',i.b+'px');
