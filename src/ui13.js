@@ -825,3 +825,14 @@ zoneScene=(function(prev){ const X={
 QUESTS.push({id:'q11', n:'Clear Crimson Crags', r:30, ok:s=>(s.zones.crags||0)>=4});
 // Bubble Shield cost per the wiki (14, 23, 32 … 86 mana)
 SK.bubble.mp=[14,9]; DEFAULT_SK.bubble=JSON.parse(JSON.stringify(SK.bubble));
+
+// ---------- music: Arena gets its own fast battle theme; zone missions keep the zone's song ----------
+TRACKS.arena={bpm:176,type:'square',ld:.9,lv:.36,
+  lead:[64,65,66,67, 68,69,70,71, 72,_,71,_, 72,_,74,_,
+        76,_,74,_, 72,_,71,_, 72,_,_,74, 76,_,_,_,
+        79,_,77,_, 76,_,74,_, 72,_,74,_, 71,_,_,_,
+        76,_,74,_, 72,_,71,_, 69,_,71,72, 74,_,_,_],
+  bass:[40,52,40,52, 40,52,40,52, 36,48,36,48, 36,48,36,48, 38,50,38,50, 38,50,38,50, 35,47,35,47, 35,47,39,47], perc:'rock'};
+playMusic=(function(prev){ return function(n){ if(n==='battle'&&B){ n=(B.mode==='campaign'&&B.meta&&B.meta.zi!=null)?'z_'+ZONES[B.meta.zi].id:'arena'; } return prev(n); }; })(playMusic);
+// start the music as early as the phone allows (iPhone needs the first touch; anything else plays right away)
+setTimeout(()=>{ try{ audioInit(); }catch(_){} },400);
