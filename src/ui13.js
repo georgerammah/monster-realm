@@ -792,3 +792,36 @@ drawTeam=(function(prev){ return function(){ const r=prev.apply(this,arguments);
     feed:{mp:[14,118]}, flame:{mp:[15,82]}, blizzard:{mp:[18,78]}, perseverance:{mp:[12,79]}, regrowth:{mp:[14,82]}, hydrate:{mp:[14,132]},
     berserk:{mp:[16,85]}, nshield:{mp:[14,103]}, emberspit:{mp:[12,92]}, trample:{mp:[12,50]} };
   Object.entries(R).forEach(([id,f])=>{ if(!SK[id]) return; Object.entries(f).forEach(([k,[a,t]])=>{ SK[id][k]=L10(a,t); }); DEFAULT_SK[id]=JSON.parse(JSON.stringify(SK[id])); }); })();
+
+// ---------- four more zones (levels 24–30) ----------
+ZONES.push(
+  {id:'lagoon', n:'Frost Lagoon', fam:'shell', lv:24, sizes:[3,3,3,3], c:'#8fd8ff'},
+  {id:'stormplains', n:'Storm Plains', fam:'volt', lv:26, sizes:[3,3,3,3], c:'#9b8cff'},
+  {id:'bog', n:'Shadow Bog', fam:'bug', lv:27, sizes:[3,3,3,3], c:'#5e8a4a'},
+  {id:'crags', n:'Crimson Crags', fam:'hound', lv:28, sizes:[3,3,3,3], c:'#d2503a'});
+Object.assign(ZTASKS,{
+  lagoon:[['act','Skate across the frozen lagoon',24,0,150,210,2,3],['fight','Battle a wild ice turtle',24,0,180,240,3,3],['act','Break through the ice for fish',25,{mp:240},180,240,2,3],['fight','Face the glacier shell leader',25,0,210,280,3,2],['boss','Frost Lagoon Boss',27,0,480,600,5,1]],
+  stormplains:[['act','Catch lightning in a jar',26,0,170,230,2,3],['fight','Battle a wild storm cat',26,0,200,270,3,3],['act','Herd the thunder clouds',26,{hp:420},200,270,2,3],['fight','Face the storm pride leader',27,0,240,310,3,2],['boss','Storm Plains Boss',28,0,540,660,5,1]],
+  bog:[['act','Wade through the glowing bog',27,0,190,250,2,3],['fight','Battle a wild bog beetle',27,0,220,290,3,3],['act','Gather moonlit spores',27,{mp:280},220,290,2,3],['fight','Face the swarm queen',28,0,260,330,3,2],['boss','Shadow Bog Boss',29,0,600,720,5,1]],
+  crags:[['act','Climb the red cliffs',28,0,210,270,2,3],['fight','Battle a wild crag hound',28,0,240,310,3,3],['act','Guard the cliffside dens',29,{hp:480},240,310,2,3],['fight','Face the crimson pack alpha',29,0,280,360,3,2],['boss','Crimson Crags Boss',30,0,700,850,5,1]]
+});
+Object.assign(ZSCENE,{
+  lagoon:{sky:['#a9dcff','#eef8ff'],orb:'#ffffff',ox:72,oy:24,hills:['#dff2ff','#b6dcf2'],x:'ice',sea:'#7cc3e8'},
+  stormplains:{sky:['#3b3566','#8a7fc4'],orb:'#e9e4ff',ox:24,oy:22,hills:['#6a7a5a','#4a5a40'],x:'storm'},
+  bog:{sky:['#20302a','#5f7a5a'],orb:'#d8ffd0',ox:70,oy:24,hills:['#3e5a36','#2a3e26'],x:'swamp'},
+  crags:{sky:['#ff9a6a','#ffd9b0'],orb:'#fff0d0',ox:28,oy:24,hills:['#b4483a','#8a3226'],x:'crags'}
+});
+Object.assign(ZCOL,{lagoon:['#e6f6ff','#c4e6fa'],stormplains:['#e6e2ff','#c9c0f4'],bog:['#d6e8cc','#aecb9e'],crags:['#ffd8cc','#f2ac98']});
+Object.assign(TRACKS,{z_lagoon:TRACKS.z_beach, z_stormplains:TRACKS.z_desert, z_bog:TRACKS.z_hollow, z_crags:TRACKS.z_volcano});
+zoneScene=(function(prev){ const X={
+    ice:z=>`<rect x="0" y="66" width="200" height="12" fill="${z.sea}"/><path d="M30 70 l10 -14 l12 4 l8 10z M120 70 l14 -20 l10 6 l12 14z" fill="#f4fbff" stroke="#9fcbe6" stroke-width="1"/>`,
+    storm:()=>`<g fill="#5a5296"><ellipse cx="50" cy="30" rx="24" ry="9"/><ellipse cx="140" cy="22" rx="30" ry="10"/></g><path d="M140 30 l-8 16 h7 l-5 14 l14 -20 h-7 l5 -10z" fill="#ffe066"/>`,
+    swamp:()=>`<g stroke="#2a3e26" stroke-width="2" fill="none"><path d="M40 92 q2 -14 -2 -24 M46 92 q0 -12 4 -20 M150 94 q-2 -14 2 -26"/></g><g fill="#c8ff9a" opacity=".8"><circle cx="70" cy="60" r="1.4"/><circle cx="110" cy="52" r="1.2"/><circle cx="160" cy="62" r="1.5"/></g>`,
+    crags:()=>`<path d="M10 80 l18 -34 l14 10 l16 -22 l20 46z M120 80 l22 -40 l12 8 l20 -16 l16 48z" fill="#9a3a2c"/>`};
+  return function(id){ const z=ZSCENE[id]; if(!z||!X[z.x]) return prev(id); const g='zg'+id, ex=X[z.x](z), behind=z.x!=='swamp';
+    return `<svg class="zscene" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${z.sky[0]}"/><stop offset="1" stop-color="${z.sky[1]}"/></linearGradient></defs>
+    <rect width="200" height="100" fill="url(#${g})"/><circle cx="${z.ox*2}" cy="${z.oy}" r="13" fill="${z.orb}" opacity=".95"/><circle cx="${z.ox*2}" cy="${z.oy}" r="22" fill="${z.orb}" opacity=".25"/>
+    ${behind?ex:''}<path d="M0 74 Q50 62 100 72 T200 68 V100 H0z" fill="${z.hills[0]}"/><path d="M0 84 Q60 76 120 84 T200 82 V100 H0z" fill="${z.hills[1]}"/>${behind?'':ex}</svg>`; }; })(zoneScene);
+QUESTS.push({id:'q11', n:'Clear Crimson Crags', r:30, ok:s=>(s.zones.crags||0)>=4});
+// Bubble Shield cost per the wiki (14, 23, 32 … 86 mana)
+SK.bubble.mp=[14,9]; DEFAULT_SK.bubble=JSON.parse(JSON.stringify(SK.bubble));
