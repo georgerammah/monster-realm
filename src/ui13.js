@@ -64,7 +64,7 @@ skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; if(!s)
 // ---------- unique usernames + server-decided admins ----------
 let ADMIN=false; try{ ADMIN=localStorage.getItem('mr-admin')==='1'; }catch(_){}
 function setAdmin(v){ ADMIN=!!v; try{ localStorage.setItem('mr-admin',ADMIN?'1':'0'); localStorage.removeItem('mr-admin-key'); }catch(_){}
-  SUBMENUS.menu=SUBMENUS.menu.filter(x=>x[0]!=='Ability Studio'); if(ADMIN) SUBMENUS.menu.push(['Ability Studio',()=>openStudio()]); }
+  SUBMENUS.menu=SUBMENUS.menu.filter(x=>x[0]!=='Ability Studio'&&x[0]!=='Players'); if(ADMIN){ SUBMENUS.menu.push(['Players',()=>openPlayers()]); SUBMENUS.menu.push(['Ability Studio',()=>openStudio()]); } }
 setAdmin(ADMIN);
 function nameError(err){ return err==='taken'?'That name is already taken. Try another one!':err==='invalid'?'Names can be 2–16 letters, numbers, spaces, - _ or .':"Couldn't check that name right now. Try again."; }
 async function claimName(name){ if(!window.MR_ACCT) return {ok:1}; try{ const r=await Promise.race([MR_ACCT.claim(name),new Promise(res=>setTimeout(()=>res({ok:0,err:'net'}),8000))]); if(r&&r.ok) setAdmin(r.admin); return r||{ok:0,err:'net'}; }catch(_){ return {ok:0,err:'net'}; } }
@@ -77,7 +77,7 @@ function askNewName(msg){ return new Promise(res=>{
 // on launch: make sure this player's name is claimed, and learn admin status
 (async()=>{ if(!window.MR_ACCT) return; await new Promise(r=>setTimeout(r,2500)); try{
   const me=await MR_ACCT.whoami(); if(!me||!me.ok) return;
-  setAdmin(!!me.admin); if(me.name) return;
+  setAdmin(!!me.admin); if(me.banned){ showBanned(); return; } if(me.rename){ await askNewName('Please choose a new trainer name.'); return; } if(me.name) return;
   if(S&&S.name&&S.tut>=0){ const r=await claimName(S.name); if(!r.ok&&r.err==='taken') await askNewName(`Someone already has the name "${esc(S.name)}". Pick a new trainer name:`); }
 }catch(_){} })();
 // onboarding: the name must be free before you can start
@@ -948,7 +948,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v141 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v142 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -967,3 +967,41 @@ kbClose=(function(prev){ return function(){ document.querySelectorAll('.kbf').fo
 onboarding=(function(prev){ let busy=false; return function(){ if(S&&S.name) return; if(busy||document.querySelector('.onb')) return; busy=true;
   const t=setInterval(()=>{ if(S&&S.name){ busy=false; clearInterval(t); } },500);
   try{ return prev.apply(this,arguments); }catch(e){ busy=false; clearInterval(t); throw e; } }; })(onboarding);
+
+// ---------- suspended accounts ----------
+function showBanned(){ if(document.querySelector('.banned')) return; try{ kbClose(); }catch(_){}
+  const w=document.createElement('div'); w.className='banned'; w.innerHTML='<div><b>Account suspended</b><p>This account can no longer play Monster Realm.</p></div>';
+  document.body.appendChild(w); }
+addEventListener('mr-banned',showBanned);
+
+// ---------- admin: players ----------
+function agoTxt(t){ if(!t) return 'never'; const s=(Date.now()-t)/1000; return s<90?'just now':s<3600?Math.round(s/60)+'m ago':s<86400?Math.round(s/3600)+'h ago':Math.round(s/86400)+'d ago'; }
+function openPlayers(){
+  const PER=4; let all=[], pg=0, me='', q='';
+  const sh=sheet(`<div class="adm"><div class="adm-top"><h2>Players</h2><input id="aq" placeholder="Search name or code" autocomplete="off"><span class="adm-n" id="an"></span></div><div class="adm-list" id="al"><p class="adm-msg">Loading…</p></div><div class="adm-pg"><button class="btn ghost sm" id="ap">‹</button><span id="api"></span><button class="btn ghost sm" id="anx">›</button></div></div>`);
+  const $a=s=>sh.body.querySelector(s);
+  const load=async()=>{ $a('#al').innerHTML='<p class="adm-msg">Loading…</p>'; let r; try{ r=await withTimeout(MR_ACCT.adm('list',{q}),15000); }catch(_){ r=null; }
+    if(!r||!r.ok){ $a('#al').innerHTML=`<p class="adm-msg">${r&&r.err==='admin'?'Admins only.':"Couldn't reach the server."}</p>`; return; }
+    all=r.players; me=r.me; pg=0; draw(); };
+  const draw=()=>{ const n=Math.max(1,Math.ceil(all.length/PER)); pg=Math.min(pg,n-1);
+    $a('#an').textContent=all.length+(all.length===1?' player':' players'); $a('#api').textContent=(pg+1)+' / '+n;
+    $a('#ap').disabled=pg===0; $a('#anx').disabled=pg>=n-1;
+    const rows=all.slice(pg*PER,pg*PER+PER);
+    $a('#al').innerHTML=rows.length?rows.map(p=>`<div class="adm-row${p.banned?' ban':''}" data-u="${esc(p.uid)}">
+      <div class="adm-who"><b>${esc(p.name||'(no name)')}${p.uid===me?' · you':''}${p.banned?' <i>Banned</i>':''}</b><span>Lv ${p.lv} · ${p.mons} monster${p.mons===1?'':'s'} · ${agoTxt(p.seen)}</span><code data-copy="${esc(p.uid)}">${esc(p.uid)}</code></div>
+      ${p.uid===me?'':`<div class="adm-act"><button class="btn sm ghost" data-op="${p.banned?'unban':'ban'}">${p.banned?'Unban':'Ban'}</button><button class="btn sm ghost" data-op="rename">Rename</button><button class="btn sm red" data-op="delete">Delete</button></div>`}</div>`).join(''):'<p class="adm-msg">No players found.</p>';
+    sh.body.querySelectorAll('[data-copy]').forEach(c=>c.onclick=()=>{ (navigator.clipboard?navigator.clipboard.writeText(c.dataset.copy):Promise.reject()).then(()=>toast('Code copied'),()=>{}); });
+    sh.body.querySelectorAll('[data-op]').forEach(b=>b.onclick=()=>{ const row=b.closest('.adm-row'), t=row.dataset.u, p=all.find(x=>x.uid===t), nm=esc(p.name||t), op=b.dataset.op;
+      const go=async()=>{ b.disabled=true; let r; try{ r=await withTimeout(MR_ACCT.adm(op,{t}),15000); }catch(_){ r=null; }
+        if(!r||!r.ok){ b.disabled=false; return toast(r&&r.err==='self'?"You can't do that to yourself":"Couldn't reach the server"); }
+        if(op==='delete'){ all=all.filter(x=>x.uid!==t); toast('Deleted '+(p.name||'account')); }
+        else if(op==='ban'||op==='unban'){ p.banned=op==='ban'; toast((op==='ban'?'Banned ':'Unbanned ')+(p.name||'account')); }
+        else if(op==='rename'){ toast((p.name||'Player')+' will pick a new name'); p.name=null; }
+        draw(); };
+      const msg={ban:`Ban <b>${nm}</b>? They won't be able to save, battle or chat. You can unban later.`,
+        unban:`Unban <b>${nm}</b>?`, rename:`Clear the name <b>${nm}</b>? They'll be asked to pick a new one.`,
+        delete:`Delete <b>${nm}</b> forever? Their monsters and progress are erased and the name is freed. This can't be undone.`}[op];
+      confirmBox(msg, {ban:'Ban',unban:'Unban',rename:'Clear name',delete:'Delete'}[op], go); }); };
+  $a('#ap').onclick=()=>{ pg--; draw(); }; $a('#anx').onclick=()=>{ pg++; draw(); };
+  let tq; $a('#aq').addEventListener('input',()=>{ clearTimeout(tq); tq=setTimeout(()=>{ q=$a('#aq').value.trim(); load(); },500); });
+  load(); }

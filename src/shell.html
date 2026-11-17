@@ -1508,6 +1508,23 @@ input.kbf{box-shadow:0 0 0 2.5px var(--ac)!important}
 body.kb-open .onb .fams{display:none}
 body.kb-open .onb #go,body.kb-open .onb #onbrst{display:none}
 .diag{font:11px ui-monospace,Menlo,monospace;color:#9a9aa3;text-align:center;margin-top:6px}
+.banned{position:fixed;inset:0;z-index:9999;background:rgba(14,14,18,.96);display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;padding:24px}
+.banned b{font-size:22px}.banned p{color:#b9b9c2;margin:8px 0 0;font-size:15px}
+.adm{display:flex;flex-direction:column;gap:8px;min-width:min(560px,80vw)}
+.adm-top{display:flex;align-items:center;gap:10px;padding-right:40px}.adm-top h2{margin:0;font-size:20px;white-space:nowrap}
+.adm-top input{flex:1;min-width:0;padding:8px 12px;border-radius:10px;border:1px solid #d9d4c4;font:15px system-ui}
+.adm-n{font-size:13px;color:#77736a;white-space:nowrap}
+.adm-list{display:flex;flex-direction:column;gap:6px}
+.adm-row{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:8px 10px}
+.adm-row.ban{background:#fbeceb}
+.adm-who{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.adm-who b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.adm-who b i{font-style:normal;color:#c0392b;font-size:12px;margin-left:4px}
+.adm-who span{font-size:12px;color:#77736a}
+.adm-who code{font-size:11px;color:#9a958a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-act{display:flex;gap:6px;flex-shrink:0}
+.adm-act .btn{padding:6px 10px;font-size:13px}
+.adm-msg{text-align:center;color:#77736a;margin:18px 0}
+.adm-pg{display:flex;align-items:center;justify-content:center;gap:12px;font-size:13px;color:#77736a}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

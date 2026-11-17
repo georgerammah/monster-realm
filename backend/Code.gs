@@ -8,18 +8,21 @@ function out(o){ return ContentService.createTextOutput(JSON.stringify(o)).setMi
 
 function handle(p){
   try {
+    const bu = banTarget(p); if (bu && isBanned(bu)) return out({ok:0, err:'banned'});
     switch (p.a) {
       case 'ping': return out({ok:1});
       case 'get': return out({ok:1, v:getSave(p.k)});
       case 'set':
         if (/^(name|uname)\//.test(String(p.k||''))) return out({ok:0, err:'forbidden'});
         if (String(p.k||'').indexOf('config/') === 0 && !isAdminUid(p.uid)) return out({ok:0, err:'admin'});
+        { const m = /^data\/users\/([A-Za-z0-9_-]+)\/save$/.exec(String(p.k||'')); if (m && p.uid && p.uid !== m[1]) return out({ok:0, err:'forbidden'}); }
         setSave(p.k, p.v); return out({ok:1});
       case 'emit': return out(emit(p));
       case 'poll': return out(poll(p));
       case 'presence': return out(presence(p));
       case 'claim': return out(claim(p));
       case 'whoami': return out(whoami(p));
+      case 'adm': return out(adm(p));
     }
     return out({ok:0, err:'unknown action'});
   } catch (err) { return out({ok:0, err:String(err)}); }
@@ -112,7 +115,62 @@ function claim(p){
     const prev = rawGet('uname/'+p.uid);
     if (prev && prev !== key) rawSet('name/'+prev, '');
     rawSet('name/'+key, p.uid); rawSet('uname/'+p.uid, key);
+    if (rawGet('flag/'+p.uid)) rawSet('flag/'+p.uid, '');
     return {ok:1, name:key, admin: adminNames().indexOf(key) >= 0};
   }
 }
-function whoami(p){ const n = p.uid ? rawGet('uname/'+p.uid) : null; return {ok:1, name:n||null, admin: !!n && adminNames().indexOf(n) >= 0}; }
+function whoami(p){ const n = p.uid ? rawGet('uname/'+p.uid) : null;
+  return {ok:1, name:n||null, admin: !!n && adminNames().indexOf(n) >= 0, banned: p.uid ? isBanned(p.uid) : false, rename: p.uid ? rawGet('flag/'+p.uid) === 'rename' : false}; }
+
+// ---- bans + admin tools ----
+function okUid(u){ return typeof u === 'string' && /^[A-Za-z0-9_-]{6,64}$/.test(u); }
+function banTarget(p){
+  if (p.a === 'set') { const m = /^data\/users\/([A-Za-z0-9_-]+)\/save$/.exec(String(p.k||'')); return m ? m[1] : null; }
+  if (p.a === 'claim' || p.a === 'emit' || p.a === 'presence') return okUid(p.uid) ? p.uid : null;
+  return null;
+}
+function isBanned(uid){
+  const c = CACHE.get('ban:'+uid); if (c !== null) return c === '1';
+  const b = rawGet('ban/'+uid) === '1'; CACHE.put('ban:'+uid, b ? '1' : '0', 120); return b;
+}
+function logAdmin(by, op, t, extra){ try { sheet().appendRow(['log/'+Date.now(), new Date(), JSON.stringify({by:rawGet('uname/'+by), op:op, target:t, info:extra||''})]); } catch (_) {} }
+function adm(p){
+  if (!isAdminUid(p.uid)) return {ok:0, err:'admin'};
+  const t = p.t;
+  if (p.op === 'list') {
+    const rows = sheet().getDataRange().getValues(), P = {};
+    const get = u => P[u] = P[u] || {uid:u, name:null, lv:0, mons:0, seen:0, banned:false};
+    rows.forEach(r => { const k = String(r[0]), v = r[2];
+      if (k.indexOf('uname/') === 0 && v) get(k.slice(6)).name = String(v);
+      else if (k.indexOf('ban/') === 0) { if (v === '1' || v === 1) get(k.slice(4)).banned = true; }
+      else { const m = /^data\/users\/([A-Za-z0-9_-]+)\/save$/.exec(k); if (m) { const x = get(m[1]); x.seen = r[1] ? new Date(r[1]).getTime() : 0;
+        try { const s = JSON.parse(v); const ms = s.mons || []; x.mons = ms.length; x.lv = ms.reduce((a,b) => Math.max(a, +b.lv||0), 0); if (!x.name && s.name) x.name = '(' + s.name + ')'; } catch (_) {} } } });
+    const q = normName(p.q||''); let list = Object.keys(P).map(u => P[u]);
+    if (q) list = list.filter(x => (x.name||'').toLowerCase().indexOf(q) >= 0 || x.uid.toLowerCase().indexOf(q) >= 0);
+    list.sort((a,b) => b.seen - a.seen);
+    return {ok:1, total:list.length, players:list.slice(0, 200), me:p.uid};
+  }
+  if (!okUid(t)) return {ok:0, err:'bad target'};
+  if (t === p.uid && p.op !== 'unban') return {ok:0, err:'self'};
+  if (p.op === 'ban' || p.op === 'unban') {
+    rawSet('ban/'+t, p.op === 'ban' ? '1' : ''); CACHE.put('ban:'+t, p.op === 'ban' ? '1' : '0', 120);
+    logAdmin(p.uid, p.op, t); return {ok:1};
+  }
+  if (p.op === 'rename') {
+    const n = rawGet('uname/'+t); if (n) rawSet('name/'+n, ''); rawSet('uname/'+t, ''); rawSet('flag/'+t, 'rename');
+    logAdmin(p.uid, 'rename', t, n||''); return {ok:1};
+  }
+  if (p.op === 'delete') {
+    const lock = LockService.getScriptLock(); lock.waitLock(8000);
+    let n;
+    try {
+      const sh = sheet(); n = rawGet('uname/'+t);
+      const keys = ['uname/'+t, 'data/users/'+t+'/save', 'ban/'+t, 'flag/'+t]; if (n) keys.push('name/'+n);
+      const vals = sh.getRange('A:A').getValues(), del = [];
+      vals.forEach((r,i) => { if (keys.indexOf(String(r[0])) >= 0) del.push(i+1); });
+      del.reverse().forEach(row => sh.deleteRow(row));
+    } finally { lock.releaseLock(); }
+    CACHE.remove('ban:'+t); logAdmin(p.uid, 'delete', t, n||''); return {ok:1};
+  }
+  return {ok:0, err:'unknown op'};
+}
