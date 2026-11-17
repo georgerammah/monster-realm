@@ -1429,6 +1429,7 @@ html,body{touch-action:manipulation}
 .kb-shift,.kb-back,.kb-123,.kb-ABC{background:#aeb3bc;max-width:13%;flex:1.4 1 0}.kb-shift.on{background:#fff}
 .kb-space{flex:5 1 0;max-width:none}.kb-done{flex:1.6 1 0;max-width:18%;background:#2f7bf6;color:#fff;font-weight:600}
 body.kb-open .sheet{translate:0 calc(-1 * min(calc(12*var(--vh)),60px));transition:translate .2s}
+body.kb-open .sheet:has(.onb){translate:0 calc(-1 * min(calc(16*var(--vh)),70px))}
 .kbd{gap:5px!important;padding-top:5px!important}
 .aneed{display:inline-flex;align-items:center;gap:3px;justify-content:center;min-width:34px;height:24px;padding:0 6px;border-radius:12px;background:linear-gradient(#ffa63d,#d96a0c);color:#fff;font:12px "Lilita One",system-ui}.aneed::before{content:"⚔"}.aneed.bad{background:linear-gradient(#aaa,#777)}
 .pbtn{position:relative}.pbtn::after{content:"";position:absolute;inset:-7px -2px}
@@ -1503,6 +1504,9 @@ body.auto-on .float2.buff{display:none!important}
 .rst{display:flex;flex-direction:column;gap:8px;padding:6px 4px}.rst h2{margin:0}.rst p{margin:0;font-size:13.5px}.rst input{font:600 16px ui-monospace,Menlo,monospace;padding:10px 12px;border-radius:10px;border:2px solid #c9c1a8}
 #onbrst{margin-top:6px;width:100%}
 .rst .xrow input{flex:1;min-width:0}
+input.kbf{box-shadow:0 0 0 2.5px var(--ac)!important}
+body.kb-open .onb .fams{display:none}
+body.kb-open .onb #go,body.kb-open .onb #onbrst{display:none}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

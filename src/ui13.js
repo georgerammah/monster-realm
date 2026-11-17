@@ -968,3 +968,9 @@ new MutationObserver(()=>{ const go=document.querySelector('#go'); if(!go||!docu
   note(); addEventListener('resize',()=>{ note(); setTimeout(heal,150); }); document.addEventListener('focusout',()=>setTimeout(heal,160));
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') setTimeout(heal,200); });
   kbClose=(function(prev){ return function(){ const r=prev.apply(this,arguments); setTimeout(heal,160); return r; }; })(kbClose); })();
+
+// rotated play: tapping a text box never focuses it (no iPhone AutoFill bar), our keyboard types into it directly
+document.addEventListener('touchstart',e=>{ if(!isRot()) return; const el=e.target&&e.target.closest&&e.target.closest('input,textarea'); if(!el) return; if(el.type&&/checkbox|radio|range|file|button|submit/.test(el.type)) return;
+  e.preventDefault(); if(document.activeElement&&document.activeElement.blur) document.activeElement.blur(); if(KBIN!==el){ if(KB) kbClose(); kbOpen(el); } },{capture:true,passive:false});
+kbOpen=(function(prev){ return function(el){ document.querySelectorAll('.kbf').forEach(x=>x.classList.remove('kbf')); const r=prev.apply(this,arguments); if(el){ el.classList.add('kbf'); try{ const n=el.value.length; el.setSelectionRange(n,n); }catch(_){} if(document.activeElement===el) el.blur(); } return r; }; })(kbOpen);
+kbClose=(function(prev){ return function(){ document.querySelectorAll('.kbf').forEach(x=>x.classList.remove('kbf')); return prev.apply(this,arguments); }; })(kbClose);
