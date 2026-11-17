@@ -758,7 +758,7 @@ skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; const 
 
 // nobody moves until the end-of-turn effects (bowl refills, burns, poison ticks) have played out
 animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(root,b,animating);
-  if(animating){ const n=(b.ev||[]).filter(e=>e.k==='dot'||e.k==='stun'||e.end).length; if(n) B.animEnd=Date.now()+1120+420*(n-1)+250; }
+  if(animating){ const n=(b.ev||[]).filter(e=>e.k==='dot'||e.k==='stun'||e.end).length; const hasAct=(b.ev||[]).some(e=>e.k==='hit'||e.k==='heal'||e.k==='mana'||e.k==='buff'||e.k==='shield'||e.k==='cast'); B.animEnd=Date.now()+(n?1120+420*(n-1)+250:(hasAct?1250:0)); }
   return r; }; })(animateBattle);
 busyLeft=(function(prev){ return function(){ const base=prev(); const a=B&&B.animEnd?B.animEnd-Date.now():0; return Math.max(base,a>0?a:0); }; })(busyLeft);
 pickWaitLeft=busyLeft;

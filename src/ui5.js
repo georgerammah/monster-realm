@@ -57,7 +57,7 @@ function drive(){
   if(c==='ai' || (c==='human' && B.auto && !(B.net&&B.net.role==='guest'&&B.net.sent===b.seq))){
     B.timer=setTimeout(()=>{ if(!B||B.b!==b||B.paused) return;
       if(B.net && B.net.role==='guest'){ NET.sendAction(aiChoose(JSON.parse(JSON.stringify(b)))); renderBattle(); return; }
-      act(b, aiChoose(b)); afterAct(); }, c==='ai'?1500:900);
+      act(b, aiChoose(b)); afterAct(); }, c==='ai'?800:600);
   }
 }
 function afterAct(){ stampIfNewTurn(); if(B&&B.net && B.net.role==='host') NET.broadcast(); drive(); }
