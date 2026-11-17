@@ -948,7 +948,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v142 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v143 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1005,3 +1005,18 @@ function openPlayers(){
   $a('#ap').onclick=()=>{ pg--; draw(); }; $a('#anx').onclick=()=>{ pg++; draw(); };
   let tq; $a('#aq').addEventListener('input',()=>{ clearTimeout(tq); tq=setTimeout(()=>{ q=$a('#aq').value.trim(); load(); },500); });
   load(); }
+
+// ---------- turn-your-phone prompt (drawn upright, outside the rotated game) ----------
+(function(){ let n=0; try{ n=+localStorage.getItem('mr-rothint')||0; }catch(_){}
+  if(n>=3) return;
+  const show=()=>{ if(!isRot()||document.querySelector('.rothint')) return;
+    const w=document.createElement('div'); w.className='rothint';
+    w.innerHTML=`<div class="rh-in"><svg viewBox="0 0 120 120" class="rh-ph"><g><rect x="38" y="14" width="44" height="92" rx="9" fill="none" stroke="#fff" stroke-width="5"/><rect x="53" y="20" width="14" height="4" rx="2" fill="#fff"/></g></svg><b>Turn your phone sideways</b><span>Tap anywhere to continue</span></div>`;
+    document.documentElement.appendChild(w); requestAnimationFrame(()=>w.classList.add('on'));
+    try{ localStorage.setItem('mr-rothint',String(n+1)); }catch(_){}
+    const done=()=>{ if(!w.isConnected) return; w.classList.remove('on'); setTimeout(()=>w.remove(),250); removeEventListener('resize',chk); removeEventListener('deviceorientation',tilt); };
+    const chk=()=>{ if(!isRot()) done(); };
+    const tilt=e=>{ if(e.gamma!=null&&Math.abs(e.gamma)>55&&Math.abs(e.beta||0)<35) done(); };
+    w.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); done(); });
+    addEventListener('resize',chk); addEventListener('deviceorientation',tilt); };
+  setTimeout(show,400); })();

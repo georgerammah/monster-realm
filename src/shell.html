@@ -1525,6 +1525,14 @@ body.kb-open .onb #go,body.kb-open .onb #onbrst{display:none}
 .adm-act .btn{padding:6px 10px;font-size:13px}
 .adm-msg{text-align:center;color:#77736a;margin:18px 0}
 .adm-pg{display:flex;align-items:center;justify-content:center;gap:12px;font-size:13px;color:#77736a}
+.rothint{position:fixed;inset:0;z-index:10000;background:rgba(12,12,16,.88);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s}
+.rothint.on{opacity:1}
+.rh-in{display:flex;flex-direction:column;align-items:center;gap:10px;color:#fff;text-align:center;padding:24px}
+.rh-in b{font:600 22px -apple-system,system-ui,sans-serif}
+.rh-in span{font-size:15px;color:#b9b9c2}
+.rh-ph{width:110px;height:110px;margin-bottom:6px}
+.rh-ph g{transform-origin:60px 60px;animation:rhturn 2.2s ease-in-out infinite}
+@keyframes rhturn{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
