@@ -281,8 +281,9 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   }
   if(d.st.mshield>0 && d.mp>0 && dmg>0){ const ab=Math.min(Math.round(dmg*d.st.mshieldV), d.mp*2); d.mp-=Math.ceil(ab/2); dmg-=ab; blocked+=ab; }
   dmg=Math.max(0,Math.min(dmg,d.hp));  // never more than the life they had left
+  // Absorb: the mana gain shows first, right before the damage lands
+  if(d.st.absorb>0 && dmg>0 && d.hp-dmg>0){ const g=Math.min(d.maxmp-d.mp, Math.round(dmg*d.st.absorbV)); if(g>0){ d.mp+=g; b.ev.push({k:'mana',s:ds,i:di,v:g,absorb:1}); } }
   d.hp = Math.max(0, d.hp-dmg);
-  if(d.st.absorb>0 && dmg>0 && d.hp>0){ const g=Math.min(d.maxmp-d.mp, Math.round(dmg*d.st.absorbV)); if(g>0){ d.mp+=g; } }
   b.ev.push({k:'hit',s:ds,i:di,v:dmg,crit,eff:elemMult(el,d.el)>1?'up':elemMult(el,d.el)<1?'down':'',el,blocked});
   if(d.st.lsh>0 && a.hp>0 && (dmg+blocked)>0){ const r=Math.min(a.hp,Math.max(1,Math.round((dmg+blocked)*0.25))); a.hp=Math.max(0,a.hp-r); b.ev.push({k:'hit',s:as.s,i:as.i,v:r,el:'bolt'}); }
   if(d.st.fsh>0 && a.hp>0 && rnd(b)<0.3 && !a.st.burn){ a.st.burn=2; a.st.burnD=6+d.lvl; log(b,`${a.n} got singed!`); }

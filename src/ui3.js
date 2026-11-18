@@ -307,7 +307,8 @@ function animateBattle(root,b,animating){
   if(animating) evs.forEach((e,k)=>{
     if(e.k==='act'||e.k==='enter') return;
     const late = e.k==='dot'||e.k==='stun'||e.end; if(e.k==='miss') e.k='buff', e.b='evade';
-    const delay = late ? T+600+after : T + (e.k==='hit'? Math.max(0,k-actIdx-1)*110 : 80);
+    const hitN=evs.slice(actIdx+1,k).filter(x=>x.k==='hit').length;
+    const delay = late ? T+600+after : e.absorb ? Math.max(0,T-350) : T + (e.k==='hit'? hitN*110 : 80);
     if(late) after+=420;
     setTimeout(()=>{
       const el=fEl(e.s,e.i); if(!el||!B||B.b!==b) return;
