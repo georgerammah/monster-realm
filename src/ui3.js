@@ -306,14 +306,14 @@ function animateBattle(root,b,animating){
   let after=0;
   if(animating) evs.forEach((e,k)=>{
     if(e.k==='act'||e.k==='enter') return;
-    const late = e.k==='dot'||e.k==='stun'||e.end; if(e.k==='miss') e.k='buff', e.b='evade';
+    const late = e.k==='dot'||e.k==='stun'||e.end; if(e.k==='miss'){ e.k='buff'; e.b='evade'; e.missed=1; }
     const hitN=evs.slice(actIdx+1,k).filter(x=>x.k==='hit').length;
     const delay = late ? T+600+after : e.absorb ? Math.max(0,T-350) : T + (e.k==='hit'? hitN*110 : 80);
     if(late) after+=420;
     setTimeout(()=>{
       const el=fEl(e.s,e.i); if(!el||!B||B.b!==b) return;
       const f=document.createElement('span'); f.className='float2 '+e.k+(e.crit?' crit':'');
-      f.textContent = (e.k==='heal'||e.k==='mana')?`+${e.v}`: e.k==='buff'?(BUFF_N[e.b]||''): e.k==='stun'?'Stunned!': e.k==='miss'?'Dodged!': (e.v===0&&e.blocked?'Blocked!':`-${e.v}`);
+      f.textContent = (e.k==='heal'||e.k==='mana')?`+${e.v}`: e.k==='buff'?(e.missed?'Missed!':(BUFF_N[e.b]||'')): e.k==='stun'?'Stunned!': e.k==='miss'?'Missed!': `-${e.v}`;
       if(e.k==='hit'||e.k==='dot'){
         el.classList.remove('shake','hitflash'); void el.offsetWidth; el.classList.add('shake','hitflash'); setTimeout(()=>el.classList.remove('hitflash','shake'),460);
         const [x,y]=fCenter(el); const bu=document.createElement('div'); bu.className='burst'; bu.style.setProperty('--c',EL[e.el]?EL[e.el].c:'#fff'); bu.style.left=x+'px'; bu.style.top=y+'px'; document.body.appendChild(bu); setTimeout(()=>bu.remove(),460);
