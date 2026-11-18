@@ -57,7 +57,7 @@ skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; if(!s)
     const map={dmg:s.dmg?f(lv(s.dmg,L)):'', pct:s.m?P(lv(s.m,L)):'', cost:skCost(id,L), tick:s.tick?f(lv(s.tick,L)):s.stormTick?f(lv(s.stormTick,L)):'', turns:s.turns||s.stormTurns||'', hits:s.hits||1,
       amt:s.amt?f(lv(s.amt,L)):s.healFlat?f(lv(s.healFlat,L)):'', v:s.v?(lv(s.v,L)<1?P(lv(s.v,L)):f(lv(s.v,L))):'', heal:s.heal?P(lv(s.heal,L)):s.hot?P(lv(s.hot,L)):'',
       steal:s.stealHp?f(lv(s.stealHp,L)):s.steal?f(lv(s.steal,L)):'', leech:s.leechL?P(lv(s.leechL,L)):'', mana:s.mpAtk?P(lv(s.mpAtk,L)):s.burnmp?f(lv(s.burnmp,L)):'',
-      stun:s.stun?P(lv(s.stun,L)):'', recoil:s.recoil?P(s.recoil):'', dbl:s.dbl?P(s.dbl):'', soak:s.soak?P(Array.isArray(s.soak)?lv(s.soak,L):s.soak):''};
+      stun:s.stun?P(lv(s.stun,L)):'', recoil:s.recoil?P(s.recoil):'', dbl:s.dbl?P(s.dbl):'', soak:s.soak?P(Array.isArray(s.soak)?lv(s.soak,L):s.soak):'', wall:s.selfShield?f(lv(s.selfShield,L)):''};
     return s.desc.replace(/\{(\w+)\}/g,(a,k)=>k in map?map[k]:a); }
   if(MOVE_OVR[id] && (!DEFAULT_SK[id] || DEFAULT_SK[id].k!==s.k)) return skillDescBase(id,L);
   return prev(id,L); }; })(skillDesc);
@@ -296,7 +296,7 @@ renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.
 
 // ---------- Monster Kingdom style info bubble: description only, sits over the icon row with a tab down to the icon ----------
 function stDesc(m,k){ const s=m.st, P=v=>Math.round((v||0)*100)+'%';
-  const d={burn:`Takes ${s.burnD|0} damage each turn`, poison:`Takes ${s.poisonD|0} damage each turn`, storm:`Takes ${s.stormD|0} damage each turn`, frost:`Takes ${s.frostD|0} damage each turn`, stun:`Can't act`,
+  const d={burn:`Takes ${s.burnD|0} damage each turn`, poison:`Takes ${s.poisonD|0} damage each turn`, storm:`Takes ${s.stormD|0} damage each turn`, fwall:`Burns attackers for ${s.fwallV|0}`, frost:`Takes ${s.frostD|0} damage each turn`, stun:`Can't act`,
     bubble:`Shield absorbs ${s.bubbleHp|0} damage`, lsh:`Shield absorbs ${s.lshHp|0} damage`, fsh:`Shield absorbs ${s.fshHp|0} damage`, nsh:`Shield absorbs ${s.nshHp|0} damage`,
     focus:`Deals ${P(s.focusV)} more damage`, charge:`Deals ${P(s.chargeV)} more damage`, cripple:`Deals ${P(s.crippleV)} less damage`, evade:`${P(s.evadeV)} chance to dodge attacks`, absorb:`Turns ${P(s.absorbV)} of damage taken into mana`, crit:`${P(s.critV)} chance to deal double damage`, mshield:`Mana blocks ${P(s.mshieldV)} of damage taken`, pers:`Takes ${P(s.persV)} less damage`, roots:`Recovers ${P(s.rootsV)} of max life each turn`}[k];
   return `${d||BUFF_N[k]||k} (${s[k]} turn${s[k]>1?'s':''})`; }
@@ -949,7 +949,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v161 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v162 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1144,3 +1144,7 @@ FIXTEAM_SPECIES=true; fixTeam();
   addEventListener('pointerup',e=>{ if(!down) return; const d=down; down=null; const b=e.target.closest&&e.target.closest('.backb,.sheet-x');
     if(b!==d.b||Math.hypot(e.clientX-d.x,e.clientY-d.y)>24) return; fired=Date.now(); b.click(); },true);
   addEventListener('click',e=>{ if(!e.isTrusted||Date.now()-fired>700) return; if(e.target.closest&&e.target.closest('.backb,.sheet-x')){ e.stopPropagation(); e.preventDefault(); } },true); })();
+
+// Fire Wall: fixed fire damage back at anyone who hits you for 3 turns
+SK.firewall.desc='Deals {dmg} fire damage, then surrounds you with a wall of fire for 3 turns. Anyone who hits you takes {wall} fire damage.';
+DEFAULT_SK.firewall=JSON.parse(JSON.stringify(SK.firewall)); try{ applyMoveOverrides(MOVE_OVR); }catch(_){}

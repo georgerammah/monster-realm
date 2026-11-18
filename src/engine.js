@@ -83,7 +83,7 @@ const SK = {
   trample:{n:'Trample', el:'neutral', t:'enemy', k:'hit', mp:[12,6], m:[1.1,.05], stun:[.15,.02]},
   camelback:{n:'Camel Back', el:'water', t:'passive', k:'passive', p:'camel', v:[3,1]}
 };
-const BUFF_N = {pers:'Perseverance', bubble:'Bubble', lsh:'Spark shield', fsh:'Fire shield', nsh:'Leaf shield', mshield:'Mana Shield', absorb:'Absorb', crit:'Spark', focus:'Focus', charge:'Charged', evade:'Evasive', cripple:'Crippled', roots:'Roots', heal:'Heal'};
+const BUFF_N = {fwall:'Fire Wall', pers:'Perseverance', bubble:'Bubble', lsh:'Spark shield', fsh:'Fire shield', nsh:'Leaf shield', mshield:'Mana Shield', absorb:'Absorb', crit:'Spark', focus:'Focus', charge:'Charged', evade:'Evasive', cripple:'Crippled', roots:'Roots', heal:'Heal'};
 const lv = (arr,L)=> arr[0]+arr[1]*(L-1);
 function skDmg(id,L,m){ const s=SK[id]; return s.dmg? Math.round(lv(s.dmg,L)) : Math.round(m.atk*(s.m?lv(s.m,L):1)); }
 function skCost(id,L){ const s=SK[id]; if(!s||!s.mp) return 0; return Math.round(lv(s.mp,L||1)); }
@@ -274,11 +274,11 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   dmg += (a.fx&&a.fx.dflat||0) + (d.fx&&d.fx.tflat||0);
   if(el==='neutral' && d.pas.hard) dmg*=1-d.pas.hard;
   dmg = Math.max(1, Math.round(dmg));
-  let blocked=0, fwBlocked=0;
+  let blocked=0;
   for(const sh of (pierce?[]:['bubble','fsh','lsh','nsh','ash'])){
     if(dmg<=0) break;
     // shields reduce every direct hit by a flat amount while they're up (they don't wear down)
-    if(d.st[sh]>0 && d.st[sh+'Hp']>0 && (!SHIELD_VS[sh] || SHIELD_VS[sh].includes(el))){ const ab=Math.min(dmg, d.st[sh+'Hp']); dmg-=ab; blocked+=ab; if(sh==='fsh'&&d.st.fwall>0) fwBlocked+=ab; }
+    if(d.st[sh]>0 && d.st[sh+'Hp']>0 && (!SHIELD_VS[sh] || SHIELD_VS[sh].includes(el))){ const ab=Math.min(dmg, d.st[sh+'Hp']); dmg-=ab; blocked+=ab; }
   }
   if(d.st.mshield>0 && d.mp>0 && dmg>0){ const ab=Math.min(Math.round(dmg*d.st.mshieldV), d.mp*2); d.mp-=Math.ceil(ab/2); dmg-=ab; blocked+=ab; }
   dmg=Math.max(0,Math.min(dmg,d.hp));  // never more than the life they had left
@@ -287,7 +287,8 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   d.hp = Math.max(0, d.hp-dmg);
   b.ev.push({k:'hit',s:ds,i:di,v:dmg,crit,eff:elemMult(el,d.el)>1?'up':elemMult(el,d.el)<1?'down':'',el,blocked});
   if(d.st.lsh>0 && a.hp>0 && (dmg+blocked)>0){ const r=Math.min(a.hp,Math.max(1,Math.round((dmg+blocked)*0.25))); a.hp=Math.max(0,a.hp-r); b.ev.push({k:'hit',s:as.s,i:as.i,v:r,el:'bolt'}); }
-  if(fwBlocked>0 && a.hp>0){ const r=Math.min(a.hp,Math.round(fwBlocked)); if(r>0){ a.hp=Math.max(0,a.hp-r); b.ev.push({k:'hit',s:as.s,i:as.i,v:r,el:'fire'}); log(b,`The fire wall burns ${a.n}!`); } }
+  // Fire Wall: every direct hit on you burns the attacker for a fixed amount (blocks nothing)
+  if(d.st.fwall>0 && a.hp>0 && a!==d){ const r=Math.min(a.hp,Math.round(d.st.fwallV||0)); if(r>0){ a.hp=Math.max(0,a.hp-r); b.ev.push({k:'hit',s:as.s,i:as.i,v:r,el:'fire'}); log(b,`The fire wall burns ${a.n}!`); } }
   if(d.st.fsh>0 && a.hp>0 && rnd(b)<0.3 && !a.st.burn){ a.st.burn=2; a.st.burnD=6+d.lvl; log(b,`${a.n} got singed!`); }
   if(d.hp<=0) log(b,`${d.n} fainted.`);
   return dmg;
@@ -343,7 +344,7 @@ function act(b, action){
     if(sk.recoil && tot>0 && me.hp>0){ const r=Math.min(me.hp,Math.max(1,Math.round(tot*sk.recoil))); me.hp=Math.max(0,me.hp-r); b.ev.push({k:'hit',s:a.s,i:a.i,v:r,el:'fire',recoil:1}); log(b,`${me.n} is hurt by the recoil!`); if(me.hp<=0) log(b,`${me.n} fainted.`); }
     if(sk.selfCleanse){ me.st.burn=0; me.st.poison=0; }
     if(sk.selfStun && me.hp>0){ me.st.stun=1; log(b,`${me.n} is stunned by the effort!`); b.ev.push({k:'buff',s:a.s,i:a.i,b:'stun'}); }
-    if(sk.selfShield && me.hp>0){ me.st.fsh=3; me.st.fwall=3; me.st.fshHp=Math.round(lv(sk.selfShield,L)); b.ev.push({k:'buff',s:a.s,i:a.i,b:'fsh'}); }
+    if(sk.selfShield && me.hp>0){ me.st.fwall=3; me.st.fwallV=Math.round(lv(sk.selfShield,L)); b.ev.push({k:'buff',s:a.s,i:a.i,b:'fwall'}); }
     if(sk.selfevade){ me.st.evade=2; me.st.evadeV=lv(sk.selfevade,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'evade'}); }
   } else if(sk.k==='dot'){
     const d=b.sides[foe].mons[tgt];
