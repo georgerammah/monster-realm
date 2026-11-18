@@ -949,7 +949,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v147 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v148 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1044,3 +1044,9 @@ function openPlayers(){
   Object.entries(SHEET).forEach(([id,f])=>{ if(!SK[id]) return; Object.entries(f).forEach(([k,v])=>{ if(v===null) delete SK[id][k]; else SK[id][k]=v; });
     DEFAULT_SK[id]=JSON.parse(JSON.stringify(SK[id])); });
   try{ applyMoveOverrides(MOVE_OVR); }catch(_){} })();
+
+// one-time gift: $1,000,000 for the george admin account only
+(function(){ const give=()=>{ try{ if(!ADMIN||typeof S==='undefined'||!S||S.giftCash1m||String(S.name||'').toLowerCase()!=='george') return false;
+    S.cash=(S.cash|0)+1000000; S.giftCash1m=1; persist(); if(typeof renderHUD==='function') renderHUD(); else if(typeof render==='function') render(); if(typeof toast==='function') toast('+$1,000,000'); return true; }catch(_){ return false; } };
+  setAdmin=(function(prev){ return function(v){ const r=prev(v); setTimeout(give,300); return r; }; })(setAdmin);
+  let n=0; const iv=setInterval(()=>{ if(give()||++n>40) clearInterval(iv); },1500); })();
