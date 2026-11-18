@@ -18,7 +18,7 @@ function updRot(){
   document.body.classList.toggle('rot',port);
   let longPx, shortPx;
   if(port){ longPx=fillGlass?Math.max(sL,innerHeight):Math.max(vh,innerHeight); shortPx=Math.min(vw,innerWidth)||innerWidth; }
-  else { longPx=Math.max(vw,innerWidth); shortPx=fillGlass?Math.max(Math.min(sS,innerHeight+40),innerHeight):vh; }
+  else { longPx=Math.max(vw,innerWidth); shortPx=Math.min(vh,innerHeight)||innerHeight; } // exactly what's visible: nothing to scroll, taps land where they look
   longPx=Math.round(longPx); shortPx=Math.round(shortPx);
   window.__lay={port,SA,iw:innerWidth,ih:innerHeight,sw:screen.width,sh:screen.height,t:Math.round(i.t),b:Math.round(i.b),L:longPx,S:shortPx};
   if(port){
