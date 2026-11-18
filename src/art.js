@@ -8,7 +8,7 @@ function cheeks(x1,x2,y){ return `<ellipse cx="${x1}" cy="${y}" rx="3.4" ry="2" 
 function feet(c){ return `<ellipse cx="38" cy="84" rx="8" ry="4.5" fill="${c}"/><ellipse cx="62" cy="84" rx="8" ry="4.5" fill="${c}"/>`; }
 
 function monSVG(spId, lvl, cls){
-  const sp = SPI[spId]; const shape = FAM[sp.fam].shape; const [c1,c2,c3] = sp.col;
+  const sp = SPI[spId]; if(!sp||!FAM[sp.fam]) return `<svg viewBox="0 0 100 100"></svg>`; const shape = FAM[sp.fam].shape; const [c1,c2,c3] = sp.col;
   const st = stageOf(lvl);
   const sc = [0.8,0.92,1][st];
   let g='';

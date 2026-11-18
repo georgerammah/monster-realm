@@ -155,6 +155,7 @@ function bugNew(c1,c2,c3,st,id){
 }
 function monSVG(spId, lvl, cls){
   const sp = SPI[spId]; const st = stageOf(lvl);
+  if(!sp||!FAM[sp.fam]) return `<svg class="${cls||''}" viewBox="0 0 100 100"></svg>`; // species not loaded yet
   const custom = CUSTOM_ART[spId];
   if(custom){ const src = Array.isArray(custom)? (custom[st]||custom[custom.length-1]) : custom;
     return `<svg class="${cls||''}" viewBox="0 0 100 100"><image href="${src}" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMax meet"/></svg>`; }

@@ -171,4 +171,4 @@ function roamTick(t){
   });
 }
 requestAnimationFrame(roamTick);
-if(typeof S!=='undefined'&&S) render();
+if(typeof S!=='undefined'&&S){ try{ render(); }catch(e){ console.warn('early render skipped',e); } }
