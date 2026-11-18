@@ -1545,6 +1545,12 @@ body.kb-open .onb #go,body.kb-open .onb #onbrst{display:none}
 </nav>
 <div id="splash"></div><div id="battle"></div><div id="sheets"></div><div id="toast"></div>
 <script>
+// show load errors on screen (a screenshot then says exactly what broke on a real phone)
+window.__errs=[]; addEventListener('error',function(e){ try{ var m=(e.message||'error')+(e.lineno?' (line '+e.lineno+')':''); if(window.__errs.indexOf(m)>=0) return; window.__errs.push(m);
+  var d=document.getElementById('errbar'); if(!d){ d=document.createElement('div'); d.id='errbar'; d.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:100000;background:#b3261e;color:#fff;font:12px/1.35 -apple-system,system-ui,sans-serif;padding:6px 10px;border-radius:8px;pointer-events:none;white-space:pre-wrap'; (document.body||document.documentElement).appendChild(d); }
+  d.textContent=window.__errs.slice(0,4).join('\n'); }catch(_){} });
+</script>
+<script>
 /*ENGINE*/
 /*ART*/
 /*ART2*/
@@ -1563,4 +1569,5 @@ body.kb-open .onb #go,body.kb-open .onb #onbrst{display:none}
 /*UI12*/
 /*UI13*/
 </script>
+
 </body></html>
