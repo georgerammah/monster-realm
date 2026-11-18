@@ -137,7 +137,9 @@ function hudIcons(m){
   const out=[];
   Object.keys(m.pas||{}).forEach(p=>{ const id=Object.keys(SK).find(k=>SK[k].p===p); out.push(`<span class="hi" data-tip="${id?esc(SK[id].n+' (passive, Lv '+(m.skl[id]||1)+')|'+skillDesc(id,m.skl[id]||1)):''}">${icon(p==='roots'?'plus':PAS_IC[p]||'star','#e3262d',30)}</span>`); });
   const f=m.fx||{};
-  if(f.dflat) out.push(`<span class="hi" data-tip="Brute Blades|+${f.dflat} damage on attacks, +${f.tflat} damage taken">${icon('star','#e3262d',30)}</span>`);
+  // item effects: one dot per effect type (same effects from several items are added together)
+  if(f.dflat) out.push(`<span class="hi" data-tip="Damage Dealt|+${f.dflat} damage on every attack">${icon('fist','#e3262d',30)}</span>`);
+  if(f.tflat) out.push(`<span class="hi" data-tip="Damage Taken|+${f.tflat} damage from every attack">${icon('shield','#7a4a3a',30)}</span>`);
   if(f.rhp) out.push(`<span class="hi" data-tip="Life Bowl|Recovers ${f.rhp} life after each turn">${icon('plus','#e0475b',30)}</span>`);
   if(f.rmp) out.push(`<span class="hi" data-tip="Mana Bowl|Recovers ${f.rmp} mana after each turn">${icon('plus','#4a9cf0',30)}</span>`);
   Object.keys(ST_ICON).filter(k=>m.st[k]>0).forEach(k=>out.push(`<span class="hi st" data-tip="${BUFF_N[k]||k}|Active for ${m.st[k]} more turn${m.st[k]>1?'s':''}">${icon(ST_ICON[k][0],ST_ICON[k][1],26)}</span>`));
