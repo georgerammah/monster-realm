@@ -949,7 +949,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v154 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v155 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1115,3 +1115,20 @@ function openMonRO(t, owner){
 // battle info card: gold star for mastered monsters
 monInfo=(function(prev){ return function(b,s,i){ const r=prev(b,s,i); const m=b.sides[s]&&b.sides[s].mons[i];
   if(m&&m.lvl>=MAXLVL) document.querySelectorAll('.minfo2 .mi-nm .lvb').forEach(x=>{ x.outerHTML=MASTER_STAR; }); return r; }; })(monInfo);
+
+// team rule: at most 3 monsters, no duplicates, only monsters you own — enforced everywhere
+var FIXTEAM_SPECIES=false;
+function fixTeam(){ if(typeof S==='undefined'||!S||!Array.isArray(S.team)) return; const seen=new Set();
+  const t=S.team.filter(u=>{ const m=u&&!seen.has(u)&&seen.add(u)&&monBy(u); return m&&(!FIXTEAM_SPECIES||SPI[m.sp]); }).slice(0,3);
+  if(!t.length&&S.mons&&S.mons.length) t.push(S.mons[0].uid);
+  if(t.length!==S.team.length||t.some((u,i)=>u!==S.team[i])) S.team=t; }
+teamMons=(function(prev){ return function(){ fixTeam(); return prev.apply(this,arguments).slice(0,3); }; })(teamMons);
+persist=(function(prev){ return function(){ fixTeam(); return prev.apply(this,arguments); }; })(persist);
+FIXTEAM_SPECIES=true; fixTeam();
+
+// the game screen never scrolls: only panels/lists that really scroll may move
+(function(){ const canScroll=el=>{ for(let n=el;n&&n!==document.body&&n!==document.documentElement;n=n.parentElement){ const cs=getComputedStyle(n);
+      if(/(auto|scroll)/.test(cs.overflowY+cs.overflowX)&&(n.scrollHeight>n.clientHeight+1||n.scrollWidth>n.clientWidth+1)) return true; } return false; };
+  document.addEventListener('touchmove',e=>{ if(e.touches.length>1) return; if(!canScroll(e.target)) e.preventDefault(); },{passive:false});
+  const pin=()=>{ if(window.scrollX||window.scrollY) window.scrollTo(0,0); if(document.documentElement.scrollTop) document.documentElement.scrollTop=0; };
+  addEventListener('scroll',pin,{passive:true}); if(window.visualViewport) visualViewport.addEventListener('scroll',pin); })();

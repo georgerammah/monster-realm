@@ -234,11 +234,11 @@ async function boot(){
   S = Object.assign(freshSave(), loadLocal()||{});
   S.stats=Object.assign(freshSave().stats, S.stats||{});
   if(S.cash==null) S.cash=50; if(S.tut==null) S.tut = S.name?99:0; S.inv=S.inv||{};
-  S.mons.forEach(ensureMon);
+  S.mons.forEach(ensureMon); try{ fixTeam(); }catch(_){}
   document.querySelectorAll('#bar [data-p]').forEach(b=>b.onclick=()=>openPanel(b.dataset.p));
   render();
   setInterval(()=>{ if(!S) return; const e=S.energy; tickEnergy(); if(e!==S.energy) persist(); if(!B){ renderHUD(); } },1000);
-  initDb().then(()=>{ S.mons.forEach(ensureMon); if(S.cash==null) S.cash=50; S.inv=S.inv||{}; });
+  initDb().then(()=>{ S.mons.forEach(ensureMon); try{ fixTeam(); }catch(_){} if(S.cash==null) S.cash=50; S.inv=S.inv||{}; });
   NET.init();
   await splash();
   if(!S.name) onboarding();

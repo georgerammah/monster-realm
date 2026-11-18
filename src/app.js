@@ -510,6 +510,7 @@ function onboarding(){
 function boot(){
   S = Object.assign(freshSave(), loadLocal()||{});
   S.stats=Object.assign(freshSave().stats, S.stats||{});
+  try{ fixTeam(); }catch(e){ console.warn('fixTeam',e&&e.message); }
   document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{ TAB=b.dataset.tab; render(); $('#view').scrollTop=0; window.scrollTo(0,0); });
   render();
   if(!S.name) onboarding();

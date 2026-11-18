@@ -1545,6 +1545,8 @@ body.kb-open .onb #go,body.kb-open .onb #onbrst{display:none}
 .pname .lvb.mst{background:linear-gradient(#f7e27a,#c99a1e 55%,#a67812)!important;box-shadow:inset 0 0 0 1.5px #7a5a0c!important;padding:2px 5px 6px!important}
 .pname .lvb.mst svg{width:15px;height:15px;filter:drop-shadow(0 1px 0 rgba(90,60,0,.5))}
 .mkprof .pname .lvb.mst{background:linear-gradient(#f7e27a,#c99a1e 55%,#a67812)!important}
+html{overflow:hidden;height:100%;overscroll-behavior:none}
+body{position:fixed!important;left:0;top:0;overscroll-behavior:none}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -1785,7 +1787,7 @@ function beginTurn(b){
     ['bubble','lsh','fsh','nsh','mshield','absorb','crit','focus','evade','cripple','pers','soak','zap','acid','eshift'].forEach(k=>{ if(st[k]>0){ st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } });
     if(m.pas.camel){ const g=Math.min(m.maxmp-m.mp, Math.round(m.pas.camel)); if(g>0){ m.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,end:1}); } }
     for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm'],['frost','water','the blizzard']]){
-      if(st[k]>0 && m.hp>0){ const d=Math.max(1,Math.round(st[k+'D'])); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el}); log(b,`${m.n} is hurt by ${nm}.`); }
+      if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el}); log(b,`${m.n} is hurt by ${nm}.`); }
     }
     if(st.roots>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*st.rootsV)); m.hp=Math.min(m.maxhp,m.hp+h); st.roots--; b.ev.push({k:'heal',s:a.s,i:a.i,v:h}); }
     if(st.nsh>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*0.04)); m.hp=Math.min(m.maxhp,m.hp+h); b.ev.push({k:'heal',s:a.s,i:a.i,v:h}); }
@@ -1845,11 +1847,11 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
     if(d.st[sh]>0 && d.st[sh+'Hp']>0 && (!SHIELD_VS[sh] || SHIELD_VS[sh].includes(el))){ const ab=Math.min(dmg, d.st[sh+'Hp']); d.st[sh+'Hp']-=ab; dmg-=ab; blocked+=ab; if(d.st[sh+'Hp']<=0){ d.st[sh]=0; log(b,`${d.n}'s shield broke!`); } }
   }
   if(d.st.mshield>0 && d.mp>0 && dmg>0){ const ab=Math.min(Math.round(dmg*d.st.mshieldV), d.mp*2); d.mp-=Math.ceil(ab/2); dmg-=ab; blocked+=ab; }
-  dmg=Math.max(0,dmg);
+  dmg=Math.max(0,Math.min(dmg,d.hp));  // never more than the life they had left
   d.hp = Math.max(0, d.hp-dmg);
   if(d.st.absorb>0 && dmg>0 && d.hp>0){ const g=Math.min(d.maxmp-d.mp, Math.round(dmg*d.st.absorbV)); if(g>0){ d.mp+=g; } }
   b.ev.push({k:'hit',s:ds,i:di,v:dmg,crit,eff:elemMult(el,d.el)>1?'up':elemMult(el,d.el)<1?'down':'',el,blocked});
-  if(d.st.lsh>0 && a.hp>0 && (dmg+blocked)>0){ const r=Math.max(1,Math.round((dmg+blocked)*0.25)); a.hp=Math.max(0,a.hp-r); b.ev.push({k:'hit',s:as.s,i:as.i,v:r,el:'bolt'}); }
+  if(d.st.lsh>0 && a.hp>0 && (dmg+blocked)>0){ const r=Math.min(a.hp,Math.max(1,Math.round((dmg+blocked)*0.25))); a.hp=Math.max(0,a.hp-r); b.ev.push({k:'hit',s:as.s,i:as.i,v:r,el:'bolt'}); }
   if(d.st.fsh>0 && a.hp>0 && rnd(b)<0.3 && !a.st.burn){ a.st.burn=2; a.st.burnD=6+d.lvl; log(b,`${a.n} got singed!`); }
   if(d.hp<=0) log(b,`${d.n} fainted.`);
   return dmg;
@@ -1902,7 +1904,7 @@ function act(b, action){
     if(sk.leech && tot>0 && me.hp>0){ const hv=Math.round(tot*(sk.leechL?lv(sk.leechL,L):sk.leech)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.mpgain && tot>0){ me.mp=Math.min(me.maxmp, me.mp+Math.round(tot*sk.mpgain)); }
     if(sk.mpLeech && tot>0 && me.hp>0){ const d1=b.sides[foe].mons[tgt]; const x=Math.min(d1.mp, Math.round(tot*sk.mpLeech)); d1.mp-=x; me.mp=Math.min(me.maxmp,me.mp+x); }
-    if(sk.recoil && tot>0 && me.hp>0){ const r=Math.max(1,Math.round(tot*sk.recoil)); me.hp=Math.max(0,me.hp-r); b.ev.push({k:'hit',s:a.s,i:a.i,v:r,el:'fire',recoil:1}); log(b,`${me.n} is hurt by the recoil!`); if(me.hp<=0) log(b,`${me.n} fainted.`); }
+    if(sk.recoil && tot>0 && me.hp>0){ const r=Math.min(me.hp,Math.max(1,Math.round(tot*sk.recoil))); me.hp=Math.max(0,me.hp-r); b.ev.push({k:'hit',s:a.s,i:a.i,v:r,el:'fire',recoil:1}); log(b,`${me.n} is hurt by the recoil!`); if(me.hp<=0) log(b,`${me.n} fainted.`); }
     if(sk.selfCleanse){ me.st.burn=0; me.st.poison=0; }
     if(sk.selfStun && me.hp>0){ me.st.stun=1; log(b,`${me.n} is stunned by the effort!`); b.ev.push({k:'buff',s:a.s,i:a.i,b:'stun'}); }
     if(sk.selfShield && me.hp>0){ me.st.fsh=3; me.st.fshHp=Math.round(lv(sk.selfShield,L)); b.ev.push({k:'buff',s:a.s,i:a.i,b:'fsh'}); }
@@ -2901,6 +2903,7 @@ function onboarding(){
 function boot(){
   S = Object.assign(freshSave(), loadLocal()||{});
   S.stats=Object.assign(freshSave().stats, S.stats||{});
+  try{ fixTeam(); }catch(e){ console.warn('fixTeam',e&&e.message); }
   document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{ TAB=b.dataset.tab; render(); $('#view').scrollTop=0; window.scrollTo(0,0); });
   render();
   if(!S.name) onboarding();
@@ -3854,11 +3857,11 @@ async function boot(){
   S = Object.assign(freshSave(), loadLocal()||{});
   S.stats=Object.assign(freshSave().stats, S.stats||{});
   if(S.cash==null) S.cash=50; if(S.tut==null) S.tut = S.name?99:0; S.inv=S.inv||{};
-  S.mons.forEach(ensureMon);
+  S.mons.forEach(ensureMon); try{ fixTeam(); }catch(_){}
   document.querySelectorAll('#bar [data-p]').forEach(b=>b.onclick=()=>openPanel(b.dataset.p));
   render();
   setInterval(()=>{ if(!S) return; const e=S.energy; tickEnergy(); if(e!==S.energy) persist(); if(!B){ renderHUD(); } },1000);
-  initDb().then(()=>{ S.mons.forEach(ensureMon); if(S.cash==null) S.cash=50; S.inv=S.inv||{}; });
+  initDb().then(()=>{ S.mons.forEach(ensureMon); try{ fixTeam(); }catch(_){} if(S.cash==null) S.cash=50; S.inv=S.inv||{}; });
   NET.init();
   await splash();
   if(!S.name) onboarding();
@@ -4756,7 +4759,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (154).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (155).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6375,7 +6378,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v154 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v155 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -6541,6 +6544,23 @@ function openMonRO(t, owner){
 // battle info card: gold star for mastered monsters
 monInfo=(function(prev){ return function(b,s,i){ const r=prev(b,s,i); const m=b.sides[s]&&b.sides[s].mons[i];
   if(m&&m.lvl>=MAXLVL) document.querySelectorAll('.minfo2 .mi-nm .lvb').forEach(x=>{ x.outerHTML=MASTER_STAR; }); return r; }; })(monInfo);
+
+// team rule: at most 3 monsters, no duplicates, only monsters you own — enforced everywhere
+var FIXTEAM_SPECIES=false;
+function fixTeam(){ if(typeof S==='undefined'||!S||!Array.isArray(S.team)) return; const seen=new Set();
+  const t=S.team.filter(u=>{ const m=u&&!seen.has(u)&&seen.add(u)&&monBy(u); return m&&(!FIXTEAM_SPECIES||SPI[m.sp]); }).slice(0,3);
+  if(!t.length&&S.mons&&S.mons.length) t.push(S.mons[0].uid);
+  if(t.length!==S.team.length||t.some((u,i)=>u!==S.team[i])) S.team=t; }
+teamMons=(function(prev){ return function(){ fixTeam(); return prev.apply(this,arguments).slice(0,3); }; })(teamMons);
+persist=(function(prev){ return function(){ fixTeam(); return prev.apply(this,arguments); }; })(persist);
+FIXTEAM_SPECIES=true; fixTeam();
+
+// the game screen never scrolls: only panels/lists that really scroll may move
+(function(){ const canScroll=el=>{ for(let n=el;n&&n!==document.body&&n!==document.documentElement;n=n.parentElement){ const cs=getComputedStyle(n);
+      if(/(auto|scroll)/.test(cs.overflowY+cs.overflowX)&&(n.scrollHeight>n.clientHeight+1||n.scrollWidth>n.clientWidth+1)) return true; } return false; };
+  document.addEventListener('touchmove',e=>{ if(e.touches.length>1) return; if(!canScroll(e.target)) e.preventDefault(); },{passive:false});
+  const pin=()=>{ if(window.scrollX||window.scrollY) window.scrollTo(0,0); if(document.documentElement.scrollTop) document.documentElement.scrollTop=0; };
+  addEventListener('scroll',pin,{passive:true}); if(window.visualViewport) visualViewport.addEventListener('scroll',pin); })();
 
 </script>
 
