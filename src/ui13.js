@@ -949,7 +949,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v153 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v154 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1097,3 +1097,21 @@ eye3=(function(base){
 
 // everything (including the zone-exclusive monsters) is loaded now: redraw anything drawn early
 if(typeof S!=='undefined'&&S){ try{ render(); }catch(e){ console.warn(e); } }
+
+// ---------- view-only monster card (another player's monster): no XP, no stat buttons ----------
+const MASTER_STAR=`<span class="lvb mst" title="Mastered"><svg viewBox="0 0 24 24"><path d="M12 3.2l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.6l-5.2 2.8 1-5.9L3.5 9.4l5.9-.8z" fill="#fff"/></svg></span>`;
+function lvBadge(lvl){ return lvl>=MAXLVL?MASTER_STAR:`<span class="lvb">${lvl}</span>`; }
+function openMonRO(t, owner){
+  const sp=SPI[t.sp]; if(!sp) return; const fam=FAM[sp.fam]; const base=statsOf(t.sp,t.lvl), b=t.bonus||{};
+  const st={atk:base.atk+(b.atk|0), hp:base.hp+(b.hp|0), mp:base.mp+(b.mp|0)}; const slots=slotsOf(t.lvl); const skl=t.skl||{};
+  const stat=(label,val)=>`<div class="pstat"><span>${label}</span><b>${val}</b></div>`;
+  const sh=sheet(`<div class="prof ro"><div class="ptop"><div class="ppor" style="--c:${EL[fam.el].c}">${monSVG(t.sp,t.lvl)}</div>
+      <div class="pinfo"><div class="pname">${lvBadge(t.lvl)}${esc(sp.n)}</div><span class="pstage">${STAGE_N[stageOf(t.lvl)].toLowerCase()}${owner?` · ${esc(owner)}`:''}</span>
+        ${stat('Attack',st.atk)}${stat('Life',st.hp)}${stat('Mana',st.mp)}</div></div>
+    <h3 class="ph">Abilities</h3>
+    <div class="pabil">${sp.sk.slice(0,slots).map(id=>{ const k=SK[id]; if(!k) return ''; const L=skl[id]||1, c=skCost(id,L), pas=k.k==='passive';
+      return `<div class="pab ${pas?'pas':''}">${icon(skIconKey(id),(EL[k.el]||EL.neutral).c,40)}<div class="pab-t"><b>${esc(k.n)} <span class="sl">Lv ${L}</span>${pas?' <span class="pastag">Passive</span>':''}</b><span>${skillDesc(id,L)}${c?` · ${c} mana`:''}</span></div></div>`; }).join('')}</div></div>`,{cls:'panel mkprof'});
+  return sh; }
+// battle info card: gold star for mastered monsters
+monInfo=(function(prev){ return function(b,s,i){ const r=prev(b,s,i); const m=b.sides[s]&&b.sides[s].mons[i];
+  if(m&&m.lvl>=MAXLVL) document.querySelectorAll('.minfo2 .mi-nm .lvb').forEach(x=>{ x.outerHTML=MASTER_STAR; }); return r; }; })(monInfo);

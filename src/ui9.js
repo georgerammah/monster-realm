@@ -1,11 +1,11 @@
 // ===== V9: arena result screen + trainer profiles =====
 const MOTTO_MAX=60;
-function myProfile(){ return {me:true, name:S.name, avatar:myAvatar(), rank:myRank(), motto:S.motto||'', team:teamMons().map(m=>({sp:m.sp,lvl:m.lvl})),
+function myProfile(){ return {me:true, name:S.name, avatar:myAvatar(), rank:myRank(), motto:S.motto||'', team:(typeof teamMsg==='function'?teamMsg():teamMons().map(m=>({sp:m.sp,lvl:m.lvl}))),
   stats:{wins:S.stats.wins|0, arenaWins:S.stats.arenaWins|0, pvpWins:S.stats.pvpWins|0, mons:S.mons.length, kinds:new Set(S.mons.map(m=>m.sp)).size, quests:Object.keys(S.quests||{}).length}}; }
 function cleanProfile(p){
   p=p||{}; const st=p.stats||{}; const n=v=>Math.max(0,Math.min(99999,v|0));
   return {name:String(p.name||'Trainer').slice(0,16), avatar:sanitizeAv(p.avatar)||{t:'trainer',i:0}, rank:Math.max(0,Math.min(9999,p.rank|0))||1000,
-    motto:String(p.motto||'').slice(0,MOTTO_MAX), team:sanitizeTeam(p.team).map(m=>({sp:m.sp,lvl:m.lvl})), cid:p.cid?String(p.cid).slice(0,40):null,
+    motto:String(p.motto||'').slice(0,MOTTO_MAX), team:sanitizeTeam(p.team), cid:p.cid?String(p.cid).slice(0,40):null,
     stats:{wins:n(st.wins),arenaWins:n(st.arenaWins),pvpWins:n(st.pvpWins),mons:n(st.mons),kinds:n(st.kinds),quests:n(st.quests)}};
 }
 // share profile info in presence + challenge/accept
@@ -63,10 +63,11 @@ function openProfile(p){
       <div class="tp-top"><button class="backb" id="tpb">Back</button>
         <div class="tp-plate"><div class="tp-av">${avatarSVG(P.avatar)}</div><div class="tp-id"><div class="tp-nm"><b>${esc(P.name)}</b>${online?'<i class="dot on"></i>':'<i class="dot"></i>'}</div><div class="tp-rk">${rankBadge(P.rank,22)} ${P.rank} · ${rankOf(P.rank)[1]}</div></div></div></div>
       <div class="tp-motto">${me?`<button id="tpedit">${P.motto?esc(P.motto):'Tap to write your motto'} ✎</button>`:(P.motto?esc(P.motto):'<span class="muted">No motto yet</span>')}</div>
-      <div class="tp-field">${sceneBG()}<div class="tp-team">${team.map((m,k)=>`<div class="tp-m" style="animation-delay:${k*.1}s">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div>`).join('')||'<p class="muted">No team</p>'}</div></div>
+      <div class="tp-field">${sceneBG()}<div class="tp-team">${team.map((m,k)=>`<div class="tp-m" data-tpm="${k}" style="animation-delay:${k*.1}s;cursor:pointer">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div>`).join('')||'<p class="muted">No team</p>'}</div></div>
       <div class="tp-bar"><button class="nb2 blue" data-tp="stats">STATS</button><button class="nb2 blue" data-tp="awards">AWARDS</button>
         ${me?'':`<button class="nb2 red" data-tp="spar" ${online&&!busy&&P.cid?'':'disabled'}>${busy?'IN BATTLE':online?'SPAR ⚡':'OFFLINE'}</button>`}</div>`;
     sh.body.querySelector('#tpb').onclick=sh.close;
+    sh.body.querySelectorAll('[data-tpm]').forEach(el=>el.onclick=()=>{ const k=+el.dataset.tpm; if(me){ const mm=teamMons()[k]; if(mm) openMon(mm.uid); } else if(team[k]) openMonRO(team[k], P.name); });
     const ed=sh.body.querySelector('#tpedit'); if(ed) ed.onclick=()=>{
       const s2=sheet(`<h2 class="game-h">Your motto</h2><input id="mtin" maxlength="${MOTTO_MAX}" value="${esc(S.motto||'')}" placeholder="Say something about yourself" style="width:100%;font:16px -apple-system,system-ui;padding:12px;border-radius:10px;border:0;box-shadow:inset 0 0 0 1.5px #c9b88a"><div class="actions"><button class="btn gbtn" id="mtok">Save</button></div>`);
       s2.body.querySelector('#mtok').onclick=()=>{ S.motto=s2.body.querySelector('#mtin').value.trim().slice(0,MOTTO_MAX); persist(); NET.updatePresence(); s2.close(); draw(); };

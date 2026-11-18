@@ -4543,12 +4543,12 @@ bindView=function(v){ _bind8(v); v=v||document; v.querySelectorAll('[data-snd]')
 
 // ===== V9: arena result screen + trainer profiles =====
 const MOTTO_MAX=60;
-function myProfile(){ return {me:true, name:S.name, avatar:myAvatar(), rank:myRank(), motto:S.motto||'', team:teamMons().map(m=>({sp:m.sp,lvl:m.lvl})),
+function myProfile(){ return {me:true, name:S.name, avatar:myAvatar(), rank:myRank(), motto:S.motto||'', team:(typeof teamMsg==='function'?teamMsg():teamMons().map(m=>({sp:m.sp,lvl:m.lvl}))),
   stats:{wins:S.stats.wins|0, arenaWins:S.stats.arenaWins|0, pvpWins:S.stats.pvpWins|0, mons:S.mons.length, kinds:new Set(S.mons.map(m=>m.sp)).size, quests:Object.keys(S.quests||{}).length}}; }
 function cleanProfile(p){
   p=p||{}; const st=p.stats||{}; const n=v=>Math.max(0,Math.min(99999,v|0));
   return {name:String(p.name||'Trainer').slice(0,16), avatar:sanitizeAv(p.avatar)||{t:'trainer',i:0}, rank:Math.max(0,Math.min(9999,p.rank|0))||1000,
-    motto:String(p.motto||'').slice(0,MOTTO_MAX), team:sanitizeTeam(p.team).map(m=>({sp:m.sp,lvl:m.lvl})), cid:p.cid?String(p.cid).slice(0,40):null,
+    motto:String(p.motto||'').slice(0,MOTTO_MAX), team:sanitizeTeam(p.team), cid:p.cid?String(p.cid).slice(0,40):null,
     stats:{wins:n(st.wins),arenaWins:n(st.arenaWins),pvpWins:n(st.pvpWins),mons:n(st.mons),kinds:n(st.kinds),quests:n(st.quests)}};
 }
 // share profile info in presence + challenge/accept
@@ -4606,10 +4606,11 @@ function openProfile(p){
       <div class="tp-top"><button class="backb" id="tpb">Back</button>
         <div class="tp-plate"><div class="tp-av">${avatarSVG(P.avatar)}</div><div class="tp-id"><div class="tp-nm"><b>${esc(P.name)}</b>${online?'<i class="dot on"></i>':'<i class="dot"></i>'}</div><div class="tp-rk">${rankBadge(P.rank,22)} ${P.rank} · ${rankOf(P.rank)[1]}</div></div></div></div>
       <div class="tp-motto">${me?`<button id="tpedit">${P.motto?esc(P.motto):'Tap to write your motto'} ✎</button>`:(P.motto?esc(P.motto):'<span class="muted">No motto yet</span>')}</div>
-      <div class="tp-field">${sceneBG()}<div class="tp-team">${team.map((m,k)=>`<div class="tp-m" style="animation-delay:${k*.1}s">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div>`).join('')||'<p class="muted">No team</p>'}</div></div>
+      <div class="tp-field">${sceneBG()}<div class="tp-team">${team.map((m,k)=>`<div class="tp-m" data-tpm="${k}" style="animation-delay:${k*.1}s;cursor:pointer">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div>`).join('')||'<p class="muted">No team</p>'}</div></div>
       <div class="tp-bar"><button class="nb2 blue" data-tp="stats">STATS</button><button class="nb2 blue" data-tp="awards">AWARDS</button>
         ${me?'':`<button class="nb2 red" data-tp="spar" ${online&&!busy&&P.cid?'':'disabled'}>${busy?'IN BATTLE':online?'SPAR ⚡':'OFFLINE'}</button>`}</div>`;
     sh.body.querySelector('#tpb').onclick=sh.close;
+    sh.body.querySelectorAll('[data-tpm]').forEach(el=>el.onclick=()=>{ const k=+el.dataset.tpm; if(me){ const mm=teamMons()[k]; if(mm) openMon(mm.uid); } else if(team[k]) openMonRO(team[k], P.name); });
     const ed=sh.body.querySelector('#tpedit'); if(ed) ed.onclick=()=>{
       const s2=sheet(`<h2 class="game-h">Your motto</h2><input id="mtin" maxlength="${MOTTO_MAX}" value="${esc(S.motto||'')}" placeholder="Say something about yourself" style="width:100%;font:16px -apple-system,system-ui;padding:12px;border-radius:10px;border:0;box-shadow:inset 0 0 0 1.5px #c9b88a"><div class="actions"><button class="btn gbtn" id="mtok">Save</button></div>`);
       s2.body.querySelector('#mtok').onclick=()=>{ S.motto=s2.body.querySelector('#mtin').value.trim().slice(0,MOTTO_MAX); persist(); NET.updatePresence(); s2.close(); draw(); };
@@ -4755,7 +4756,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (153).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (154).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6374,7 +6375,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v153 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v154 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -6522,6 +6523,24 @@ eye3=(function(base){
 
 // everything (including the zone-exclusive monsters) is loaded now: redraw anything drawn early
 if(typeof S!=='undefined'&&S){ try{ render(); }catch(e){ console.warn(e); } }
+
+// ---------- view-only monster card (another player's monster): no XP, no stat buttons ----------
+const MASTER_STAR=`<span class="lvb mst" title="Mastered"><svg viewBox="0 0 24 24"><path d="M12 3.2l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.6l-5.2 2.8 1-5.9L3.5 9.4l5.9-.8z" fill="#fff"/></svg></span>`;
+function lvBadge(lvl){ return lvl>=MAXLVL?MASTER_STAR:`<span class="lvb">${lvl}</span>`; }
+function openMonRO(t, owner){
+  const sp=SPI[t.sp]; if(!sp) return; const fam=FAM[sp.fam]; const base=statsOf(t.sp,t.lvl), b=t.bonus||{};
+  const st={atk:base.atk+(b.atk|0), hp:base.hp+(b.hp|0), mp:base.mp+(b.mp|0)}; const slots=slotsOf(t.lvl); const skl=t.skl||{};
+  const stat=(label,val)=>`<div class="pstat"><span>${label}</span><b>${val}</b></div>`;
+  const sh=sheet(`<div class="prof ro"><div class="ptop"><div class="ppor" style="--c:${EL[fam.el].c}">${monSVG(t.sp,t.lvl)}</div>
+      <div class="pinfo"><div class="pname">${lvBadge(t.lvl)}${esc(sp.n)}</div><span class="pstage">${STAGE_N[stageOf(t.lvl)].toLowerCase()}${owner?` · ${esc(owner)}`:''}</span>
+        ${stat('Attack',st.atk)}${stat('Life',st.hp)}${stat('Mana',st.mp)}</div></div>
+    <h3 class="ph">Abilities</h3>
+    <div class="pabil">${sp.sk.slice(0,slots).map(id=>{ const k=SK[id]; if(!k) return ''; const L=skl[id]||1, c=skCost(id,L), pas=k.k==='passive';
+      return `<div class="pab ${pas?'pas':''}">${icon(skIconKey(id),(EL[k.el]||EL.neutral).c,40)}<div class="pab-t"><b>${esc(k.n)} <span class="sl">Lv ${L}</span>${pas?' <span class="pastag">Passive</span>':''}</b><span>${skillDesc(id,L)}${c?` · ${c} mana`:''}</span></div></div>`; }).join('')}</div></div>`,{cls:'panel mkprof'});
+  return sh; }
+// battle info card: gold star for mastered monsters
+monInfo=(function(prev){ return function(b,s,i){ const r=prev(b,s,i); const m=b.sides[s]&&b.sides[s].mons[i];
+  if(m&&m.lvl>=MAXLVL) document.querySelectorAll('.minfo2 .mi-nm .lvb').forEach(x=>{ x.outerHTML=MASTER_STAR; }); return r; }; })(monInfo);
 
 </script>
 
