@@ -132,14 +132,16 @@ const ARENA_BG=`<div class="abg"><svg viewBox="0 0 400 300" preserveAspectRatio=
   <path d="M0 200 C80 188 160 206 240 196 S360 190 400 198 V300 H0Z" fill="#4f7d4a"/>
   ${Array.from({length:70},(_,k)=>{ const x=k*6+((k*37)%5), h=6+((k*13)%9); return `<path d="M${x} ${182+((k*7)%6)} l2 -${h} l2 ${h}" fill="#4a7a44" opacity=".8"/>`; }).join('')}</svg></div>`;
 const PAS_IC={fury:'fist',sweaty:'drop',roots:'heart',thick:'shield',grounded:'earth',hard:'shield',camel:'drop'};
+// item-effect badge (Monster Kingdom style): orange disc, white rim, thin inner ring, white star
+const ITEM_FX_IC=`<svg viewBox="0 0 40 40" width="30" height="30"><circle cx="20" cy="21" r="17.5" fill="rgba(0,0,0,.25)"/><circle cx="20" cy="20" r="17.5" fill="#fff"/><circle cx="20" cy="20" r="15" fill="#e8603c"/><circle cx="20" cy="20" r="11.6" fill="none" stroke="#fff" stroke-width="1.6" opacity=".9"/><path d="M20 10.6l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L20 25l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z" fill="#fff"/></svg>`;
 function hudIcons(m){
   if(!m) return '';
   const out=[];
   Object.keys(m.pas||{}).forEach(p=>{ const id=Object.keys(SK).find(k=>SK[k].p===p); out.push(`<span class="hi" data-tip="${id?esc(SK[id].n+' (passive, Lv '+(m.skl[id]||1)+')|'+skillDesc(id,m.skl[id]||1)):''}">${icon(p==='roots'?'plus':PAS_IC[p]||'star','#e3262d',30)}</span>`); });
   const f=m.fx||{};
   // item effects: one dot per effect type (same effects from several items are added together)
-  if(f.dflat) out.push(`<span class="hi" data-tip="Damage Dealt|+${f.dflat} damage on every attack">${icon('fist','#e3262d',30)}</span>`);
-  if(f.tflat) out.push(`<span class="hi" data-tip="Damage Taken|+${f.tflat} damage from every attack">${icon('shield','#7a4a3a',30)}</span>`);
+  if(f.dflat) out.push(`<span class="hi ifx" data-tip="Damage Dealt|+${f.dflat} damage on every attack">${ITEM_FX_IC}</span>`);
+  if(f.tflat) out.push(`<span class="hi ifx" data-tip="Damage Taken|+${f.tflat} damage from every attack">${ITEM_FX_IC}</span>`);
   if(f.rhp) out.push(`<span class="hi" data-tip="Life Bowl|Recovers ${f.rhp} life after each turn">${icon('plus','#e0475b',30)}</span>`);
   if(f.rmp) out.push(`<span class="hi" data-tip="Mana Bowl|Recovers ${f.rmp} mana after each turn">${icon('plus','#4a9cf0',30)}</span>`);
   Object.keys(ST_ICON).filter(k=>m.st[k]>0).forEach(k=>out.push(`<span class="hi st" data-tip="${BUFF_N[k]||k}|Active for ${m.st[k]} more turn${m.st[k]>1?'s':''}">${icon(ST_ICON[k][0],ST_ICON[k][1],26)}</span>`));
