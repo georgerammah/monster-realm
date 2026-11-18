@@ -4762,7 +4762,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (158).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (159).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6381,7 +6381,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v158 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v159 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -6561,16 +6561,21 @@ FIXTEAM_SPECIES=true; fixTeam();
 // the game screen never scrolls: only panels/lists that really scroll may move
 (function(){ const canScroll=el=>{ for(let n=el;n&&n!==document.body&&n!==document.documentElement;n=n.parentElement){ const cs=getComputedStyle(n);
       if(/(auto|scroll)/.test(cs.overflowY+cs.overflowX)&&(n.scrollHeight>n.clientHeight+1||n.scrollWidth>n.clientWidth+1)) return true; } return false; };
-  document.addEventListener('touchmove',e=>{ if(e.touches.length>1) return; if(!canScroll(e.target)) e.preventDefault(); },{passive:false});
+  // only block real drags: a finger that wiggles a few pixels during a tap must still count as a tap on iPhone
+  let sx=0, sy=0, dragging=false;
+  document.addEventListener('touchstart',e=>{ const t=e.touches[0]; if(t){ sx=t.clientX; sy=t.clientY; } dragging=false; },{capture:true,passive:true});
+  document.addEventListener('touchmove',e=>{ if(e.touches.length>1) return; const t=e.touches[0];
+    if(!dragging){ if(Math.hypot(t.clientX-sx,t.clientY-sy)<12) return; dragging=true; }
+    if(!canScroll(e.target)) e.preventDefault(); },{passive:false});
   const pin=()=>{ if(window.scrollX||window.scrollY) window.scrollTo(0,0); if(document.documentElement.scrollTop) document.documentElement.scrollTop=0; };
   addEventListener('scroll',pin,{passive:true}); if(window.visualViewport) visualViewport.addEventListener('scroll',pin); })();
 
-// Back buttons react the moment your finger lifts (don't wait on iOS's delayed click)
+// Back and close (X) buttons react the moment your finger lifts (don't wait on iOS's delayed click)
 (function(){ let down=null, fired=0;
-  addEventListener('pointerdown',e=>{ const b=e.target.closest&&e.target.closest('.backb'); down=b?{b,x:e.clientX,y:e.clientY}:null; },true);
-  addEventListener('pointerup',e=>{ if(!down) return; const d=down; down=null; const b=e.target.closest&&e.target.closest('.backb');
+  addEventListener('pointerdown',e=>{ const b=e.target.closest&&e.target.closest('.backb,.sheet-x'); down=b?{b,x:e.clientX,y:e.clientY}:null; },true);
+  addEventListener('pointerup',e=>{ if(!down) return; const d=down; down=null; const b=e.target.closest&&e.target.closest('.backb,.sheet-x');
     if(b!==d.b||Math.hypot(e.clientX-d.x,e.clientY-d.y)>24) return; fired=Date.now(); b.click(); },true);
-  addEventListener('click',e=>{ if(!e.isTrusted||Date.now()-fired>700) return; if(e.target.closest&&e.target.closest('.backb')){ e.stopPropagation(); e.preventDefault(); } },true); })();
+  addEventListener('click',e=>{ if(!e.isTrusted||Date.now()-fired>700) return; if(e.target.closest&&e.target.closest('.backb,.sheet-x')){ e.stopPropagation(); e.preventDefault(); } },true); })();
 
 </script>
 
