@@ -65,7 +65,7 @@ skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; if(!s)
 // ---------- unique usernames + server-decided admins ----------
 let ADMIN=false; try{ ADMIN=localStorage.getItem('mr-admin')==='1'; }catch(_){}
 function setAdmin(v){ ADMIN=!!v; try{ localStorage.setItem('mr-admin',ADMIN?'1':'0'); localStorage.removeItem('mr-admin-key'); }catch(_){}
-  SUBMENUS.menu=SUBMENUS.menu.filter(x=>x[0]!=='Ability Studio'&&x[0]!=='Players'); if(ADMIN){ SUBMENUS.menu.push(['Players',()=>openPlayers()]); SUBMENUS.menu.push(['Ability Studio',()=>openStudio()]); } }
+  SUBMENUS.menu=SUBMENUS.menu.filter(x=>x[0]!=='Ability Studio'&&x[0]!=='Players'); if(ADMIN){ SUBMENUS.menu.push(['Players',()=>openPlayers()]); SUBMENUS.menu.push([EYES_CLASSIC?'Eye style: Classic':'Eye style: New',()=>{ try{ localStorage.setItem('mr-eyes',EYES_CLASSIC?'new':'classic'); }catch(_){} location.reload(); }]); SUBMENUS.menu.push(['Ability Studio',()=>openStudio()]); } }
 setAdmin(ADMIN);
 function nameError(err){ return err==='taken'?'That name is already taken. Try another one!':err==='invalid'?'Names can be 2–16 letters, numbers, spaces, - _ or .':"Couldn't check that name right now. Try again."; }
 async function claimName(name){ if(!window.MR_ACCT) return {ok:1}; try{ const r=await Promise.race([MR_ACCT.claim(name),new Promise(res=>setTimeout(()=>res({ok:0,err:'net'}),8000))]); if(r&&r.ok) setAdmin(r.admin); return r||{ok:0,err:'net'}; }catch(_){ return {ok:0,err:'net'}; } }
@@ -949,7 +949,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v148 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v149 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1050,3 +1050,47 @@ function openPlayers(){
     S.cash=(S.cash|0)+1000000; S.giftCash1m=1; persist(); if(typeof renderHUD==='function') renderHUD(); else if(typeof render==='function') render(); if(typeof toast==='function') toast('+$1,000,000'); return true; }catch(_){ return false; } };
   setAdmin=(function(prev){ return function(v){ const r=prev(v); setTimeout(give,300); return r; }; })(setAdmin);
   let n=0; const iv=setInterval(()=>{ if(give()||++n>40) clearInterval(iv); },1500); })();
+
+// ---------- eyes: one style per family, varied per species; babies stay round and cute ----------
+let EYE_FAM='', EYE_SEED=0; let EYES_CLASSIC=false; try{ EYES_CLASSIC=localStorage.getItem('mr-eyes')==='classic'; }catch(_){}
+monSVG=(function(prev){ return function(spId,lvl,cls){ const sp=SPI[spId]; EYE_FAM=(sp&&FAM[sp.fam]&&FAM[sp.fam].shape)||''; let h=0; String(spId).split('').forEach(c=>h=(h*31+c.charCodeAt(0))>>>0); EYE_SEED=h; try{ return prev(spId,lvl,cls); } finally{ EYE_FAM=''; } }; })(monSVG);
+eye3=(function(base){
+  const IRIS={cat:['#f5c542','#9be15d','#5fd0e8'], hound:['#ffb347','#ff6b4a','#e8e04a'], turtle:['#6b4a2b','#3c7a4a','#2f5d8a'],
+    dragon:['#ffcf4a','#ff7a3d','#c7f05a'], bird:['#ff9f1a','#ffd23f','#e85d5d'], ram:['#c99a3a','#e0b84a','#9fc36a'],
+    frog:['#ffd23a','#ff9a2a','#e8f06a'], lizard:['#ff9a2a','#ffd23a','#7fe07a'], penguin:['#1a120c']};
+  const W='#fffdf6', K='#120c08';
+  const hl=(x,y,r,st)=>`<circle cx="${x+r*0.32}" cy="${y-r*0.32}" r="${r*(st===0?0.22:0.15)}" fill="#fff"/>`+(st===0?`<circle cx="${x-r*0.2}" cy="${y+r*0.25}" r="${r*0.09}" fill="#fff"/>`:'');
+  const brow=(x,y,r,st,ang)=>st>=1?`<path d="M${x-r*1.15} ${y-r*(1.05+ang)} Q${x} ${y-r*1.4} ${x+r*1.2} ${y-r*(0.75-ang)}" fill="none" stroke="${OL3}" stroke-width="${1.6+st*0.4}" stroke-linecap="round"/>`:'';
+  const almond=(x,y,r,h)=>`<path d="M${x-r} ${y} Q${x-r*0.2} ${y-r*h} ${x+r} ${y-r*0.15} Q${x+r*0.2} ${y+r*h*0.9} ${x-r} ${y}Z" fill="${W}" ${s3} stroke-width="1.5"/>`;
+  return function(x,y,r,iris,st,tilt){
+    const f=EYE_FAM; if(!f||!IRIS[f]||EYES_CLASSIC) return base(x,y,r,iris,st,tilt);
+    const pal=IRIS[f]; const ir=pal[EYE_SEED%pal.length]; r=r*(0.94+((EYE_SEED>>3)%5)*0.03); tilt=tilt||0;
+    const px=x+r*0.22, py=y-r*0.06; let e='', b='';
+    if(st===0 && f!=='penguin'){ // baby: big round shiny eyes for every family
+      e=`<circle cx="${x}" cy="${y}" r="${r*1.05}" fill="${W}" ${s3} stroke-width="1.5"/><circle cx="${x+r*0.15}" cy="${y}" r="${r*0.68}" fill="${ir}"/><circle cx="${x+r*0.18}" cy="${y}" r="${r*0.42}" fill="${K}"/>`+hl(x+r*0.15,y,r*0.9,0);
+    } else if(f==='cat'||f==='lizard'||f==='dragon'){ // slit pupils
+      const lid=f==='lizard'||f==='dragon';
+      e=almond(x,y,r,0.95)+`<circle cx="${px}" cy="${py}" r="${r*0.58}" fill="${ir}"/><ellipse cx="${px}" cy="${py}" rx="${r*(f==='cat'?0.12:0.1)}" ry="${r*0.5}" fill="${K}"/>`+hl(px,py,r*0.7,st);
+      if(lid) e+=`<path d="M${x-r*1.05} ${y-r*0.05} Q${x-r*0.1} ${y-r*0.95} ${x+r*1.05} ${y-r*0.2} L${x+r} ${y-r*0.45} Q${x-r*0.1} ${y-r*1.2} ${x-r*1.05} ${y-r*0.3}Z" fill="${OL3}" opacity=".85"/>`;
+      b=brow(x,y,r,st,f==='cat'?0:0.15);
+    } else if(f==='hound'){ // narrow, fierce
+      e=`<path d="M${x-r} ${y+r*0.1} L${x+r*0.2} ${y-r*0.6} Q${x+r*0.9} ${y-r*0.5} ${x+r*1.05} ${y-r*0.05} Q${x+r*0.3} ${y+r*0.6} ${x-r} ${y+r*0.1}Z" fill="${W}" ${s3} stroke-width="1.5"/><circle cx="${px}" cy="${py}" r="${r*0.45}" fill="${ir}"/><circle cx="${px+r*0.05}" cy="${py}" r="${r*0.24}" fill="${K}"/>`+hl(px,py,r*0.55,st);
+      b=st>=1?`<path d="M${x-r*1.2} ${y-r*1.15} L${x+r*1.15} ${y-r*0.45}" stroke="${OL3}" stroke-width="${2+st*0.5}" stroke-linecap="round"/>`:'';
+    } else if(f==='turtle'){ // round and calm, heavy-lidded
+      e=`<circle cx="${x}" cy="${y}" r="${r*0.9}" fill="${W}" ${s3} stroke-width="1.5"/><circle cx="${px*0.6+x*0.4}" cy="${y+r*0.05}" r="${r*0.55}" fill="${ir}"/><circle cx="${px*0.6+x*0.4}" cy="${y+r*0.05}" r="${r*0.3}" fill="${K}"/>`+hl(px*0.6+x*0.4,y,r*0.6,st)+
+        `<path d="M${x-r*0.95} ${y-r*0.1} Q${x} ${y-r*1.15} ${x+r*0.95} ${y-r*0.1} Q${x} ${y-r*0.55} ${x-r*0.95} ${y-r*0.1}Z" fill="${OL3}" opacity=".8"/>`;
+    } else if(f==='bird'){ // round with a bright ring
+      e=`<circle cx="${x}" cy="${y}" r="${r*0.95}" fill="${ir}" ${s3} stroke-width="1.5"/><circle cx="${x+r*0.12}" cy="${y}" r="${r*0.62}" fill="${W}"/><circle cx="${x+r*0.2}" cy="${y}" r="${r*0.38}" fill="${K}"/>`+hl(x+r*0.2,y,r*0.5,st);
+      b=st>=2?brow(x,y,r,st,0.2):'';
+    } else if(f==='penguin'){ // small beady eyes
+      e=`<circle cx="${x}" cy="${y}" r="${r*(st===0?0.62:0.5)}" fill="${K}"/><circle cx="${x+r*0.16}" cy="${y-r*0.18}" r="${r*0.17}" fill="#fff"/>`;
+    } else if(f==='ram'){ // sleepy, sideways goat pupils
+      e=almond(x,y,r,0.85)+`<circle cx="${px}" cy="${py}" r="${r*0.55}" fill="${ir}"/><rect x="${px-r*0.42}" y="${py-r*0.12}" width="${r*0.84}" height="${r*0.24}" rx="${r*0.12}" fill="${K}"/>`+
+        `<path d="M${x-r*1.05} ${y+r*0.02} Q${x} ${y-r*1.05} ${x+r*1.05} ${y-r*0.12} Q${x} ${y-r*0.15} ${x-r*1.05} ${y+r*0.02}Z" fill="${OL3}" opacity=".85"/>`;
+      b=brow(x,y,r,st,0.05);
+    } else if(f==='frog'){ // big bulging eyes, sideways pupils
+      e=`<circle cx="${x}" cy="${y}" r="${r*1.1}" fill="${W}" ${s3} stroke-width="1.6"/><circle cx="${x}" cy="${y}" r="${r*0.7}" fill="${ir}"/><ellipse cx="${x}" cy="${y}" rx="${r*0.5}" ry="${r*0.22}" fill="${K}"/>`+hl(x,y,r*0.75,st);
+    }
+    return `<g transform="rotate(${tilt} ${x} ${y})">${e}</g>${b}`;
+  };
+})(eye3);
