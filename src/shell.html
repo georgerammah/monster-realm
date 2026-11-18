@@ -192,7 +192,7 @@ body{overflow:hidden;height:calc(100*var(--vh));height:calc(100*var(--vh))}
 .cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
 .cloud::before{width:34px;height:34px;left:14px;top:-16px}.cloud::after{width:26px;height:26px;left:40px;top:-10px}
 .c1{width:90px;top:22%;animation-duration:70s;animation-delay:-20s}.c2{width:70px;top:30%;animation-duration:90s;animation-delay:-60s;transform:scale(.8)}.c3{width:110px;top:16%;animation-duration:110s;animation-delay:-5s}
-@keyframes drift{from{left:-130px}to{left:110%}}
+@keyframes drift{from{transform:translate3d(calc(-130px - var(--cx,0px)),0,0)}to{transform:translate3d(calc(110vw - var(--cx,0px)),0,0)}}
 .hills{position:absolute;left:0;right:0;top:36%;height:16%;width:100%}
 .grass{position:absolute;left:0;right:0;top:51.5%;bottom:0;background:linear-gradient(180deg,#72b84e,#5aa646 40%,#4b9a3b);}
 .grass::after{content:"";position:absolute;inset:0;opacity:.25;background:repeating-linear-gradient(90deg,transparent 0 6px,rgba(30,90,20,.35) 6px 7px)}
@@ -1541,6 +1541,9 @@ body{overscroll-behavior:none}
 /* Back buttons: bigger and easy to hit, with an invisible tap zone around them */
 .backb{position:relative;z-index:5;min-width:calc(23*var(--vh));min-height:calc(13*var(--vh));font-size:calc(6.4*var(--vh))!important}
 .backb::after{content:""!important;display:block!important;position:absolute!important;inset:-14px -16px -14px -16px!important;background:none!important;box-shadow:none!important;border:0!important;opacity:1!important}
+.pet.roam{will-change:transform}
+.cloud{left:0;will-change:transform}
+.c2{width:56px}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -1553,6 +1556,25 @@ body{overscroll-behavior:none}
 </nav>
 <div id="splash"></div><div id="battle"></div><div id="sheets"></div><div id="toast"></div>
 <script>
+// battery: one scheduler for all repeating timers. The permanent fast battle/keyboard timers only run during a
+// battle or while the in-game keyboard is open; nothing runs while the app is in the background.
+(function(){ var rSI=window.setInterval.bind(window), rCI=window.clearInterval.bind(window), rST=window.setTimeout.bind(window), rCT=window.clearTimeout.bind(window);
+  var jobs={}, nid=1e6, wake=null, wakeAt=0, booting=true; // only the permanent timers set up at load (battle/keyboard) are paused off-battle
+  addEventListener('load',function(){ booting=false; });
+  function fastOK(){ try{ return !!((typeof B!=='undefined'&&B)||(typeof KB!=='undefined'&&KB)); }catch(_){ return true; } }
+  function plan(){ if(document.hidden){ if(wake){ rCT(wake); wake=null; } return; } var now=Date.now(), next=Infinity, ok=fastOK();
+    for(var k in jobs){ var j=jobs[k]; if(j.fast&&!ok) continue; if(j.due<next) next=j.due; }
+    if(!ok){ var slow=now+500; if(slow<next) next=slow; } // look again soon so battle timers start promptly
+    if(next===Infinity) return; var d=Math.max(0,next-now); if(wake&&wakeAt<=next) return; if(wake) rCT(wake); wakeAt=next; wake=rST(tick,d); }
+  function tick(){ wake=null; var now=Date.now(), ok=fastOK();
+    for(var k in jobs){ var j=jobs[k]; if(!j) continue; if(j.fast&&!ok){ j.due=now+j.ms; continue; }
+      if(now>=j.due){ j.due=now+j.ms; try{ j.fn.apply(window,j.args); }catch(e){ setTimeout(function(){ throw e; }); } } }
+    plan(); }
+  window.setInterval=function(fn,ms){ if(typeof fn!=='function') return rSI(fn,ms); ms=Math.max(16,+ms||0); var id=++nid; var args=[].slice.call(arguments,2);
+    jobs[id]={fn:fn,ms:ms,args:args,due:Date.now()+ms,fast:booting&&ms<=250&&!fn.alwaysOn}; plan(); return id; };
+  window.clearInterval=function(id){ if(jobs[id]){ delete jobs[id]; return; } rCI(id); };
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden){ var n=Date.now(); for(var k in jobs) if(jobs[k].due<n) jobs[k].due=n; } plan(); });
+  window.__timers=function(){ var o=[]; for(var k in jobs) o.push(jobs[k].ms); return o; }; })();
 // show load errors on screen (a screenshot then says exactly what broke on a real phone)
 window.__errs=[]; addEventListener('error',function(e){ try{ var m=(e.message||'error')+(e.lineno?' (line '+e.lineno+')':''); if(window.__errs.indexOf(m)>=0) return; window.__errs.push(m);
   var d=document.getElementById('errbar'); if(!d){ d=document.createElement('div'); d.id='errbar'; d.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:100000;background:#b3261e;color:#fff;font:12px/1.35 -apple-system,system-ui,sans-serif;padding:6px 10px;border-radius:8px;pointer-events:none;white-space:pre-wrap'; (document.body||document.documentElement).appendChild(d); }

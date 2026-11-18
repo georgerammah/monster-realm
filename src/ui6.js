@@ -155,9 +155,11 @@ sceneHTML=function(){
 let _roamT=0;
 function roamTick(t){
   requestAnimationFrame(roamTick);
-  const dt=Math.min(60,t-(_roamT||t)); _roamT=t;
-  if(!ROAM||B) return;
+  if(t-(_roamT||0)<30) return;            // ~30 fps is plenty for walking monsters (saves battery)
+  const dt=Math.min(80,t-(_roamT||t)); _roamT=t;
+  if(!ROAM||B||document.hidden) return;
   const els=document.querySelectorAll('#view .pet.roam'); if(!els.length) return;
+  const box=els[0].offsetParent; const W=box?box.clientWidth:innerWidth, H=box?box.clientHeight:innerHeight;  // one read per frame
   ROAM.forEach(r=>{
     const el=document.querySelector(`#view .pet.roam[data-pet="${r.uid}"]`); if(!el) return;
     if(r.wait>0){ r.wait-=dt; if(r.walking){ r.walking=false; el.classList.remove('walk'); } if(r.wait<=0){ r.tx=8+Math.random()*84; r.ty=64+Math.random()*24; } return; }
@@ -167,7 +169,10 @@ function roamTick(t){
     const sp=0.0045*dt; r.x+=dx/d*sp; r.y+=dy/d*sp*0.6;
     const nd=dx<0?-1:1; if(nd!==r.dir){ r.dir=nd; el.querySelector('.flip').classList.toggle('l',nd<0); }
     if(!r.walking){ r.walking=true; el.classList.add('walk'); }
-    el.style.left=r.x+'%'; el.style.top=r.y+'%'; el.style.zIndex=Math.round(r.y); el.style.setProperty('--s',(0.75+(r.y-66)/20*0.35).toFixed(2));
+    // GPU-only move: transform instead of left/top, so the page doesn't re-layout every frame
+    const sc=(0.75+(r.y-66)/20*0.35).toFixed(3); el.style.left='0'; el.style.top='0';
+    el.style.transform=`translate3d(${(r.x/100*W).toFixed(1)}px,${(r.y/100*H).toFixed(1)}px,0) translate(-50%,-100%) scale(${sc})`;
+    const z=Math.round(r.y); if(el._z!==z){ el._z=z; el.style.zIndex=z; }
   });
 }
 requestAnimationFrame(roamTick);

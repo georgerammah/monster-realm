@@ -12,7 +12,7 @@ const ITEMS = {
   orb:{n:'Storm Orb', cost:760, lv:18, b:{mp:55}},
   manabowl:{n:'Mana Bowl', cost:0, mush:20, lv:4, b:{mp:8}, fx:{rmp:16}},
   lifebowl:{n:'Life Bowl', cost:0, mush:20, lv:4, b:{hp:8}, fx:{rhp:16}},
-  blade:{n:'Brute Blade', cost:300, lv:8, b:{}, fx:{dflat:7,tflat:3}}
+  blade:{n:"Krill's Swords", cost:300, lv:8, b:{}, fx:{dflat:34,tflat:17}}
 };
 const STAT_N={atk:'attack',hp:'life',mp:'mana',spd:'speed'};
 function itemDesc(id){ const it=ITEMS[id], b=it.b||{}, f=it.fx||{}; const p=Object.keys(b).map(k=>`+${b[k]} ${STAT_N[k]}`);

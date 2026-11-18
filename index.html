@@ -201,7 +201,7 @@ body{overflow:hidden;height:calc(100*var(--vh));height:calc(100*var(--vh))}
 .cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
 .cloud::before{width:34px;height:34px;left:14px;top:-16px}.cloud::after{width:26px;height:26px;left:40px;top:-10px}
 .c1{width:90px;top:22%;animation-duration:70s;animation-delay:-20s}.c2{width:70px;top:30%;animation-duration:90s;animation-delay:-60s;transform:scale(.8)}.c3{width:110px;top:16%;animation-duration:110s;animation-delay:-5s}
-@keyframes drift{from{left:-130px}to{left:110%}}
+@keyframes drift{from{transform:translate3d(calc(-130px - var(--cx,0px)),0,0)}to{transform:translate3d(calc(110vw - var(--cx,0px)),0,0)}}
 .hills{position:absolute;left:0;right:0;top:36%;height:16%;width:100%}
 .grass{position:absolute;left:0;right:0;top:51.5%;bottom:0;background:linear-gradient(180deg,#72b84e,#5aa646 40%,#4b9a3b);}
 .grass::after{content:"";position:absolute;inset:0;opacity:.25;background:repeating-linear-gradient(90deg,transparent 0 6px,rgba(30,90,20,.35) 6px 7px)}
@@ -1550,6 +1550,9 @@ body{overscroll-behavior:none}
 /* Back buttons: bigger and easy to hit, with an invisible tap zone around them */
 .backb{position:relative;z-index:5;min-width:calc(23*var(--vh));min-height:calc(13*var(--vh));font-size:calc(6.4*var(--vh))!important}
 .backb::after{content:""!important;display:block!important;position:absolute!important;inset:-14px -16px -14px -16px!important;background:none!important;box-shadow:none!important;border:0!important;opacity:1!important}
+.pet.roam{will-change:transform}
+.cloud{left:0;will-change:transform}
+.c2{width:56px}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -1562,6 +1565,25 @@ body{overscroll-behavior:none}
 </nav>
 <div id="splash"></div><div id="battle"></div><div id="sheets"></div><div id="toast"></div>
 <script>
+// battery: one scheduler for all repeating timers. The permanent fast battle/keyboard timers only run during a
+// battle or while the in-game keyboard is open; nothing runs while the app is in the background.
+(function(){ var rSI=window.setInterval.bind(window), rCI=window.clearInterval.bind(window), rST=window.setTimeout.bind(window), rCT=window.clearTimeout.bind(window);
+  var jobs={}, nid=1e6, wake=null, wakeAt=0, booting=true; // only the permanent timers set up at load (battle/keyboard) are paused off-battle
+  addEventListener('load',function(){ booting=false; });
+  function fastOK(){ try{ return !!((typeof B!=='undefined'&&B)||(typeof KB!=='undefined'&&KB)); }catch(_){ return true; } }
+  function plan(){ if(document.hidden){ if(wake){ rCT(wake); wake=null; } return; } var now=Date.now(), next=Infinity, ok=fastOK();
+    for(var k in jobs){ var j=jobs[k]; if(j.fast&&!ok) continue; if(j.due<next) next=j.due; }
+    if(!ok){ var slow=now+500; if(slow<next) next=slow; } // look again soon so battle timers start promptly
+    if(next===Infinity) return; var d=Math.max(0,next-now); if(wake&&wakeAt<=next) return; if(wake) rCT(wake); wakeAt=next; wake=rST(tick,d); }
+  function tick(){ wake=null; var now=Date.now(), ok=fastOK();
+    for(var k in jobs){ var j=jobs[k]; if(!j) continue; if(j.fast&&!ok){ j.due=now+j.ms; continue; }
+      if(now>=j.due){ j.due=now+j.ms; try{ j.fn.apply(window,j.args); }catch(e){ setTimeout(function(){ throw e; }); } } }
+    plan(); }
+  window.setInterval=function(fn,ms){ if(typeof fn!=='function') return rSI(fn,ms); ms=Math.max(16,+ms||0); var id=++nid; var args=[].slice.call(arguments,2);
+    jobs[id]={fn:fn,ms:ms,args:args,due:Date.now()+ms,fast:booting&&ms<=250&&!fn.alwaysOn}; plan(); return id; };
+  window.clearInterval=function(id){ if(jobs[id]){ delete jobs[id]; return; } rCI(id); };
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden){ var n=Date.now(); for(var k in jobs) if(jobs[k].due<n) jobs[k].due=n; } plan(); });
+  window.__timers=function(){ var o=[]; for(var k in jobs) o.push(jobs[k].ms); return o; }; })();
 // show load errors on screen (a screenshot then says exactly what broke on a real phone)
 window.__errs=[]; addEventListener('error',function(e){ try{ var m=(e.message||'error')+(e.lineno?' (line '+e.lineno+')':''); if(window.__errs.indexOf(m)>=0) return; window.__errs.push(m);
   var d=document.getElementById('errbar'); if(!d){ d=document.createElement('div'); d.id='errbar'; d.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:100000;background:#b3261e;color:#fff;font:12px/1.35 -apple-system,system-ui,sans-serif;padding:6px 10px;border-radius:8px;pointer-events:none;white-space:pre-wrap'; (document.body||document.documentElement).appendChild(d); }
@@ -3643,7 +3665,7 @@ const ITEMS = {
   orb:{n:'Storm Orb', cost:760, lv:18, b:{mp:55}},
   manabowl:{n:'Mana Bowl', cost:0, mush:20, lv:4, b:{mp:8}, fx:{rmp:16}},
   lifebowl:{n:'Life Bowl', cost:0, mush:20, lv:4, b:{hp:8}, fx:{rhp:16}},
-  blade:{n:'Brute Blade', cost:300, lv:8, b:{}, fx:{dflat:7,tflat:3}}
+  blade:{n:"Krill's Swords", cost:300, lv:8, b:{}, fx:{dflat:34,tflat:17}}
 };
 const STAT_N={atk:'attack',hp:'life',mp:'mana',spd:'speed'};
 function itemDesc(id){ const it=ITEMS[id], b=it.b||{}, f=it.fx||{}; const p=Object.keys(b).map(k=>`+${b[k]} ${STAT_N[k]}`);
@@ -4346,9 +4368,11 @@ sceneHTML=function(){
 let _roamT=0;
 function roamTick(t){
   requestAnimationFrame(roamTick);
-  const dt=Math.min(60,t-(_roamT||t)); _roamT=t;
-  if(!ROAM||B) return;
+  if(t-(_roamT||0)<30) return;            // ~30 fps is plenty for walking monsters (saves battery)
+  const dt=Math.min(80,t-(_roamT||t)); _roamT=t;
+  if(!ROAM||B||document.hidden) return;
   const els=document.querySelectorAll('#view .pet.roam'); if(!els.length) return;
+  const box=els[0].offsetParent; const W=box?box.clientWidth:innerWidth, H=box?box.clientHeight:innerHeight;  // one read per frame
   ROAM.forEach(r=>{
     const el=document.querySelector(`#view .pet.roam[data-pet="${r.uid}"]`); if(!el) return;
     if(r.wait>0){ r.wait-=dt; if(r.walking){ r.walking=false; el.classList.remove('walk'); } if(r.wait<=0){ r.tx=8+Math.random()*84; r.ty=64+Math.random()*24; } return; }
@@ -4358,7 +4382,10 @@ function roamTick(t){
     const sp=0.0045*dt; r.x+=dx/d*sp; r.y+=dy/d*sp*0.6;
     const nd=dx<0?-1:1; if(nd!==r.dir){ r.dir=nd; el.querySelector('.flip').classList.toggle('l',nd<0); }
     if(!r.walking){ r.walking=true; el.classList.add('walk'); }
-    el.style.left=r.x+'%'; el.style.top=r.y+'%'; el.style.zIndex=Math.round(r.y); el.style.setProperty('--s',(0.75+(r.y-66)/20*0.35).toFixed(2));
+    // GPU-only move: transform instead of left/top, so the page doesn't re-layout every frame
+    const sc=(0.75+(r.y-66)/20*0.35).toFixed(3); el.style.left='0'; el.style.top='0';
+    el.style.transform=`translate3d(${(r.x/100*W).toFixed(1)}px,${(r.y/100*H).toFixed(1)}px,0) translate(-50%,-100%) scale(${sc})`;
+    const z=Math.round(r.y); if(el._z!==z){ el._z=z; el.style.zIndex=z; }
   });
 }
 requestAnimationFrame(roamTick);
@@ -4767,7 +4794,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (162).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (163).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -5007,7 +5034,7 @@ function drawShop(){
     body=`<div class="s2cards"><button class="s2card" id="hatch"><div class="egg"></div><b>Mystery Egg</b><span>Hatches a random monster</span><em>10 🍄</em></button>
       <button class="s2card" id="hatchc"><div class="egg plain"></div><b>Monster Egg</b><span>A random monster, a few levels lower</span><em class="g">$${eggCost()}</em></button></div>`;
   } else if(SHOPTAB==='energy'){
-    body=`<div class="s2cards"><button class="s2card" id="refill"><div class="egg bolt">⚡</div><b>Energy Refill</b><span>Fill your energy to max</span><em>15 🍄</em></button></div>`;
+    body=`<div class="s2cards"><button class="s2card" id="refill"><div class="egg bolt">⚡</div><b>Energy Refill</b><span>Fill your energy to max</span><em>10 🍄</em></button></div>`;
   } else {
     body=`<div class="s2cards">${[[60,'$0.99'],[330,'$4.99'],[700,'$9.99'],[1500,'$19.99']].map(([n,p])=>`<div class="s2card soon"><div class="s2m">${mushroomSVG('#b04fd6')}</div><b>${n} Mushrooms</b><em>${p}</em><span class="s2soon">Coming soon</span></div>`).join('')}</div>`;
   }
@@ -5026,7 +5053,7 @@ function drawShop(){
     const cur=m.eq[slot]; if(cur) S.inv[cur]=(S.inv[cur]|0)+1; S.inv[id]--; m.eq[slot]=id; persist(); sh.close(); openMon(m.uid); toast(`Equipped ${ITEMS[id].n}!`); };
   const h=q('#hatch'); if(h) h.onclick=()=>{ hatch(); drawShop(); };
   const hc=q('#hatchc'); if(hc) hc.onclick=()=>{ hatchCash(); drawShop(); };
-  const rf=q('#refill'); if(rf) rf.onclick=()=>{ tickEnergy(); if(S.energy>=S.maxEnergy) return toast('Energy is already full'); if(S.mush<15) return toast('You need 15 🍄'); S.mush-=15; S.energy=S.maxEnergy; S.energyAt=Date.now(); persist(); drawShop(); toast('Energy refilled!'); };
+  const rf=q('#refill'); if(rf) rf.onclick=()=>{ tickEnergy(); if(S.energy>=S.maxEnergy) return toast('Energy is already full'); if(S.mush<10) return toast('You need 10 🍄'); S.mush-=10; S.energy=S.maxEnergy; S.energyAt=Date.now(); persist(); drawShop(); toast('Energy refilled!'); };
   const cur=q('.s2item.sel'), row=q('.s2row'); if(cur&&row&&!row._init){ row._init=1; row.scrollLeft=cur.offsetLeft-(row.clientWidth-cur.offsetWidth)/2; }
 }
 
@@ -6386,7 +6413,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v162 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v163 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -6585,6 +6612,44 @@ FIXTEAM_SPECIES=true; fixTeam();
 // Fire Wall: fixed fire damage back at anyone who hits you for 3 turns
 SK.firewall.desc='Deals {dmg} fire damage, then surrounds you with a wall of fire for 3 turns. Anyone who hits you takes {wall} fire damage.';
 DEFAULT_SK.firewall=JSON.parse(JSON.stringify(SK.firewall)); try{ applyMoveOverrides(MOVE_OVR); }catch(_){}
+
+// tap the energy bar when it isn't full → offer a recharge for 10 mushrooms
+document.addEventListener('click',e=>{ const bar=e.target.closest&&e.target.closest('.hbar.energy'); if(!bar||(typeof B!=='undefined'&&B&&B.b&&!B.b.over)) return;
+  e.stopPropagation(); e.preventDefault(); tickEnergy(); if(S.energy>=S.maxEnergy) return;
+  confirmBox(`<span style="white-space:nowrap">Recharge energy for <b>10</b> <span style="display:inline-block;width:1.15em;height:1.15em;vertical-align:-.2em">${mushroomSVG('#b04fd6').replace('<svg','<svg width="100%" height="100%"')}</span>?</span>`,'Recharge',()=>{
+    tickEnergy(); if(S.energy>=S.maxEnergy) return toast('Energy is already full');
+    if((S.mush|0)<10){ toast('You need 10 🍄'); SHOPTAB='mush'; return openShop(); }
+    S.mush-=10; S.energy=S.maxEnergy; S.energyAt=Date.now(); persist(); try{ renderHUD(); }catch(_){} try{ render(); }catch(_){} sfx&&sfx('coin'); toast('Energy recharged!'); }); },true);
+
+// ---------- battery: music plays from pre-rendered loops instead of live synthesis ----------
+(function(){
+  const liveSchedule=schedule; const cache=new Map(); let src=null, srcName=null, gain=null, pending=null;
+  const gcd=(a,b)=>b?gcd(b,a%b):a, lcm=(a,b)=>a/gcd(a,b)*b;
+  async function render(name){
+    if(cache.has(name)) return cache.get(name);
+    const T=TRACKS[name]; if(!T||!SND.ctx) return null;
+    const st=60/T.bpm/2; const L=Math.min(256,[T.lead.length,T.bass.length,32].reduce(lcm,1)); const dur=L*st, tail=2.0, sr=22050;
+    const off=new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,Math.ceil((dur+tail)*sr),sr);
+    const fake={ get currentTime(){ return (L-0.5)*st-0.25; }, createOscillator:()=>off.createOscillator(), createGain:()=>off.createGain(),
+      createBufferSource:()=>off.createBufferSource(), createBiquadFilter:()=>off.createBiquadFilter(), destination:off.destination };
+    const keep={ctx:SND.ctx,mus:SND.mus,track:SND.track,step:SND.step,next:SND.next};
+    try{ SND.ctx=fake; SND.mus=off.destination; SND.track=name; SND.step=0; SND.next=0; liveSchedule(); }
+    finally{ Object.assign(SND,keep); }
+    const full=await off.startRendering(); const n=Math.round(dur*sr), out=SND.ctx.createBuffer(1,n,sr), a=full.getChannelData(0), o=out.getChannelData(0);
+    o.set(a.subarray(0,n)); for(let i=n;i<a.length;i++) o[i-n]+=a[i];   // wrap the tail onto the start: seamless loop
+    if(cache.size>=4) cache.delete(cache.keys().next().value); cache.set(name,out); return out; }
+  function stop(fade){ if(!src) return; const s=src, g=gain; src=null; srcName=null; try{ const t=SND.ctx.currentTime; g.gain.setTargetAtTime(0,t,fade||.08); s.stop(t+(fade||.08)*5); }catch(_){ try{s.stop();}catch(_){} } }
+  async function loop(name){
+    if(srcName===name&&src) return; pending=name;
+    const buf=await render(name); if(!buf||pending!==name||SND.track!==name) return;
+    stop(.15); const c=SND.ctx; gain=c.createGain(); gain.gain.setValueAtTime(0,c.currentTime); gain.gain.linearRampToValueAtTime(1,c.currentTime+.25); gain.connect(SND.mus);
+    src=c.createBufferSource(); src.buffer=buf; src.loop=true; src.connect(gain); src.start(); srcName=name; }
+  schedule=function(){ clearInterval(SND.timer); SND.timer=null; if(!SND.ctx) return; if(!TRACKS[SND.track]){ stop(); return; } loop(SND.track).catch(e=>{ console.warn('music loop failed',e&&e.message); window.__mErr=String(e&&e.message); SND.timer=setInterval(liveSchedule,40); }); };
+  schedule.alwaysOn=true; liveSchedule.alwaysOn=true;
+  window.__musicLoop=()=>({playing:srcName, cached:[...cache.keys()]});
+  window.__musicStats=()=>[...cache.entries()].map(([n,b])=>{ const d=b.getChannelData(0); let s=0,pk=0; for(let i=0;i<d.length;i+=7){ s+=d[i]*d[i]; pk=Math.max(pk,Math.abs(d[i])); }
+    const k=Math.min(200,d.length-1); let jump=0; for(let i=1;i<k;i++) jump=Math.max(jump,Math.abs(d[i]-d[i-1])); return {n,sec:+b.duration.toFixed(1),rms:+Math.sqrt(s/(d.length/7)).toFixed(3),peak:+pk.toFixed(2),seam:+Math.abs(d[0]-d[d.length-1]).toFixed(3),maxStep:+jump.toFixed(3)}; });
+})();
 
 </script>
 

@@ -949,7 +949,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v162 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v163 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1148,3 +1148,41 @@ FIXTEAM_SPECIES=true; fixTeam();
 // Fire Wall: fixed fire damage back at anyone who hits you for 3 turns
 SK.firewall.desc='Deals {dmg} fire damage, then surrounds you with a wall of fire for 3 turns. Anyone who hits you takes {wall} fire damage.';
 DEFAULT_SK.firewall=JSON.parse(JSON.stringify(SK.firewall)); try{ applyMoveOverrides(MOVE_OVR); }catch(_){}
+
+// tap the energy bar when it isn't full → offer a recharge for 10 mushrooms
+document.addEventListener('click',e=>{ const bar=e.target.closest&&e.target.closest('.hbar.energy'); if(!bar||(typeof B!=='undefined'&&B&&B.b&&!B.b.over)) return;
+  e.stopPropagation(); e.preventDefault(); tickEnergy(); if(S.energy>=S.maxEnergy) return;
+  confirmBox(`<span style="white-space:nowrap">Recharge energy for <b>10</b> <span style="display:inline-block;width:1.15em;height:1.15em;vertical-align:-.2em">${mushroomSVG('#b04fd6').replace('<svg','<svg width="100%" height="100%"')}</span>?</span>`,'Recharge',()=>{
+    tickEnergy(); if(S.energy>=S.maxEnergy) return toast('Energy is already full');
+    if((S.mush|0)<10){ toast('You need 10 🍄'); SHOPTAB='mush'; return openShop(); }
+    S.mush-=10; S.energy=S.maxEnergy; S.energyAt=Date.now(); persist(); try{ renderHUD(); }catch(_){} try{ render(); }catch(_){} sfx&&sfx('coin'); toast('Energy recharged!'); }); },true);
+
+// ---------- battery: music plays from pre-rendered loops instead of live synthesis ----------
+(function(){
+  const liveSchedule=schedule; const cache=new Map(); let src=null, srcName=null, gain=null, pending=null;
+  const gcd=(a,b)=>b?gcd(b,a%b):a, lcm=(a,b)=>a/gcd(a,b)*b;
+  async function render(name){
+    if(cache.has(name)) return cache.get(name);
+    const T=TRACKS[name]; if(!T||!SND.ctx) return null;
+    const st=60/T.bpm/2; const L=Math.min(256,[T.lead.length,T.bass.length,32].reduce(lcm,1)); const dur=L*st, tail=2.0, sr=22050;
+    const off=new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,Math.ceil((dur+tail)*sr),sr);
+    const fake={ get currentTime(){ return (L-0.5)*st-0.25; }, createOscillator:()=>off.createOscillator(), createGain:()=>off.createGain(),
+      createBufferSource:()=>off.createBufferSource(), createBiquadFilter:()=>off.createBiquadFilter(), destination:off.destination };
+    const keep={ctx:SND.ctx,mus:SND.mus,track:SND.track,step:SND.step,next:SND.next};
+    try{ SND.ctx=fake; SND.mus=off.destination; SND.track=name; SND.step=0; SND.next=0; liveSchedule(); }
+    finally{ Object.assign(SND,keep); }
+    const full=await off.startRendering(); const n=Math.round(dur*sr), out=SND.ctx.createBuffer(1,n,sr), a=full.getChannelData(0), o=out.getChannelData(0);
+    o.set(a.subarray(0,n)); for(let i=n;i<a.length;i++) o[i-n]+=a[i];   // wrap the tail onto the start: seamless loop
+    if(cache.size>=4) cache.delete(cache.keys().next().value); cache.set(name,out); return out; }
+  function stop(fade){ if(!src) return; const s=src, g=gain; src=null; srcName=null; try{ const t=SND.ctx.currentTime; g.gain.setTargetAtTime(0,t,fade||.08); s.stop(t+(fade||.08)*5); }catch(_){ try{s.stop();}catch(_){} } }
+  async function loop(name){
+    if(srcName===name&&src) return; pending=name;
+    const buf=await render(name); if(!buf||pending!==name||SND.track!==name) return;
+    stop(.15); const c=SND.ctx; gain=c.createGain(); gain.gain.setValueAtTime(0,c.currentTime); gain.gain.linearRampToValueAtTime(1,c.currentTime+.25); gain.connect(SND.mus);
+    src=c.createBufferSource(); src.buffer=buf; src.loop=true; src.connect(gain); src.start(); srcName=name; }
+  schedule=function(){ clearInterval(SND.timer); SND.timer=null; if(!SND.ctx) return; if(!TRACKS[SND.track]){ stop(); return; } loop(SND.track).catch(e=>{ console.warn('music loop failed',e&&e.message); window.__mErr=String(e&&e.message); SND.timer=setInterval(liveSchedule,40); }); };
+  schedule.alwaysOn=true; liveSchedule.alwaysOn=true;
+  window.__musicLoop=()=>({playing:srcName, cached:[...cache.keys()]});
+  window.__musicStats=()=>[...cache.entries()].map(([n,b])=>{ const d=b.getChannelData(0); let s=0,pk=0; for(let i=0;i<d.length;i+=7){ s+=d[i]*d[i]; pk=Math.max(pk,Math.abs(d[i])); }
+    const k=Math.min(200,d.length-1); let jump=0; for(let i=1;i<k;i++) jump=Math.max(jump,Math.abs(d[i]-d[i-1])); return {n,sec:+b.duration.toFixed(1),rms:+Math.sqrt(s/(d.length/7)).toFixed(3),peak:+pk.toFixed(2),seam:+Math.abs(d[0]-d[d.length-1]).toFixed(3),maxStep:+jump.toFixed(3)}; });
+})();
