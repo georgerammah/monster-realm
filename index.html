@@ -1542,6 +1542,9 @@ body.kb-open .onb #go,body.kb-open .onb #onbrst{display:none}
 .rh-ph{width:110px;height:110px;margin-bottom:6px}
 .rh-ph g{transform-origin:60px 60px;animation:rhturn 2.2s ease-in-out infinite}
 @keyframes rhturn{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+.pname .lvb.mst{background:linear-gradient(#f7e27a,#c99a1e 55%,#a67812)!important;box-shadow:inset 0 0 0 1.5px #7a5a0c!important;padding:2px 5px 6px!important}
+.pname .lvb.mst svg{width:15px;height:15px;filter:drop-shadow(0 1px 0 rgba(90,60,0,.5))}
+.mkprof .pname .lvb.mst{background:linear-gradient(#f7e27a,#c99a1e 55%,#a67812)!important}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -3734,7 +3737,7 @@ function drawMon(){
   const stat=(k,label,val)=>`<div class="pstat"><span>${label}</span><b>${val}</b>${k!=='spd'?`<div class="pbtns"><button class="pbtn minus" data-pm="${k}" ${m.pts[k]>0?'':'disabled'}>−</button><button class="pbtn plus" data-pp="${k}" ${m.free>0?'':'disabled'}>+</button></div>`:''}</div>`;
   sh.body.querySelector('.prof').innerHTML=`
     <div class="ptop"><div class="ppor" style="--c:${EL[fam.el].c}">${monSVG(m.sp,m.lvl)}</div>
-      <div class="pinfo"><div class="pname"><span class="lvb">${m.lvl}</span>${sp.n}</div><span class="pstage">${STAGE_N[stageOf(m.lvl)].toLowerCase()} · ${fam.n} ${elChip(fam.el)}</span>
+      <div class="pinfo"><div class="pname">${m.lvl>=MAXLVL?`<span class="lvb mst" title="Mastered"><svg viewBox="0 0 24 24"><path d="M12 3.2l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.6l-5.2 2.8 1-5.9L3.5 9.4l5.9-.8z" fill="#fff"/></svg></span>`:`<span class="lvb">${m.lvl}</span>`}${sp.n}</div><span class="pstage">${STAGE_N[stageOf(m.lvl)].toLowerCase()} · ${fam.n} ${elChip(fam.el)}</span>
         <div class="pxp"><i style="width:${m.lvl>=MAXLVL?100:m.xp/xpNeed(m.lvl)*100}%"></i><em>${m.lvl>=MAXLVL?'MAX':`${m.xp} / ${xpNeed(m.lvl)} xp`}</em></div>
         <div class="pfree" style="${m.free>0?'':'visibility:hidden'}">${m.free|0} points</div>
         ${stat('atk','Attack',s.atk)}${stat('hp','Life',s.hp)}${stat('mp','Mana',s.mp)}
@@ -4752,7 +4755,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (152).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (153).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6371,7 +6374,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v152 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
+function diagLine(){ const l=window.__lay||{}; return `v153 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});

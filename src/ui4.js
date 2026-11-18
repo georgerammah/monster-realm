@@ -117,7 +117,7 @@ function drawMon(){
   const stat=(k,label,val)=>`<div class="pstat"><span>${label}</span><b>${val}</b>${k!=='spd'?`<div class="pbtns"><button class="pbtn minus" data-pm="${k}" ${m.pts[k]>0?'':'disabled'}>−</button><button class="pbtn plus" data-pp="${k}" ${m.free>0?'':'disabled'}>+</button></div>`:''}</div>`;
   sh.body.querySelector('.prof').innerHTML=`
     <div class="ptop"><div class="ppor" style="--c:${EL[fam.el].c}">${monSVG(m.sp,m.lvl)}</div>
-      <div class="pinfo"><div class="pname"><span class="lvb">${m.lvl}</span>${sp.n}</div><span class="pstage">${STAGE_N[stageOf(m.lvl)].toLowerCase()} · ${fam.n} ${elChip(fam.el)}</span>
+      <div class="pinfo"><div class="pname">${m.lvl>=MAXLVL?`<span class="lvb mst" title="Mastered"><svg viewBox="0 0 24 24"><path d="M12 3.2l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.6l-5.2 2.8 1-5.9L3.5 9.4l5.9-.8z" fill="#fff"/></svg></span>`:`<span class="lvb">${m.lvl}</span>`}${sp.n}</div><span class="pstage">${STAGE_N[stageOf(m.lvl)].toLowerCase()} · ${fam.n} ${elChip(fam.el)}</span>
         <div class="pxp"><i style="width:${m.lvl>=MAXLVL?100:m.xp/xpNeed(m.lvl)*100}%"></i><em>${m.lvl>=MAXLVL?'MAX':`${m.xp} / ${xpNeed(m.lvl)} xp`}</em></div>
         <div class="pfree" style="${m.free>0?'':'visibility:hidden'}">${m.free|0} points</div>
         ${stat('atk','Attack',s.atk)}${stat('hp','Life',s.hp)}${stat('mp','Mana',s.mp)}
