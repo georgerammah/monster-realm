@@ -267,8 +267,8 @@ monInfo=function(b,s,i){
       <div class="lb life"><i style="width:${m.hp/m.maxhp*100}%"></i><b>${m.hp} / ${m.maxhp} life</b></div>
       <div class="lb mana"><i style="width:${m.mp/m.maxmp*100}%"></i><b>${m.mp} / ${m.maxmp} mana</b></div>
       <div class="mi-atk">Attack <b>${m.atk}</b></div>
-      ${eff.length?`<div class="mi-eff">${stList(m).map(x=>`<span class="${x.exp?'exp':''}">${x.ic(18)} ${x.name} · ${x.t}</span>`).join('')}</div>`:''}</div>
-    <div class="mi2-r"><h3>Abilities</h3><div class="pabil">${all.map(id=>{ const k=SK[id]; if(!k) return ''; const L=(m.skl&&m.skl[id])||1, c=skCost(id,L);
+      </div>
+    <div class="mi2-r">${eff.length?`<h3 id="mi-effects">Effects</h3><div class="mi2-eff">${stList(m).map(x=>`<div class="pab ${x.exp?'exp':''}"><span class="mi2-it">${x.ic(34)}</span><div class="pab-t"><b>${x.name} <span class="sl">${x.t} turn${x.t>1?'s':''}</span></b><span>${esc(String(x.tip).replace(/ \(\d+ turns?\)$/,''))}</span></div></div>`).join('')}</div>`:''}<h3>Abilities</h3><div class="pabil">${all.map(id=>{ const k=SK[id]; if(!k) return ''; const L=(m.skl&&m.skl[id])||1, c=skCost(id,L);
         return `<div class="pab ${k.k==='passive'?'pas':''}">${icon(skIconKey(id),(EL[k.el]||EL.neutral).c,34)}<div class="pab-t"><b>${esc(k.n)} <span class="sl">Lv ${L}</span>${k.k==='passive'?' <span class="pastag">Passive</span>':''}</b><span>${skillDesc(id,L)}${c?` · ${c} mana`:''}</span></div></div>`; }).join('')}</div>
       ${items.length?`<h3>Items</h3><div class="mi2-items">${items.map(([id])=>`<div class="pab"><span class="mi2-it">${itemSVG(id)}</span><div class="pab-t"><b>${ITEMS[id].n}</b><span>${itemLine(id)}</span></div></div>`).join('')}</div>`:''}</div></div>`,{cls:'mi2sheet'});
   return sh; };
@@ -708,9 +708,9 @@ function evSchedule(b){ const evs=b.ev||[]; const a=evs.find(e=>e.k==='act'), sk
     const key=e.s+'-'+e.i; const c=per[key]!=null?per[key]:T; e._d=c; per[key]=c+(e.k==='hit'?320:420); hitEnd=Math.max(hitEnd,e._d); });
   evs.forEach(e=>{ if(e.k==='act'||e.k==='enter'||e.ph||seqd(e)) return;
     if(false);
-    else if((e.k==='buff'||e.k==='miss')&&a&&e.s!==a.s&&!(e.k==='miss'||e.missed)){ e._d=(hitEnd>=0?hitEnd:T)+450; deb=Math.max(deb,e._d); }
+    else if((e.k==='buff'||e.k==='miss')&&a&&e.s!==a.s&&!(e.k==='miss'||e.missed)){ e._d=hitEnd>=0?hitEnd+450:T+900; deb=Math.max(deb,e._d); }
     else e._d=T+80; });
-  let cur=Math.max(hitEnd>=0?hitEnd+700:T+500, deb>=0?deb+800:0);
+  let cur=Math.max(hitEnd>=0?hitEnd+700:T+500, deb>=0?deb+500:0);
   [1,2,3].forEach(ph=>evs.forEach(e=>{ if(e.ph!==ph) return; if(ph===1){ e._fx=cur; e._d=cur+(e.k==='dot'?380:0); cur+=850; } else { e._d=cur; cur+=650; } }));
   const last=Math.max(0,...evs.map(e=>e._d||0)); b._animTotal=Math.max(cur, last+500); return b._animTotal; }
 syncHud=(function(prev){ return function(b){ prev(b); if(!B||!B.b) return;
@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v176 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v177 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1227,7 +1227,9 @@ function practiceTeam(){
   const mine=mySnap(); const n=Math.max(1,mine.length);
   const lvl=Math.max(1,Math.round(mine.reduce((t,m)=>t+m.lvl,0)/n));
   const avg=k=>Math.round(mine.reduce((t,m)=>t+((m.bonus&&m.bonus[k])|0),0)/n);
-  const bonus={atk:avg('atk'),hp:avg('hp'),mp:avg('mp'),rmp:avg('rmp')>=8?16:0,rhp:avg('rhp')>=8?16:0,dflat:avg('dflat'),tflat:avg('tflat'),belem:avg('belem'),bphys:avg('bphys')};
+  const bonus={atk:avg('atk'),hp:avg('hp'),mp:avg('mp')};
+  // items aren't averaged: foe #k carries exactly what your monster #k carries
+  const gear=k=>{ const m=mine[k]||{}, b=m.bonus||{}; return {g:{rmp:b.rmp|0,rhp:b.rhp|0,dflat:b.dflat|0,tflat:b.tflat|0,belem:b.belem|0,bphys:b.bphys|0}, items:(m.items||[]).slice()}; };
   const abil=Math.max(1,Math.round(mine.reduce((t,m)=>{ const v=Object.values(m.skl||{}); return t+(v.length?v.reduce((a,b)=>a+b,0)/v.length:1); },0)/n));
   const myEls=mine.map(m=>FAM[SPI[m.sp].fam].el);
   const pool=SP.filter(s=>FAM[s.fam]&&FAM[s.fam].shape!=='dummy'&&s.fam!=='dummy'&&!s.boss).map(s=>{ const el=FAM[s.fam].el;
@@ -1235,7 +1237,7 @@ function practiceTeam(){
   const pickd=[], fams=new Set();
   for(const {s} of pool){ if(pickd.length>=3) break; if(fams.has(s.fam)) continue; fams.add(s.fam); pickd.push(s); }
   const names=['Nour','Sami','Maya','Karim','Lina','Rami','Dana','Tarek','Yara'];
-  return {name:names[Math.floor(Math.random()*names.length)], mons:pickd.map(s=>{ const skl={}; s.sk.slice(0,slotsOf(lvl)).forEach(id=>skl[id]=Math.min(10,abil)); return {sp:s.id,lvl,bonus,skl}; })};
+  return {name:names[Math.floor(Math.random()*names.length)], mons:pickd.map(s=>{ const skl={}; s.sk.slice(0,slotsOf(lvl)).forEach(id=>skl[id]=Math.min(10,abil)); const G=gear(pickd.indexOf(s)); return {sp:s.id,lvl,bonus:Object.assign({},bonus,G.g),items:G.items,skl}; })};
 }
 
 // ---------- Smarter AI for arena-style fights: looks ahead at each option and your likely reply ----------
@@ -1352,12 +1354,13 @@ function stIconFor(k,src){ const s=src&&SK[src]; return s? (n=>icon(skIconKey(sr
 function stList(m){ const r=stList0(m); const H=B&&B.hideSt&&B.hideSt.get?B.hideSt.get(m):null; let out=r;
   if(H){ const left=Object.assign({},H); out=r.filter(x=>{ if(left[x.k]>0){ if(x.stack){ left[x.k]--; return false; } return false; } return true; }); }
   return out.sort((a,b)=>(a.at||0)-(b.at||0)); }
+function stName(k,src){ const s=src&&src!=='basic'&&SK[src]; return s?s.n:(BUFF_N[k]||(k[0].toUpperCase()+k.slice(1))); }
 function stList0(m){ const st=m.st, out=[], P=v=>Math.round((v||0)*100)+'%', T=t=>`${t} turn${t>1?'s':''}`;
   Object.keys(ST_ICON).filter(k=>st[k]>0).forEach(k=>{
     const S=st[k+'S'];
     if((k==='soak'||k==='scorch')&&S&&S.length){ const what=k==='soak'?'water':'fire';
-      S.slice().sort((a,b)=>(b.at||0)-(a.at||0)).forEach(x=>out.push({k, stack:1, at:x.at||0, t:x.t, exp:x.t<=1, name:BUFF_N[k]||k, ic:stIconFor(k,x.src||(k==='soak'?'wave':'emberspit')), tip:`Takes ${P(x.v)} more ${what} damage (${T(x.t)})`})); return; }
-    out.push({k, at:st[k+'At']||0, t:st[k], exp:st[k]<=1, name:BUFF_N[k]||k, ic:stIconFor(k,st[k+'Src']), tip:stDesc(m,k)}); });
+      S.slice().sort((a,b)=>(b.at||0)-(a.at||0)).forEach(x=>out.push({k, stack:1, at:x.at||0, t:x.t, exp:x.t<=1, name:stName(k,x.src||(k==='soak'?'wave':'emberspit')), ic:stIconFor(k,x.src||(k==='soak'?'wave':'emberspit')), tip:`Takes ${P(x.v)} more ${what} damage (${T(x.t)})`})); return; }
+    out.push({k, at:st[k+'At']||0, t:st[k], exp:st[k]<=1, name:stName(k,st[k+'Src']), ic:stIconFor(k,st[k+'Src']), tip:stDesc(m,k)}); });
   return out; }
 act=(function(prev){ return function(b,action){
   const snap=b.sides.map(sd=>sd.mons.map(m=>{ const o={}; Object.keys(ST_ICON).forEach(k=>o[k]=m.st[k]|0); return o; }));
@@ -1403,3 +1406,6 @@ animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(r
       const ic=document.createElement('div'); ic.className='dotpop'; ic.innerHTML=icon(skIconKey(a.sk),(EL[sk.el]||EL.neutral).c,46); el.appendChild(ic); setTimeout(()=>ic.remove(),900);
       el.classList.remove('weaken'); void el.offsetWidth; el.classList.add('weaken'); setTimeout(()=>el.classList.remove('weaken'),700); },260); }); }catch(_){}
   return r; }; })(animateBattle);
+
+document.addEventListener('click',e=>{ const hi=e.target.closest&&e.target.closest('#battle .hicons'); if(!hi||!B||!B.b) return; const p=hi.closest('.bhp'); if(!p) return;
+  e.stopPropagation(); const s=+p.dataset.hs, sd=B.b.sides[s]; monInfo(B.b,s,sd.active!=null?sd.active:+p.dataset.hi||0); },true);

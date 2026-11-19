@@ -1573,6 +1573,12 @@ body{overscroll-behavior:none}
 
 /* status icons wrap to a new row inside their side of the screen, never under AUTO */
 .hicons{flex-wrap:wrap;width:100%;row-gap:6px!important}
+
+/* battle info card: one column per section, the right side scrolls */
+.mi2-r{max-height:calc(74*var(--vh));overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-right:4px}
+.mi2-r .pabil,.mi2-items,.mi2-eff{display:flex!important;flex-direction:column;gap:5px}
+.mi2-eff .pab.exp .mi2-it{animation:stexp .9s ease-in-out infinite}
+#battle .hicons{cursor:pointer}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
