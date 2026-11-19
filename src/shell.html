@@ -1550,6 +1550,10 @@ body{overscroll-behavior:none}
 .tscreen.tasks{height:calc(100*var(--vh));min-height:0;display:flex;flex-direction:column;overflow:hidden}
 .tscreen.tasks .thud{flex:none;position:relative}
 .tscreen.tasks .tlist{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+
+/* champion cards: name never hides under the X */
+.cc-h{padding-right:34px!important;min-width:0}
+.cc-h b{flex:1;min-width:0;white-space:nowrap;overflow:hidden}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

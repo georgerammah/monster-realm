@@ -19,7 +19,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (169).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (170).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -569,6 +569,9 @@ function openChampions(){
       const p=sheet(`<h2>Add a Champion</h2><div class="cc-pick">${bench.map(m=>`<button class="cc-pk" data-pk="${m.uid}">${monSVG(m.sp,m.lvl)}<b>${esc(SPI[m.sp].n)}</b><span class="lvb">${m.lvl}</span></button>`).join('')}</div>`);
       p.body.querySelectorAll('[data-pk]').forEach(x=>x.onclick=()=>{ if(S.team.length<3) S.team.push(x.dataset.pk); persist(); p.close(); draw(); }); });
     q('#ccr').onclick=()=>{ if(!S.team.length) return alertBox('Add a champion first!'); startSearch(sh); };
+    sh.body.querySelectorAll('.cc-card:not(.empty)').forEach((c,i)=>{ const m=tm[i]; if(!m) return; c.style.cursor='pointer';
+      c.onclick=e=>{ if(e.target.closest('.cc-x')) return; openMon(m.uid); }; });
+    requestAnimationFrame(()=>sh.body.querySelectorAll('.cc-h b').forEach(b=>{ let f=parseFloat(getComputedStyle(b).fontSize); while(b.scrollWidth>b.clientWidth+1&&f>11){ f-=1; b.style.fontSize=f+'px'; } }));
   };
   draw();
 }

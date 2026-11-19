@@ -1559,6 +1559,10 @@ body{overscroll-behavior:none}
 .tscreen.tasks{height:calc(100*var(--vh));min-height:0;display:flex;flex-direction:column;overflow:hidden}
 .tscreen.tasks .thud{flex:none;position:relative}
 .tscreen.tasks .tlist{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+
+/* champion cards: name never hides under the X */
+.cc-h{padding-right:34px!important;min-width:0}
+.cc-h b{flex:1;min-width:0;white-space:nowrap;overflow:hidden}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -3178,6 +3182,9 @@ async function boot(){
 }
 
 // ===== V3: zones as activities, side-view battles =====
+// a task's level requirement is checked against the team's combined level
+function teamLvSum(){ return teamMons().reduce((s,m)=>s+(m.lvl|0),0); }
+function taskLvReq(zi,t){ return zi===0?t.lv:t.lv*2; }
 const ZTASKS = {
   meadow:[['act','Play catch with your monster',1,0,10,15,2,2],['fight','Spar with the straw dummy',1,0,20,20,3,2,'dummy'],['act','Bring enough mana to class',1,{mp:50},20,20,2,3],['act','Train with the camp coach',1,0,20,20,2,3],['act','Pass the camp fitness test',2,{hp:90},25,25,2,3],['boss',"Lila's graduation match",3,0,60,60,5,1]],
   beach:[['act','Collect shiny shells',4,0,30,40,2,3],['fight','Battle a wild turtle',4,0,40,50,3,3],['act','Swim laps in the lagoon',5,{mp:70},40,50,2,3],['fight','Face the tide pool leader',6,0,55,65,3,2],['boss','Coral Beach Boss',7,0,120,140,5,1]],
@@ -3298,13 +3305,13 @@ function drawTasks(){
       <div class="hrow"><div class="hbar cash"><span class="ico c">$</span><b>${S.cash|0}</b></div><div class="hbar shrooms"><span class="ico m">${mushroomSVG('#b04fd6')}</span><b>${S.mush}</b></div></div></div>
       <div class="thmon">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div></div>
     <div class="tlist">${tl.map((t,k)=>{
-      const done=pr[k]>=t.reps; const lockBoss=t.t==='boss'&&!nonBossDone; const lvOk=teamMons().some(x=>x.lvl>=t.lv), mpOk=!t.mp||teamMons().some(x=>monStats(x).mp>=t.mp), hpOk=!t.hp||teamMons().some(x=>monStats(x).hp>=t.hp), atkOk=!t.atk||teamMons().some(x=>monStats(x).atk>=t.atk);
+      const done=pr[k]>=t.reps; const lockBoss=t.t==='boss'&&!nonBossDone; const lvOk=teamLvSum()>=taskLvReq(zi,t), mpOk=!t.mp||teamMons().some(x=>monStats(x).mp>=t.mp), hpOk=!t.hp||teamMons().some(x=>monStats(x).hp>=t.hp), atkOk=!t.atk||teamMons().some(x=>monStats(x).atk>=t.atk);
       const can=!lockBoss;
       const why = lockBoss?'Finish the other activities first':'';
       return `<div class="task ${done?'done':''} ${t.t} ${lockBoss?'lockedq':''}">
         <div class="t-h">${t.t!=='act'?`<span class="tkind">${t.t==='boss'?'BOSS':'BATTLE'}</span>`:''}${esc(t.n)}</div>
         <div class="t-grid">
-          <div class="t-needs"><span>Needs:</span><span class="lvb ${lvOk?'':'bad'}">${t.lv}</span>${t.mp?`<span class="mdrop ${mpOk?'':'bad'}">${t.mp}</span>`:''}${t.hp?`<span class="hneed ${hpOk?'':'bad'}">${t.hp}</span>`:''}${t.atk?`<span class="aneed ${atkOk?'':'bad'}">${t.atk}</span>`:''}</div>
+          <div class="t-needs"><span>Needs:</span><span class="lvb ${lvOk?'':'bad'}">${taskLvReq(zi,t)}</span>${t.mp?`<span class="mdrop ${mpOk?'':'bad'}">${t.mp}</span>`:''}${t.hp?`<span class="hneed ${hpOk?'':'bad'}">${t.hp}</span>`:''}${t.atk?`<span class="aneed ${atkOk?'':'bad'}">${t.atk}</span>`:''}</div>
           <div class="t-rew"><b class="g">$ +${t.cash}</b><b class="x">XP +${t.xp}</b></div>
           <div class="t-cost">⚡ <b>${t.en}</b></div>
           <div class="t-prog"><div><i style="width:${Math.min(1,pr[k]/t.reps)*100}%"></i></div><em>${Math.min(pr[k],t.reps)} / ${t.reps}</em></div>
@@ -3313,7 +3320,7 @@ function drawTasks(){
     <div class="zfoot"><div class="zbar big"><i style="width:${zonePct(zi)}%"></i><em>${z.n} — ${zonePct(zi)}% complete</em></div></div>`;
   sh.body.querySelector('#tb').onclick=sh.close;
   sh.body.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{ const t=tl[+b.dataset.task];
-    if(!teamMons().some(x=>x.lvl>=t.lv)) return alertBox(`You need a level ${t.lv} monster on your team for this task!`);
+    if(teamLvSum()<taskLvReq(zi,t)) return alertBox(`Your team's levels need to add up to ${taskLvReq(zi,t)} for this task. Right now they add up to ${teamLvSum()}.`);
     if(t.mp&&!teamMons().some(x=>monStats(x).mp>=t.mp)) return alertBox(`You need a monster with ${t.mp} mana on your team for this task!`+(teamMons().some(x=>x.free>0)?` Spend stat points on Mana in your monster's profile.`:''));
     if(t.hp&&!teamMons().some(x=>monStats(x).hp>=t.hp)) return alertBox(`You need a monster with ${t.hp} life on your team for this task!`+(teamMons().some(x=>x.free>0)?` Spend stat points on Life in your monster's profile.`:''));
     if(t.atk&&!teamMons().some(x=>monStats(x).atk>=t.atk)) return alertBox(`You need a monster with ${t.atk} attack on your team for this task!`+(teamMons().some(x=>x.free>0)?` Spend stat points on Attack in your monster's profile.`:''));
@@ -4806,7 +4813,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (169).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (170).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -5356,6 +5363,9 @@ function openChampions(){
       const p=sheet(`<h2>Add a Champion</h2><div class="cc-pick">${bench.map(m=>`<button class="cc-pk" data-pk="${m.uid}">${monSVG(m.sp,m.lvl)}<b>${esc(SPI[m.sp].n)}</b><span class="lvb">${m.lvl}</span></button>`).join('')}</div>`);
       p.body.querySelectorAll('[data-pk]').forEach(x=>x.onclick=()=>{ if(S.team.length<3) S.team.push(x.dataset.pk); persist(); p.close(); draw(); }); });
     q('#ccr').onclick=()=>{ if(!S.team.length) return alertBox('Add a champion first!'); startSearch(sh); };
+    sh.body.querySelectorAll('.cc-card:not(.empty)').forEach((c,i)=>{ const m=tm[i]; if(!m) return; c.style.cursor='pointer';
+      c.onclick=e=>{ if(e.target.closest('.cc-x')) return; openMon(m.uid); }; });
+    requestAnimationFrame(()=>sh.body.querySelectorAll('.cc-h b').forEach(b=>{ let f=parseFloat(getComputedStyle(b).fontSize); while(b.scrollWidth>b.clientWidth+1&&f>11){ f-=1; b.style.fontSize=f+'px'; } }));
   };
   draw();
 }
@@ -6425,7 +6435,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v169 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v170 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});

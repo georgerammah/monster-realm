@@ -1,4 +1,7 @@
 // ===== V3: zones as activities, side-view battles =====
+// a task's level requirement is checked against the team's combined level
+function teamLvSum(){ return teamMons().reduce((s,m)=>s+(m.lvl|0),0); }
+function taskLvReq(zi,t){ return zi===0?t.lv:t.lv*2; }
 const ZTASKS = {
   meadow:[['act','Play catch with your monster',1,0,10,15,2,2],['fight','Spar with the straw dummy',1,0,20,20,3,2,'dummy'],['act','Bring enough mana to class',1,{mp:50},20,20,2,3],['act','Train with the camp coach',1,0,20,20,2,3],['act','Pass the camp fitness test',2,{hp:90},25,25,2,3],['boss',"Lila's graduation match",3,0,60,60,5,1]],
   beach:[['act','Collect shiny shells',4,0,30,40,2,3],['fight','Battle a wild turtle',4,0,40,50,3,3],['act','Swim laps in the lagoon',5,{mp:70},40,50,2,3],['fight','Face the tide pool leader',6,0,55,65,3,2],['boss','Coral Beach Boss',7,0,120,140,5,1]],
@@ -119,13 +122,13 @@ function drawTasks(){
       <div class="hrow"><div class="hbar cash"><span class="ico c">$</span><b>${S.cash|0}</b></div><div class="hbar shrooms"><span class="ico m">${mushroomSVG('#b04fd6')}</span><b>${S.mush}</b></div></div></div>
       <div class="thmon">${monSVG(m.sp,m.lvl)}<span class="lvb">${m.lvl}</span></div></div>
     <div class="tlist">${tl.map((t,k)=>{
-      const done=pr[k]>=t.reps; const lockBoss=t.t==='boss'&&!nonBossDone; const lvOk=teamMons().some(x=>x.lvl>=t.lv), mpOk=!t.mp||teamMons().some(x=>monStats(x).mp>=t.mp), hpOk=!t.hp||teamMons().some(x=>monStats(x).hp>=t.hp), atkOk=!t.atk||teamMons().some(x=>monStats(x).atk>=t.atk);
+      const done=pr[k]>=t.reps; const lockBoss=t.t==='boss'&&!nonBossDone; const lvOk=teamLvSum()>=taskLvReq(zi,t), mpOk=!t.mp||teamMons().some(x=>monStats(x).mp>=t.mp), hpOk=!t.hp||teamMons().some(x=>monStats(x).hp>=t.hp), atkOk=!t.atk||teamMons().some(x=>monStats(x).atk>=t.atk);
       const can=!lockBoss;
       const why = lockBoss?'Finish the other activities first':'';
       return `<div class="task ${done?'done':''} ${t.t} ${lockBoss?'lockedq':''}">
         <div class="t-h">${t.t!=='act'?`<span class="tkind">${t.t==='boss'?'BOSS':'BATTLE'}</span>`:''}${esc(t.n)}</div>
         <div class="t-grid">
-          <div class="t-needs"><span>Needs:</span><span class="lvb ${lvOk?'':'bad'}">${t.lv}</span>${t.mp?`<span class="mdrop ${mpOk?'':'bad'}">${t.mp}</span>`:''}${t.hp?`<span class="hneed ${hpOk?'':'bad'}">${t.hp}</span>`:''}${t.atk?`<span class="aneed ${atkOk?'':'bad'}">${t.atk}</span>`:''}</div>
+          <div class="t-needs"><span>Needs:</span><span class="lvb ${lvOk?'':'bad'}">${taskLvReq(zi,t)}</span>${t.mp?`<span class="mdrop ${mpOk?'':'bad'}">${t.mp}</span>`:''}${t.hp?`<span class="hneed ${hpOk?'':'bad'}">${t.hp}</span>`:''}${t.atk?`<span class="aneed ${atkOk?'':'bad'}">${t.atk}</span>`:''}</div>
           <div class="t-rew"><b class="g">$ +${t.cash}</b><b class="x">XP +${t.xp}</b></div>
           <div class="t-cost">⚡ <b>${t.en}</b></div>
           <div class="t-prog"><div><i style="width:${Math.min(1,pr[k]/t.reps)*100}%"></i></div><em>${Math.min(pr[k],t.reps)} / ${t.reps}</em></div>
@@ -134,7 +137,7 @@ function drawTasks(){
     <div class="zfoot"><div class="zbar big"><i style="width:${zonePct(zi)}%"></i><em>${z.n} — ${zonePct(zi)}% complete</em></div></div>`;
   sh.body.querySelector('#tb').onclick=sh.close;
   sh.body.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{ const t=tl[+b.dataset.task];
-    if(!teamMons().some(x=>x.lvl>=t.lv)) return alertBox(`You need a level ${t.lv} monster on your team for this task!`);
+    if(teamLvSum()<taskLvReq(zi,t)) return alertBox(`Your team's levels need to add up to ${taskLvReq(zi,t)} for this task. Right now they add up to ${teamLvSum()}.`);
     if(t.mp&&!teamMons().some(x=>monStats(x).mp>=t.mp)) return alertBox(`You need a monster with ${t.mp} mana on your team for this task!`+(teamMons().some(x=>x.free>0)?` Spend stat points on Mana in your monster's profile.`:''));
     if(t.hp&&!teamMons().some(x=>monStats(x).hp>=t.hp)) return alertBox(`You need a monster with ${t.hp} life on your team for this task!`+(teamMons().some(x=>x.free>0)?` Spend stat points on Life in your monster's profile.`:''));
     if(t.atk&&!teamMons().some(x=>monStats(x).atk>=t.atk)) return alertBox(`You need a monster with ${t.atk} attack on your team for this task!`+(teamMons().some(x=>x.free>0)?` Spend stat points on Attack in your monster's profile.`:''));
