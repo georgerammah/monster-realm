@@ -1544,6 +1544,12 @@ body{overscroll-behavior:none}
 .pet.roam{will-change:transform}
 .cloud{left:0;will-change:transform}
 .c2{width:56px}
+
+/* activities: header pinned, only the list scrolls */
+.sheet:has(.tscreen.tasks){overflow:hidden!important;padding:0!important;overscroll-behavior:none}
+.tscreen.tasks{height:calc(100*var(--vh));min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.tscreen.tasks .thud{flex:none;position:relative}
+.tscreen.tasks .tlist{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
