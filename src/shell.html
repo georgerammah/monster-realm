@@ -1567,6 +1567,9 @@ body{overscroll-behavior:none}
 .cc-h .lvb.mast,.cc-h .lvb.mst{background:linear-gradient(#f7e27a,#c99a1e 55%,#a67812)!important}
 .cc-h .lvb.mast svg,.cc-h .lvb.mst svg{width:19px!important;height:19px!important;flex:none}
 .lvb.mast{flex:none}
+
+.fighter.weaken .fart{animation:weaken .7s ease-in-out;transform-origin:50% 95%}
+@keyframes weaken{30%{transform:scale(.88,.84);filter:saturate(.4) brightness(.8)}100%{transform:none;filter:none}}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
