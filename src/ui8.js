@@ -3,7 +3,7 @@ const SND={ctx:null, master:null, mus:null, sfx:null, track:null, timer:null, st
   get musicOn(){ return !(S&&S.settings&&S.settings.music===false); }, get sfxOn(){ return !(S&&S.settings&&S.settings.sfx===false); }};
 function audioInit(){
   // iOS 17+: play like a game, not like page sound, so the silent switch doesn't mute the music
-  try{ if(navigator.audioSession&&navigator.audioSession.type!=='playback') navigator.audioSession.type='playback'; }catch(_){}
+  try{ if(navigator.audioSession&&navigator.audioSession.type!=='ambient') navigator.audioSession.type='ambient'; }catch(_){}
   if(SND.ctx){ if(SND.ctx.state!=='running'){ try{ const z=SND.ctx.createBufferSource(); z.buffer=SND.ctx.createBuffer(1,1,22050); z.connect(SND.ctx.destination); z.start(0); }catch(_){} SND.ctx.resume().then(()=>{ try{ const t=SND.track; SND.track=null; playMusic(t||(B?'battle':'home')); }catch(_){} }).catch(()=>{}); } return; }
   const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
   const c=new AC(); SND.ctx=c;

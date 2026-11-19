@@ -57,7 +57,7 @@ skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; if(!s)
     const map={dmg:s.dmg?f(lv(s.dmg,L)):'', pct:s.m?P(lv(s.m,L)):'', cost:skCost(id,L), tick:s.tick?f(lv(s.tick,L)):s.stormTick?f(lv(s.stormTick,L)):'', turns:s.turns||s.stormTurns||'', hits:s.hits||1,
       amt:s.amt?f(lv(s.amt,L)):s.healFlat?f(lv(s.healFlat,L)):'', v:s.v?(lv(s.v,L)<1?P(lv(s.v,L)):f(lv(s.v,L))):'', heal:s.heal?P(lv(s.heal,L)):s.hot?P(lv(s.hot,L)):'',
       steal:s.stealHp?f(lv(s.stealHp,L)):s.steal?f(lv(s.steal,L)):'', leech:s.leechL?P(lv(s.leechL,L)):'', mana:s.mpAtk?P(lv(s.mpAtk,L)):s.burnmp?f(lv(s.burnmp,L)):'',
-      stun:s.stun?P(lv(s.stun,L)):'', recoil:s.recoil?P(s.recoil):'', dbl:s.dbl?P(s.dbl):'', soak:s.soak?P(Array.isArray(s.soak)?lv(s.soak,L):s.soak):'', wall:s.selfShield?f(lv(s.selfShield,L)):''};
+      stun:s.stun?P(lv(s.stun,L)):'', recoil:s.recoil?P(s.recoil):'', dbl:s.dbl?P(s.dbl):'', soak:s.soak?P(Array.isArray(s.soak)?lv(s.soak,L):s.soak):'', scorch:s.scorch?P(Array.isArray(s.scorch)?lv(s.scorch,L):s.scorch):'', wall:s.selfShield?f(lv(s.selfShield,L)):''};
     return s.desc.replace(/\{(\w+)\}/g,(a,k)=>k in map?map[k]:a); }
   if(MOVE_OVR[id] && (!DEFAULT_SK[id] || DEFAULT_SK[id].k!==s.k)) return skillDescBase(id,L);
   return prev(id,L); }; })(skillDesc);
@@ -575,8 +575,8 @@ Object.assign(SK.purge,{mp:[12,4],healFlat:[15,9],desc:'Heals {amt} life and rem
 Object.assign(SK.splash,{dmg:[22,19]});
 Object.assign(SK.camelback,{v:[6,5],desc:'Regenerates {v} mana every turn.'});
 ['wave','purge','splash','camelback'].forEach(k=>{ DEFAULT_SK[k]=JSON.parse(JSON.stringify(SK[k])); });
-ST_ICON.soak=['mkwave','#22a6e3']; BUFF_N.soak='Soaked';
-stDesc=(function(prev){ return function(m,k){ if(k==='soak') return `Takes ${Math.round((m.st.soakV||0)*100)}% more water damage (${m.st.soak} turn${m.st.soak>1?'s':''})`; return prev(m,k); }; })(stDesc);
+ST_ICON.soak=['mkwave','#22a6e3']; BUFF_N.soak='Soaked'; ST_ICON.scorch=['mkember','#e3262d']; BUFF_N.scorch='Scorched';
+stDesc=(function(prev){ return function(m,k){ if(k==='scorch') return `Takes ${Math.round((m.st.scorchV||0)*100)}% more fire damage (${m.st.scorch} turn${m.st.scorch>1?'s':''})`; if(k==='soak') return `Takes ${Math.round((m.st.soakV||0)*100)}% more water damage (${m.st.soak} turn${m.st.soak>1?'s':''})`; return prev(m,k); }; })(stDesc);
 skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1;
   if(id==='wave'&&s&&s.soak) return `Deals ${Math.round(lv(s.dmg,L))} water damage and reduces enemy's water resistance by ${Math.round((Array.isArray(s.soak)?lv(s.soak,L):s.soak)*100)}% for ${s.soakTurns||6} turns.`;
   if(id==='purge'&&s&&s.healFlat) return `Heals ${Math.round(lv(s.healFlat,L))} life and removes all negative effects.`;
@@ -949,7 +949,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v168 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v169 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1036,6 +1036,7 @@ function openPlayers(){
     shock:{dmg:P(42,307), stun:null, selfStun:1, desc:'Extremely powerful attack that deals {dmg} damage, but stuns yourself for one turn.'},
     spark:{v:P(.13,.76), turns:4},
     stormcloud:{tick:P(19,94), desc:'Hangs a storm cloud over your enemy, dealing {tick} damage each turn for {turns} turns. Penetrates shields.'},
+    emberspit:{dmg:P(14,86), scorch:P(.07,.41), scorchTurns:6, burn:null, btick:null, desc:"Fiery attack that deals {dmg} damage and reduces enemy's fire resistance by {scorch} for 6 turns."},
     wave:{dmg:P(20,123), soak:P(.06,.33), soakTurns:6, desc:"Deals {dmg} water damage and reduces enemy's water resistance by {soak} for 6 turns."},
     souleater:{m:P(.8,.84), mpAtk:P(.4,.42), mp:P(8,16)},
     mshield:{v:P(.13,.67), el:'water'},
