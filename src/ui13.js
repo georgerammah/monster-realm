@@ -260,17 +260,17 @@ placeTip=(function(prev){ return function(h){ prev(h); const tip=document.queryS
 monInfo=function(b,s,i){
   const m=b.sides[s].mons[i]; if(!m) return; const sp=SPI[m.sp], mine=s===B.mySide;
   const all=(sp.sk||[]).slice(0,slotsOf(m.lvl)); const fx=m.fx||{};
-  const items=[fx.rmp&&'manabowl', fx.rhp&&'lifebowl', fx.dflat&&'blade'].filter(Boolean);
+  const items=itemCopies(fx);
   const eff=Object.keys(ST_ICON).filter(k=>m.st[k]>0);
   const sh=sheet(`<div class="minfo2"><div class="mi2-l"><div class="mi-art">${monSVG(m.sp,m.lvl)}</div>
       <div class="mi-nm"><span class="lvb">${m.lvl}</span><b>${esc(m.n)}</b></div>
       <div class="lb life"><i style="width:${m.hp/m.maxhp*100}%"></i><b>${m.hp} / ${m.maxhp} life</b></div>
       <div class="lb mana"><i style="width:${m.mp/m.maxmp*100}%"></i><b>${m.mp} / ${m.maxmp} mana</b></div>
       <div class="mi-atk">Attack <b>${m.atk}</b></div>
-      ${eff.length?`<div class="mi-eff">${eff.map(k=>`<span>${icon(ST_ICON[k][0],ST_ICON[k][1],18)} ${BUFF_N[k]||k} · ${m.st[k]}</span>`).join('')}</div>`:''}</div>
+      ${eff.length?`<div class="mi-eff">${stList(m).map(x=>`<span class="${x.exp?'exp':''}">${x.ic(18)} ${x.name} · ${x.t}</span>`).join('')}</div>`:''}</div>
     <div class="mi2-r"><h3>Abilities</h3><div class="pabil">${all.map(id=>{ const k=SK[id]; if(!k) return ''; const L=(m.skl&&m.skl[id])||1, c=skCost(id,L);
         return `<div class="pab ${k.k==='passive'?'pas':''}">${icon(skIconKey(id),(EL[k.el]||EL.neutral).c,34)}<div class="pab-t"><b>${esc(k.n)} <span class="sl">Lv ${L}</span>${k.k==='passive'?' <span class="pastag">Passive</span>':''}</b><span>${skillDesc(id,L)}${c?` · ${c} mana`:''}</span></div></div>`; }).join('')}</div>
-      ${items.length?`<h3>Items</h3><div class="mi2-items">${items.map(id=>`<div class="pab"><span class="mi2-it">${itemSVG(id)}</span><div class="pab-t"><b>${ITEMS[id].n}</b><span>${id==='manabowl'?`Recovers ${fx.rmp} mana after each turn`:id==='lifebowl'?`Recovers ${fx.rhp} life after each turn`:`+${fx.dflat} damage on attacks, takes +${fx.tflat} more`}</span></div></div>`).join('')}</div>`:''}</div></div>`,{cls:'mi2sheet'});
+      ${items.length?`<h3>Items</h3><div class="mi2-items">${items.map(([id,f])=>`<div class="pab"><span class="mi2-it">${itemSVG(id)}</span><div class="pab-t"><b>${ITEMS[id].n}</b><span>${id==='manabowl'?`Recovers ${f.rmp} mana after each turn`:id==='lifebowl'?`Recovers ${f.rhp} life after each turn`:`+${f.dflat} damage on attacks, takes +${f.tflat} more`}</span></div></div>`).join('')}</div>`:''}</div></div>`,{cls:'mi2sheet'});
   return sh; };
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; const b=B.b;
   document.querySelectorAll('#battle .bhp .bpor').forEach(p=>{ if(p.id==='swapb') return; const hp=p.closest('.bhp'); if(!hp) return; const s=+hp.dataset.hs; if(s===B.mySide&&p.classList.contains('swapper')) return;
@@ -301,7 +301,7 @@ function stDesc(m,k){ const s=m.st, P=v=>Math.round((v||0)*100)+'%';
     focus:`Deals ${P(s.focusV)} more damage`, charge:`Deals ${P(s.chargeV)} more damage`, cripple:`Deals ${P(s.crippleV)} less damage`, evade:`${P(s.evadeV)} chance to dodge attacks`, absorb:`Turns ${P(s.absorbV)} of damage taken into mana`, crit:`${P(s.critV)} chance to deal double damage`, mshield:`Mana blocks ${P(s.mshieldV)} of damage taken`, pers:`Takes ${P(s.persV)} less damage`, roots:`Recovers ${P(s.rootsV)} of max life each turn`}[k];
   return `${d||BUFF_N[k]||k} (${s[k]} turn${s[k]>1?'s':''})`; }
 hudIcons=(function(prev){ return function(m){ if(!m) return ''; let h=prev(m).replace(/<span class="hi st"[\s\S]*?<\/span><\/span>/g,'');
-  const add=Object.keys(ST_ICON).filter(k=>m.st[k]>0).map(k=>`<span class="hi st" data-tip="|${esc(stDesc(m,k))}">${icon(ST_ICON[k][0],ST_ICON[k][1],26)}</span>`).join('');
+  const add=stList(m).map(x=>`<span class="hi st${x.exp?' exp':''}" data-tip="|${esc(x.tip)}">${x.ic(26)}</span>`).join('');
   const i=h.lastIndexOf('</div>'); return i>=0? h.slice(0,i)+add+h.slice(i) : h+add; }; })(hudIcons);
 placeTip=function(h){
   if(TIPH===h&&document.querySelector('.tipb')) return; TIPH=h; hideTips(); if(!h||!h.dataset.tip) return;
@@ -949,7 +949,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v170 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v171 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1320,3 +1320,25 @@ zoneScene=(function(prev){ const X={
   return function(id){ const z=ZSCENE[id]; if(!z||!X[z.x]) return prev(id); const g='zg'+id, ex=X[z.x](z);
     return `<svg class="zscene" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${z.sky[0]}"/><stop offset="1" stop-color="${z.sky[1]}"/></linearGradient></defs><rect width="200" height="100" fill="url(#${g})"/><circle cx="${z.ox}" cy="${z.oy}" r="10" fill="${z.orb}" opacity=".9"/><path d="M0 74 Q50 62 100 70 T200 66 V100 H0Z" fill="${z.hills[0]}"/>${ex}<path d="M0 84 Q60 76 120 84 T200 82 V100 H0Z" fill="${z.hills[1]}"/></svg>`; }; })(zoneScene);
 QUESTS.push({id:'q12', n:'Clear Sky Grasslands', r:35, ok:s=>(s.zones.grasslands||0)>=4});
+
+// ---------- status icons use the icon of the ability that caused them; stacked effects show one icon each ----------
+function stIconFor(k,src){ const s=src&&SK[src]; return s? (n=>icon(skIconKey(src),(EL[s.el]||EL.neutral).c,n)) : (n=>icon(ST_ICON[k][0],ST_ICON[k][1],n)); }
+function stList(m){ const st=m.st, out=[], P=v=>Math.round((v||0)*100)+'%', T=t=>`${t} turn${t>1?'s':''}`;
+  Object.keys(ST_ICON).filter(k=>st[k]>0).forEach(k=>{
+    const S=st[k+'S'];
+    if((k==='soak'||k==='scorch')&&S&&S.length){ const what=k==='soak'?'water':'fire';
+      S.slice().sort((a,b)=>b.t-a.t).forEach(x=>out.push({k, t:x.t, exp:x.t<=1, name:BUFF_N[k]||k, ic:stIconFor(k,x.src||(k==='soak'?'wave':'emberspit')), tip:`Takes ${P(x.v)} more ${what} damage (${T(x.t)})`})); return; }
+    out.push({k, t:st[k], exp:st[k]<=1, name:BUFF_N[k]||k, ic:stIconFor(k,st[k+'Src']), tip:stDesc(m,k)}); });
+  return out; }
+act=(function(prev){ return function(b,action){
+  const snap=b.sides.map(sd=>sd.mons.map(m=>{ const o={}; Object.keys(ST_ICON).forEach(k=>o[k]=m.st[k]|0); return o; }));
+  const sk=action&&action.skill&&SK[action.skill]?action.skill:'basic';
+  const r=prev(b,action);
+  if(r) b.sides.forEach((sd,s)=>sd.mons.forEach((m,i)=>{ const o=snap[s]&&snap[s][i]; if(!o) return;
+    Object.keys(ST_ICON).forEach(k=>{ if((m.st[k]|0)>o[k]&&k!=='soak'&&k!=='scorch') m.st[k+'Src']=sk; }); }));
+  return r; }; })(act);
+// items listed one card per copy (three Krill's Swords show as three)
+function itemCopies(fx){ const out=[]; const keyOf={manabowl:'rmp',lifebowl:'rhp',blade:'dflat'};
+  ['manabowl','lifebowl','blade'].forEach(id=>{ const k=keyOf[id], tot=fx[k]|0; if(!tot) return; const it=ITEMS[id], per=(it.fx&&it.fx[k])|0;
+    const n=per>0&&tot%per===0?tot/per:1; for(let j=0;j<n;j++){ const f={}; Object.keys(it.fx||{}).forEach(q=>f[q]=n>1?it.fx[q]:(fx[q]|0)); out.push([id,f]); } });
+  return out; }

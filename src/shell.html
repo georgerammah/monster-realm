@@ -1554,6 +1554,9 @@ body{overscroll-behavior:none}
 /* champion cards: name never hides under the X */
 .cc-h{padding-right:34px!important;min-width:0}
 .cc-h b{flex:1;min-width:0;white-space:nowrap;overflow:hidden}
+
+.hi.st.exp .ic,.mi-eff .exp .ic{animation:stexp .9s ease-in-out infinite}
+@keyframes stexp{50%{opacity:.25}}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
