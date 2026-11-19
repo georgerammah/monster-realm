@@ -141,6 +141,8 @@ function hudIcons(m){
   const f=m.fx||{};
   // item effects: one dot per effect type (same effects from several items are added together)
   if(f.dflat) out.push(`<span class="hi ifx" data-tip="Damage Dealt|+${f.dflat} damage on every attack">${ITEM_FX_IC}</span>`);
+  if(f.belem) out.push(`<span class="hi ifx" data-tip="Elemental Block|Blocks ${f.belem} nature, fire, lightning and water damage from every attack">${ITEM_FX_IC}</span>`);
+  if(f.bphys) out.push(`<span class="hi ifx" data-tip="Physical Block|Blocks ${f.bphys} physical damage from every attack">${ITEM_FX_IC}</span>`);
   if(f.tflat) out.push(`<span class="hi ifx" data-tip="Damage Taken|+${f.tflat} damage from every attack">${ITEM_FX_IC}</span>`);
   if(f.rhp) out.push(`<span class="hi" data-tip="Life Bowl|Recovers ${f.rhp} life after each turn">${icon('plus','#e0475b',30)}</span>`);
   if(f.rmp) out.push(`<span class="hi" data-tip="Mana Bowl|Recovers ${f.rmp} mana after each turn">${icon('plus','#4a9cf0',30)}</span>`);

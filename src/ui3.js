@@ -306,31 +306,30 @@ function animateBattle(root,b,animating){
         document.body.appendChild(p); setTimeout(()=>{ p.style.transform=`translate(${x1-x0}px,${y1-y0}px)`; },170); setTimeout(()=>p.remove(),520); });
     } else T = sk.pow?260:300;
   }
-  let after=0;
-  if(animating) evs.forEach((e,k)=>{
+  if(animating){ evSchedule(b,T); evs.forEach(e=>{
     if(e.k==='act'||e.k==='enter') return;
-    const late = e.k==='dot'||e.k==='stun'||e.end; if(e.k==='miss'){ e.k='buff'; e.b='evade'; e.missed=1; }
-    const hitN=evs.slice(actIdx+1,k).filter(x=>x.k==='hit').length;
-    const delay = late ? T+600+after : e.absorb ? Math.max(0,T-350) : T + (e.k==='hit'? hitN*110 : 80);
-    if(late) after+=420;
+    if(e.k==='miss'){ e.k='buff'; e.b='evade'; e.missed=1; }
+    if(e.k==='dot'&&e._fx!=null) setTimeout(()=>{ const el=fEl(e.s,e.i); if(!el||!B||B.b!==b) return; dotIntro(el,e,b); }, e._fx);
     setTimeout(()=>{
       const el=fEl(e.s,e.i); if(!el||!B||B.b!==b) return;
+      evLand(b,e);
+      if(e.k==='buff'&&!e.missed){ const r=document.createElement('i'); r.className='ring2'; r.style.setProperty('--c', (ST_ICON[e.b]||['','#5e8bff'])[1]); el.appendChild(r); setTimeout(()=>r.remove(),800); syncFighter(b,e.s,e.i); return; }
       const f=document.createElement('span'); f.className='float2 '+e.k+(e.crit?' crit':'');
-      f.textContent = (e.k==='heal'||e.k==='mana')?`+${e.v}`: e.k==='buff'?(e.missed?'Missed!':(BUFF_N[e.b]||'')): e.k==='stun'?'Stunned!': e.k==='miss'?'Missed!': `-${e.v}`;
+      f.textContent = (e.k==='heal'||e.k==='mana')?(e.v<0?`${e.v}`:`+${e.v}`): e.k==='buff'?'Missed!': e.k==='stun'?'Stunned!': `-${e.v}`;
+      if(e.k==='shield'){ syncFighter(b,e.s,e.i); return; }
       if(e.k==='hit'||e.k==='dot'){
         el.classList.remove('shake','hitflash'); void el.offsetWidth; el.classList.add('shake','hitflash'); setTimeout(()=>el.classList.remove('hitflash','shake'),460);
         const [x,y]=fCenter(el); const bu=document.createElement('div'); bu.className='burst'; bu.style.setProperty('--c',EL[e.el]?EL[e.el].c:'#fff'); bu.style.left=x+'px'; bu.style.top=y+'px'; document.body.appendChild(bu); setTimeout(()=>bu.remove(),460);
-        if(e.eff==='up'){ const x2=document.createElement('span'); x2.className='eff2'; x2.textContent='Super effective!'; el.appendChild(x2); setTimeout(()=>x2.remove(),1300); }
-        if(e.crit){ const c=document.createElement('span'); c.className='eff2 crit'; c.textContent='Critical!'; el.appendChild(c); setTimeout(()=>c.remove(),1300); root.classList.remove('quake'); void root.offsetWidth; root.classList.add('quake'); }
+        if(e.eff==='up'){ const x2=document.createElement('span'); x2.className='eff2'; x2.textContent='Super effective!'; el.appendChild(x2); setTimeout(()=>x2.remove(),1500); }
+        if(e.crit){ const c=document.createElement('span'); c.className='eff2 crit'; c.textContent='Critical!'; el.appendChild(c); setTimeout(()=>c.remove(),1500); root.classList.remove('quake'); void root.offsetWidth; root.classList.add('quake'); }
       }
       if(e.k==='heal'){ for(let n=0;n<7;n++){ const s=document.createElement('i'); s.className='sparkle'; s.style.left=(15+Math.random()*70)+'%'; s.style.animationDelay=(n*0.07)+'s'; el.appendChild(s); setTimeout(()=>s.remove(),1300);} }
-      if(e.k==='buff'){ const r=document.createElement('i'); r.className='ring2'; r.style.setProperty('--c', (ST_ICON[e.b]||['','#5e8bff'])[1]); el.appendChild(r); setTimeout(()=>r.remove(),800); }
-      el.appendChild(f); setTimeout(()=>f.remove(),1300);
+      el.appendChild(f); setTimeout(()=>f.remove(),1500);
       syncFighter(b,e.s,e.i);
-    }, delay);
-  });
-  const fin=()=>{ if(!B||B.b!==b) return; b.sides.forEach((sd,s)=>sd.mons.forEach((m,i)=>syncFighter(b,s,i))); syncHud(b); };
-  if(animating) setTimeout(fin, T+600+after+80); else fin();
+    }, e._d);
+  }); }
+  const fin=()=>{ if(!B||B.b!==b) return; if(B.pend) B.pend=new Map(); if(B.hideSt) B.hideSt=new Map(); b.sides.forEach((sd,s)=>sd.mons.forEach((m,i)=>syncFighter(b,s,i))); syncHud(b); };
+  if(animating) setTimeout(fin, (b._animTotal||600)+80); else fin();
   B.prev={}; b.sides.forEach((sd,s)=>sd.mons.forEach((m,i)=>{ B.prev[s+'-'+i]={hp:m.hp,mp:m.mp}; }));
 }
 function syncFighter(b,s,i){

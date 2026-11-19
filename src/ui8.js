@@ -90,16 +90,16 @@ animateBattle=function(root,b,animating){
     const evs=b.ev||[]; const actE=evs.find(e=>e.k==='act'); const sk=actE&&SK[actE.sk];
     const ranged=sk&&sk.pow!=null&&sk.el!=='neutral'; let T=0;
     if(actE&&sk){ if(sk.k==='hit'||sk.k==='dot'){ sfx('whoosh'); T=ranged?520:260; } else T=120; }
-    let hitN=0;
-    evs.forEach(e=>{
-      if(e.k==='hit'){ const el=e.el; const d=T+hitN*110; hitN++;
+    evSchedule(b);
+    evs.forEach(e=>{ const d=e._d|0;
+      if(e.k==='hit'){ const el=e.el;
         if(el==='bolt') sfx('zap',d-60); else if(el==='fire') sfx('fire',d-80); else if(el==='water') sfx('water',d-80);
         sfx('hit',d,{crit:e.crit}); }
-      else if(e.k==='heal' && !e.end) sfx('heal',T+60);
-      else if(e.k==='buff') sfx('buff',T+60);
-      else if(e.k==='miss') sfx('miss',T+60);
-      else if(e.k==='stun') sfx('stun',T+600);
-      else if(e.k==='dot') sfx('hit',T+600);
+      else if(e.k==='heal' && !e.end) sfx('heal',d);
+      else if(e.k==='buff') sfx('buff',d);
+      else if(e.k==='miss') sfx('miss',d);
+      else if(e.k==='stun') sfx('stun',d);
+      else if(e.k==='dot') sfx('hit',d);
     });
     b.sides.forEach((sd,s)=>sd.mons.forEach((m,i)=>{ const p=B&&B.prev&&B.prev[s+'-'+i]; if(p&&p.hp>0&&m.hp<=0) sfx('faint',T+500); }));
   }

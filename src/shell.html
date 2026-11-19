@@ -1557,6 +1557,10 @@ body{overscroll-behavior:none}
 
 .hi.st.exp .ic,.mi-eff .exp .ic{animation:stexp .9s ease-in-out infinite}
 @keyframes stexp{50%{opacity:.25}}
+
+.dotpop{position:absolute;left:50%;top:18%;transform:translate(-50%,-50%) scale(.3);opacity:0;z-index:6;pointer-events:none;animation:dotpop .9s ease-out forwards;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
+@keyframes dotpop{20%{transform:translate(-50%,-60%) scale(1.15);opacity:1}60%{transform:translate(-50%,-60%) scale(1);opacity:1}100%{transform:translate(-50%,-75%) scale(.9);opacity:0}}
+.float2{animation-duration:1.5s!important}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

@@ -150,7 +150,8 @@ SPI.strawdum={id:'strawdum',n:'Straw Dummy',fam:'dummy',col:['#e2c27a','#8a6a3a'
 const MAXLVL = 30, MAXSKL = 10;
 const UNLOCK = [1,1,10,20];
 // resistance-down effects stack: each cast is its own entry with its own countdown
-function addStack(st,k,v,t,src){ const S=st[k+'S']=(st[k+'S']||[]).filter(x=>x.t>0); S.push({v,t,src,fresh:1}); syncStack(st,k); }
+var STSEQ=0; function stSeq(){ return ++STSEQ; }
+function addStack(st,k,v,t,src){ const S=st[k+'S']=(st[k+'S']||[]).filter(x=>x.t>0); S.push({v,t,src,fresh:1,at:stSeq()}); syncStack(st,k); }
 function syncStack(st,k){ const S=st[k+'S']||[]; st[k]=S.reduce((a,x)=>Math.max(a,x.t),0); st[k+'V']=S.reduce((a,x)=>a+x.v,0); }
 function tickStacks(st){ ['soak','scorch'].forEach(k=>{ const S=st[k+'S']; if(!S||!S.length) return; S.forEach(x=>{ if(x.fresh) delete x.fresh; else x.t--; }); st[k+'S']=S.filter(x=>x.t>0); syncStack(st,k); }); }
 function stageOf(lvl){ return lvl>=20?2:lvl>=10?1:0; }
@@ -183,13 +184,13 @@ function makeMon(spId, lvl, extra){
   const skl=Object.assign({}, (extra&&extra.skl&&Object.keys(extra.skl).length)?extra.skl:autoSkl(spId,lvl));
   const o=Object.assign({sp:spId, n:sp.n, lvl, el:FAM[sp.fam].el, maxhp:hp, hp, maxmp:mp, mp, atk:s.atk+(bo.atk|0), spd:s.spd+(+bo.spd||0),
     sk: sp.sk.slice(0, slotsOf(lvl)), st:freshSt()}, extra||{});
-  o.fx={rmp:bo.rmp|0, rhp:bo.rhp|0, dflat:bo.dflat|0, tflat:bo.tflat|0};
+  o.fx={rmp:bo.rmp|0, rhp:bo.rhp|0, dflat:bo.dflat|0, tflat:bo.tflat|0, belem:bo.belem|0, bphys:bo.bphys|0};
   delete o.bonus; o.skl=skl;
   o.pas={}; o.sk.forEach(id=>{ const k=SK[id]; if(k&&k.k==='passive') o.pas[k.p]=lv(k.v, skl[id]||1); });
   return o;
 }
 function newBattle(teamA, teamB, opts){
-  const mk=m=>{ const x=makeMon(m.sp,m.lvl,{uid:m.uid,bonus:m.bonus,skl:m.skl}); if(m.hpMul){ x.maxhp=x.hp=Math.round(x.hp*m.hpMul); x.atk=Math.max(1,Math.round(x.atk*m.hpMul)); } return x; };
+  const mk=m=>{ const x=makeMon(m.sp,m.lvl,{uid:m.uid,bonus:m.bonus,skl:m.skl,items:Array.isArray(m.items)?m.items.slice(0,4):undefined}); if(m.hpMul){ x.maxhp=x.hp=Math.round(x.hp*m.hpMul); x.atk=Math.max(1,Math.round(x.atk*m.hpMul)); } return x; };
   const b = {sides:[{name:teamA.name, mons:teamA.mons.map(mk)},{name:teamB.name, mons:teamB.mons.map(mk)}],
     order:[], turnIdx:0, round:0, rng:(opts&&opts.seed)|| (Math.random()*2**31|0), log:[], ev:[], over:false, winner:null, seq:0, mode:(opts&&opts.mode)||'campaign', single:!!(opts&&opts.single)};
   if(b.single){ b.sides.forEach(sd=>sd.active=null); const f=rnd(b)<.5?0:1; b.phase='pick'; b.pickQ=[f,1-f]; b.pickSide=f; b.first=f; return b; }
@@ -222,14 +223,14 @@ function beginTurn(b){
     if(m.hp<=0){ b.turnIdx++; continue; }
     const st=m.st;
     ['bubble','lsh','fsh','fwall','nsh','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','zap','acid','eshift'].forEach(k=>{ if(st[k]>0){ st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
-    if(m.pas.camel){ const g=Math.min(m.maxmp-m.mp, Math.round(m.pas.camel)); if(g>0){ m.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,end:1}); } }
+    if(m.pas.camel){ const g=Math.min(m.maxmp-m.mp, Math.round(m.pas.camel)); if(g>0){ m.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,end:1,ph:2}); } }
     for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm'],['frost','water','the blizzard']]){
-      if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el}); log(b,`${m.n} is hurt by ${nm}.`); }
+      if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el,dk:k,ph:1}); log(b,`${m.n} is hurt by ${nm}.`); }
     }
-    if(st.roots>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*st.rootsV)); m.hp=Math.min(m.maxhp,m.hp+h); st.roots--; b.ev.push({k:'heal',s:a.s,i:a.i,v:h}); }
-    if(st.nsh>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*0.04)); m.hp=Math.min(m.maxhp,m.hp+h); b.ev.push({k:'heal',s:a.s,i:a.i,v:h}); }
+    if(st.roots>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*st.rootsV)); m.hp=Math.min(m.maxhp,m.hp+h); st.roots--; b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
+    if(st.nsh>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*0.04)); m.hp=Math.min(m.maxhp,m.hp+h); b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
     if(m.hp<=0){ log(b,`${m.n} fainted.`); if(checkOver(b)) return; if(b.single){ needPicks(b); return; } b.turnIdx++; continue; }
-    if(st.stun>0){ st.stun--; log(b,`${m.n} is stunned and can't move!`); b.ev.push({k:'stun',s:a.s,i:a.i}); b.turnIdx++; continue; }
+    if(st.stun>0){ st.stun--; log(b,`${m.n} is stunned and can't move!`); b.ev.push({k:'stun',s:a.s,i:a.i,ph:1}); b.turnIdx++; continue; }
     b.swapped=false;
     return;
   }
@@ -280,17 +281,23 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   if(el==='neutral' && d.pas.hard) dmg*=1-d.pas.hard;
   dmg = Math.max(1, Math.round(dmg));
   let blocked=0;
+  { const f=d.fx||{}; const bl=(!el||el==='neutral')?(f.bphys|0):(f.belem|0); if(bl>0){ const x=Math.min(dmg,bl); dmg-=x; blocked+=x; } }
   for(const sh of (pierce?[]:['bubble','fsh','lsh','nsh','ash'])){
     if(dmg<=0) break;
     // shields reduce every direct hit by a flat amount while they're up (they don't wear down)
     if(d.st[sh]>0 && d.st[sh+'Hp']>0 && (!SHIELD_VS[sh] || SHIELD_VS[sh].includes(el))){ const ab=Math.min(dmg, d.st[sh+'Hp']); dmg-=ab; blocked+=ab; }
   }
-  if(d.st.mshield>0 && d.mp>0 && dmg>0){ const ab=Math.min(Math.round(dmg*d.st.mshieldV), d.mp*2); d.mp-=Math.ceil(ab/2); dmg-=ab; blocked+=ab; }
+  // Absorb and Mana Shield resolve in the order they were cast:
+  //  absorb first -> gain mana, then the shield pays for the blocked damage out of mana; shield first -> mana pays, life drops, then absorb refills
+  const absOn=d.st.absorb>0, mshOn=d.st.mshield>0, absFirst=absOn&&(!mshOn||(d.st.absorbAt||0)<(d.st.mshieldAt||0));
+  const doAbsorb=()=>{ const left=Math.max(0,Math.min(dmg,d.hp)); if(absOn && left>0 && d.hp-left>0){ const g=Math.min(d.maxmp-d.mp, Math.round(left*d.st.absorbV)); if(g>0){ d.mp+=g; b.ev.push({k:'mana',s:ds,i:di,v:g,absorb:1}); } } };
+  const doShield=()=>{ if(mshOn && d.mp>0 && dmg>0){ const ab=Math.min(Math.round(dmg*d.st.mshieldV), d.mp); if(ab>0){ d.mp-=ab; dmg-=ab; blocked+=ab; b.ev.push({k:'mana',s:ds,i:di,v:-ab,msh:1}); } } };
+  let absLater=false;
+  if(absFirst){ doAbsorb(); doShield(); } else { doShield(); absLater=true; }
   dmg=Math.max(0,Math.min(dmg,d.hp));  // never more than the life they had left
-  // Absorb: the mana gain shows first, right before the damage lands
-  if(d.st.absorb>0 && dmg>0 && d.hp-dmg>0){ const g=Math.min(d.maxmp-d.mp, Math.round(dmg*d.st.absorbV)); if(g>0){ d.mp+=g; b.ev.push({k:'mana',s:ds,i:di,v:g,absorb:1}); } }
   d.hp = Math.max(0, d.hp-dmg);
   b.ev.push({k:'hit',s:ds,i:di,v:dmg,crit,eff:elemMult(el,d.el)>1?'up':elemMult(el,d.el)<1?'down':'',el,blocked});
+  if(absLater&&d.hp>0){ const left=dmg; if(absOn && left>0){ const g=Math.min(d.maxmp-d.mp, Math.round(left*d.st.absorbV)); if(g>0){ d.mp+=g; b.ev.push({k:'mana',s:ds,i:di,v:g,absorb:1,after:1}); } } }
   if(d.st.lsh>0 && a.hp>0 && (dmg+blocked)>0){ const r=Math.min(a.hp,Math.max(1,Math.round((dmg+blocked)*0.25))); a.hp=Math.max(0,a.hp-r); b.ev.push({k:'hit',s:as.s,i:as.i,v:r,el:'bolt'}); }
   // Fire Wall: every direct hit on you burns the attacker for a fixed amount (blocks nothing)
   if(d.st.fwall>0 && a.hp>0 && a!==d){ const r=Math.min(a.hp,Math.round(d.st.fwallV||0)); if(r>0){ a.hp=Math.max(0,a.hp-r); b.ev.push({k:'hit',s:as.s,i:as.i,v:r,el:'fire'}); log(b,`The fire wall burns ${a.n}!`); } }
@@ -376,9 +383,9 @@ function act(b, action){
     const d=b.sides[foe].mons[tgt]; const x=Math.min(d.mp, Math.round(lv(sk.steal,L))); d.mp-=x; me.mp=Math.min(me.maxmp,me.mp+x); log(b,`${me.n} stole ${x} mana!`);
   }
   if(me.hp>0 && !b.over){
-    if(me.pas.roots!=null){ const h=Math.min(me.maxhp-me.hp, Math.round(me.maxhp*me.pas.roots)); me.hp+=h; b.ev.push({k:'heal',s:a.s,i:a.i,v:h,end:1}); }
-    if(me.fx.rhp){ const h=Math.min(me.maxhp-me.hp, me.fx.rhp); me.hp+=h; b.ev.push({k:'heal',s:a.s,i:a.i,v:h,end:1}); }
-    if(me.fx.rmp){ const g=Math.min(me.maxmp-me.mp, me.fx.rmp); me.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,end:1}); }
+    if(me.pas.roots!=null){ const h=Math.min(me.maxhp-me.hp, Math.round(me.maxhp*me.pas.roots)); me.hp+=h; b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
+    if(me.fx.rhp&&me.hp>0){ const h=Math.min(me.maxhp-me.hp, me.fx.rhp); me.hp+=h; b.ev.push({k:'heal',s:a.s,i:a.i,v:me.fx.rhp,rv:h,end:1,ph:3}); }
+    if(me.fx.rmp&&me.hp>0){ const g=Math.min(me.maxmp-me.mp, me.fx.rmp); me.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:me.fx.rmp,rv:g,end:1,ph:3}); }
   }
   b.seq++;
   if(checkOver(b)) return true;
