@@ -228,7 +228,7 @@ animateBattle=(function(prev){ return function(root,b,animating){
   const r=prev(root,b,animating); if(!animating) return r;
   try{ const evs=b.ev||[]; const a=evs.find(e=>e.k==='act'); const sk=a&&SK[a.sk]; if(!sk) return r;
     const ac=fEl(a.s,a.i); if(!ac) return r; const [x0,y0]=fCenter(ac); const ar=localRect(ac.querySelector('.fart')); const size=Math.max(50,ar.width*.55);
-    const el=EL[sk.el]?sk.el:'neutral'; const hits=evs.filter(e=>(e.k==='hit'||e.k==='dot'||e.k==='stun'||e.k==='miss')&&e.s!==a.s);
+    const el=EL[sk.el]?sk.el:'neutral'; const hits=evs.filter(e=>(e.k==='hit'||e.k==='stun'||e.k==='miss'||(e.k==='buff'&&!e.ph))&&e.s!==a.s);
     const tg=[...new Set(hits.map(h=>h.s+'-'+h.i))].map(k=>fEl(+k.split('-')[0],+k.split('-')[1])).filter(Boolean);
     if(sk.t==='enemy'||sk.t==='allE'){
       if(a.sk==='basic'&&tg.length){ fxTackle(ac,tg[0],a.s===B.mySide); }
@@ -710,7 +710,7 @@ function evSchedule(b){ const evs=b.ev||[]; const a=evs.find(e=>e.k==='act'), sk
     if(false);
     else if((e.k==='buff'||e.k==='miss')&&a&&e.s!==a.s&&!(e.k==='miss'||e.missed)){ e._d=(hitEnd>=0?hitEnd:T)+450; deb=Math.max(deb,e._d); }
     else e._d=T+80; });
-  let cur=Math.max(hitEnd>=0?hitEnd+700:T+500, deb>=0?deb+500:0);
+  let cur=Math.max(hitEnd>=0?hitEnd+700:T+500, deb>=0?deb+800:0);
   [1,2,3].forEach(ph=>evs.forEach(e=>{ if(e.ph!==ph) return; if(ph===1){ e._fx=cur; e._d=cur+(e.k==='dot'?380:0); cur+=850; } else { e._d=cur; cur+=650; } }));
   const last=Math.max(0,...evs.map(e=>e._d||0)); b._animTotal=Math.max(cur, last+500); return b._animTotal; }
 syncHud=(function(prev){ return function(b){ prev(b); if(!B||!B.b) return;
@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v173 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v174 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1369,7 +1369,7 @@ act=(function(prev){ return function(b,action){
 // items listed one card per copy (three Krill's Swords show as three)
 function itemLine(id){ const it=ITEMS[id], f=it.fx||{}, b=it.b||{};
   if(f.rmp) return `Recovers ${f.rmp} mana after each turn`; if(f.rhp) return `Recovers ${f.rhp} life after each turn`;
-  if(f.dflat) return `+${f.dflat} damage on attacks, takes +${f.tflat} more`;
+  if(f.dflat) return `Deals ${f.dflat} more damage to foes, takes ${f.tflat} more damage from foes`;
   if(f.belem||f.bphys) return `Blocks ${f.belem|0} elemental and ${f.bphys|0} physical damage`;
   return Object.keys(b).map(k=>`+${b[k]} ${STAT_N[k]||k}`).join(', '); }
 function itemCopies(fx,m){
@@ -1391,3 +1391,7 @@ drawTasks=(function(prev){ return function(){ const l=document.querySelector('.t
     vest:S0+'<path d="M20 8 L12 14 L10 54 Q20 58 30 56 L30 22 Z" fill="#3a6ad8" stroke="#1a2a5a" stroke-width="2.5" stroke-linejoin="round"/><path d="M44 8 L52 14 L54 54 Q44 58 34 56 L34 22 Z" fill="#3a6ad8" stroke="#1a2a5a" stroke-width="2.5" stroke-linejoin="round"/><path d="M20 8 Q26 18 30 22 M44 8 Q38 18 34 22" stroke="#1a2a5a" stroke-width="2.5" fill="none"/><circle cx="27" cy="32" r="2" fill="#ffd84d"/><circle cx="27" cy="42" r="2" fill="#ffd84d"/><path d="M14 30 L28 28 M50 30 L36 28" stroke="#ffd84d" stroke-width="3"/>'+E,
     diploma:S0+'<rect x="8" y="16" width="48" height="28" rx="3" fill="#fff6dc" stroke="#7a5a2a" stroke-width="2.5"/><circle cx="8" cy="30" r="6" fill="#e8d6a8" stroke="#7a5a2a" stroke-width="2"/><circle cx="56" cy="30" r="6" fill="#e8d6a8" stroke="#7a5a2a" stroke-width="2"/><path d="M16 24h24M16 30h28M16 36h18" stroke="#b09a6a" stroke-width="2" stroke-linecap="round"/><circle cx="44" cy="40" r="7" fill="#e3262d" stroke="#7a0a0a" stroke-width="1.6"/><path d="M40 46 37 58 44 54 51 58 48 46" fill="#e3262d" stroke="#7a0a0a" stroke-width="1.4"/>'+E };
   itemSVG=(function(prev){ return function(id){ return ART[id]||prev(id); }; })(itemSVG); })();
+// other players' monster cards list each equipped item (three Krill's Swords show as three)
+openMonRO=(function(prev){ return function(t,owner){ const sh=prev(t,owner); try{ const b=t.bonus||{};
+  const items=itemCopies({rmp:b.rmp|0,rhp:b.rhp|0,dflat:b.dflat|0,tflat:b.tflat|0},{items:t.items});
+  if(items.length&&sh&&sh.body){ const p=sh.body.querySelector('.prof'); if(p) p.insertAdjacentHTML('beforeend',`<h3 class="ph">Items</h3><div class="mi2-items">${items.map(([id])=>`<div class="pab"><span class="mi2-it">${itemSVG(id)}</span><div class="pab-t"><b>${ITEMS[id].n}</b><span>${itemLine(id)}</span></div></div>`).join('')}</div>`); } }catch(_){} return sh; }; })(openMonRO);

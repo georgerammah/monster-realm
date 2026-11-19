@@ -222,7 +222,7 @@ function beginTurn(b){
     const a = actor(b); const m=a.m;
     if(m.hp<=0){ b.turnIdx++; continue; }
     const st=m.st;
-    ['bubble','lsh','fsh','fwall','nsh','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','zap','acid','eshift'].forEach(k=>{ if(st[k]>0){ st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
+    ['bubble','lsh','fsh','fwall','nsh','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','zap','acid','eshift'].forEach(k=>{ if(st[k]>0){ if(st[k+'F']){ st[k+'F']=0; return; } st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
     if(m.pas.camel){ const g=Math.min(m.maxmp-m.mp, Math.round(m.pas.camel)); if(g>0){ m.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,end:1,ph:2}); } }
     for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm'],['frost','water','the blizzard']]){
       if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el,dk:k,ph:1}); log(b,`${m.n} is hurt by ${nm}.`); }
@@ -344,7 +344,7 @@ function act(b, action){
       if(d0.hp>0 && sk.zap){ d0.st.zap=sk.zapTurns||6; d0.st.zapV=sk.zap; b.ev.push({k:'buff',s:foe,i:ti,b:'zap'}); }
       if(d0.hp>0 && sk.soak){ addStack(d0.st,'soak',Array.isArray(sk.soak)?lv(sk.soak,L):sk.soak,sk.soakTurns||6,skId); b.ev.push({k:'buff',s:foe,i:ti,b:'soak'}); }
       if(d0.hp>0 && sk.scorch){ addStack(d0.st,'scorch',Array.isArray(sk.scorch)?lv(sk.scorch,L):sk.scorch,sk.scorchTurns||6,skId); b.ev.push({k:'buff',s:foe,i:ti,b:'scorch'}); }
-      if(d0.hp>0 && sk.weaken){ d0.st.cripple=2; d0.st.crippleV=Math.max(d0.st.crippleV||0, lv(sk.weaken,L)); b.ev.push({k:'buff',s:foe,i:ti,b:'cripple'}); }
+      if(d0.hp>0 && sk.weaken){ d0.st.cripple=2; d0.st.crippleF=1; d0.st.crippleV=Math.max(d0.st.crippleV||0, lv(sk.weaken,L)); b.ev.push({k:'buff',s:foe,i:ti,b:'cripple'}); }
       const d=b.sides[foe].mons[ti]; if(d.hp<=0) return;
       if(sk.burn && rnd(b)<lv(sk.burn,L) && !(d.pas.sweaty && rnd(b)<0.5)){ d.st.burn=3; d.st.burnD=sk.btick?lv(sk.btick,L):8; log(b,`${d.n} was burned!`); }
       if(sk.stun && rnd(b)<lv(sk.stun,L)){ d.st.stun=1; log(b,`${d.n} is stunned!`); }
@@ -369,7 +369,7 @@ function act(b, action){
   } else if(sk.k==='buff'){
     me.st[sk.buff]=sk.turns; me.st[sk.buff+'V']=lv(sk.v,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:sk.buff});
   } else if(sk.k==='debuff'){
-    const d=b.sides[foe].mons[tgt]; d.st[sk.buff]=sk.turns; d.st[sk.buff+'V']=Math.min(.75,lv(sk.v,L)); if(sk.v2) d.st[sk.buff+'R']=lv(sk.v2,L); b.ev.push({k:'buff',s:foe,i:tgt,b:sk.buff}); log(b,sk.buff==='cripple'?`${d.n} is crippled!`:`${d.n} is weakened!`);
+    const d=b.sides[foe].mons[tgt]; d.st[sk.buff]=sk.turns; d.st[sk.buff+'F']=1; d.st[sk.buff+'V']=Math.min(.75,lv(sk.v,L)); if(sk.v2) d.st[sk.buff+'R']=lv(sk.v2,L); b.ev.push({k:'buff',s:foe,i:tgt,b:sk.buff}); log(b,sk.buff==='cripple'?`${d.n} is crippled!`:`${d.n} is weakened!`);
   } else if(sk.k==='heal'){
     if(sk.hot){ me.st.roots=sk.turns; me.st.rootsV=lv(sk.hot,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
     if(sk.heal){ const hv=Math.round(me.maxhp*lv(sk.heal,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }

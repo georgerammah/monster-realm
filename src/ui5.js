@@ -140,10 +140,10 @@ function hudIcons(m){
   Object.keys(m.pas||{}).forEach(p=>{ const id=Object.keys(SK).find(k=>SK[k].p===p); out.push(`<span class="hi" data-tip="${id?esc(SK[id].n+' (passive, Lv '+(m.skl[id]||1)+')|'+skillDesc(id,m.skl[id]||1)):''}">${icon(p==='roots'?'plus':PAS_IC[p]||'star','#e3262d',30)}</span>`); });
   const f=m.fx||{};
   // item effects: one dot per effect type (same effects from several items are added together)
-  if(f.dflat) out.push(`<span class="hi ifx" data-tip="Damage Dealt|+${f.dflat} damage on every attack">${ITEM_FX_IC}</span>`);
+  if(f.dflat) out.push(`<span class="hi ifx" data-tip="Damage Dealt|Deals ${f.dflat} more damage to foes">${ITEM_FX_IC}</span>`);
   if(f.belem) out.push(`<span class="hi ifx" data-tip="Elemental Block|Blocks ${f.belem} nature, fire, lightning and water damage from every attack">${ITEM_FX_IC}</span>`);
   if(f.bphys) out.push(`<span class="hi ifx" data-tip="Physical Block|Blocks ${f.bphys} physical damage from every attack">${ITEM_FX_IC}</span>`);
-  if(f.tflat) out.push(`<span class="hi ifx" data-tip="Damage Taken|+${f.tflat} damage from every attack">${ITEM_FX_IC}</span>`);
+  if(f.tflat) out.push(`<span class="hi ifx" data-tip="Damage Taken|Takes ${f.tflat} more damage from foes">${ITEM_FX_IC}</span>`);
   if(f.rhp) out.push(`<span class="hi" data-tip="Life Bowl|Recovers ${f.rhp} life after each turn">${icon('plus','#e0475b',30)}</span>`);
   if(f.rmp) out.push(`<span class="hi" data-tip="Mana Bowl|Recovers ${f.rmp} mana after each turn">${icon('plus','#4a9cf0',30)}</span>`);
   Object.keys(ST_ICON).filter(k=>m.st[k]>0).forEach(k=>out.push(`<span class="hi st" data-tip="${BUFF_N[k]||k}|Active for ${m.st[k]} more turn${m.st[k]>1?'s':''}">${icon(ST_ICON[k][0],ST_ICON[k][1],26)}</span>`));

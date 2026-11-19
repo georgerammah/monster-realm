@@ -1561,6 +1561,12 @@ body{overscroll-behavior:none}
 .dotpop{position:absolute;left:50%;top:18%;transform:translate(-50%,-50%) scale(.3);opacity:0;z-index:6;pointer-events:none;animation:dotpop .9s ease-out forwards;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
 @keyframes dotpop{20%{transform:translate(-50%,-60%) scale(1.15);opacity:1}60%{transform:translate(-50%,-60%) scale(1);opacity:1}100%{transform:translate(-50%,-75%) scale(.9);opacity:0}}
 .float2{animation-duration:1.5s!important}
+
+/* champion cards: Monster Kingdom header (pentagon level badge, gold star when mastered, then the name) */
+.cc-h .lvb{flex:none;width:30px;height:33px;min-width:0;padding:0 0 6px;border-radius:3px;clip-path:polygon(0 0,100% 0,100% 72%,50% 100%,0 72%);background:linear-gradient(#e07ad8,#a0309a)!important;box-shadow:none!important;font:17px "Lilita One",system-ui;color:#fff}
+.cc-h .lvb.mast,.cc-h .lvb.mst{background:linear-gradient(#f7e27a,#c99a1e 55%,#a67812)!important}
+.cc-h .lvb.mast svg,.cc-h .lvb.mst svg{width:19px!important;height:19px!important;flex:none}
+.lvb.mast{flex:none}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
