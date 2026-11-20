@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v197 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v198 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1734,3 +1734,13 @@ drawTasks=(function(prev){ return function(){ prev(); if(!TASKSH) return; const 
   if(f) f.textContent=run>1?`${z.n} — Run ${run} · ${tl.length-left} of ${tl.length} missions done`:`${z.n} — ${tl.length-left} of ${tl.length} missions done`; }; })(drawTasks);
 // battle missions only need to be won once
 taskList=(function(prev){ return function(zi){ return prev(zi).map(t=>(t.t==='fight'||t.t==='boss')?Object.assign(t,{reps:1}):t); }; })(taskList);
+// only real Monster Kingdom monsters: remove retired species from saves, returning their items
+function purgeRetired(){ if(typeof S==='undefined'||!S||!Array.isArray(S.mons)) return 0;
+  const bad=m=>!m||!SPI[m.sp]||SPI[m.sp].legacy; const gone=S.mons.filter(bad); if(!gone.length) return 0;
+  S.inv=S.inv||{}; let top=1; gone.forEach(m=>{ top=Math.max(top,m.lvl|0); (m.eq||[]).forEach(id=>{ if(id) S.inv[id]=(S.inv[id]|0)+1; }); });
+  S.mons=S.mons.filter(m=>!bad(m)); S.team=(S.team||[]).filter(u=>S.mons.some(m=>m.uid===u));
+  if(!S.mons.length) addMon('zephyra',top);
+  [...S.mons].sort((a,b)=>(b.lvl|0)-(a.lvl|0)).forEach(m=>{ if(S.team.length<3&&!S.team.includes(m.uid)) S.team.push(m.uid); });
+  return gone.length; }
+if(purgeRetired()){ try{ persist(); render(); }catch(e){} }
+persist=(function(prev){ return function(){ purgeRetired(); return prev.apply(this,arguments); }; })(persist);
