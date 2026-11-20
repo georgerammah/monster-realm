@@ -3716,7 +3716,7 @@ const ITEMS = {
   crystal:{n:'Mana Crystal', cost:160, lv:6, b:{mp:22}},
   ironshell:{n:'Iron Shell', cost:170, lv:6, b:{hp:32}},
   fang:{n:'Sharp Fang', cost:190, lv:8, b:{atk:6}},
-  collar:{n:'Spiked Collar', cost:420, lv:12, b:{atk:8,hp:20}},
+  collar:{n:'Spiked Collar', cost:5600, lv:7, b:{atk:10}},
   crown:{n:'Golden Crown', cost:700, lv:16, b:{atk:10,hp:45}},
   orb:{n:'Storm Orb', cost:760, lv:18, b:{mp:55}},
   manabowl:{n:'Mana Bowl', cost:0, mush:20, lv:4, b:{mp:8}, fx:{rmp:16}},
@@ -4876,7 +4876,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (182).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (183).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6526,7 +6526,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v182 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v183 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -7032,6 +7032,12 @@ function buyRare(id){ const s=SPI[id]; if(!s) return; if(S.mush<50) return toast
 // Cripple uses MK's symbol: a white bone lying flat on an orange disc
 ICON.mkbone='<g transform="translate(0.5 3.6) rotate(-45 12 12)">'+ICON.mkbone+'</g>';
 icon=(function(prev){ return function(key,bg,size){ return prev(key, key==='mkbone'?'#f39a2b':bg, size); }; })(icon);
+
+// Spiked Collar: gold band with white spikes
+itemSVG=(function(prev){ const A='<svg viewBox="0 0 64 64">'+[...Array(12)].map((_,i)=>{ const a=i/12*Math.PI*2, x=32+Math.cos(a)*17, y=34+Math.sin(a)*11, X=32+Math.cos(a)*30, Y=34+Math.sin(a)*22;
+    const px=-Math.sin(a)*4.4, py=Math.cos(a)*3; return `<path d="M${(x+px).toFixed(1)} ${(y+py).toFixed(1)} L${X.toFixed(1)} ${Y.toFixed(1)} L${(x-px).toFixed(1)} ${(y-py).toFixed(1)}Z" fill="#f4f0e4" stroke="#2b2216" stroke-width="1" stroke-linejoin="round"/>`; }).join('')
+  +'<ellipse cx="32" cy="34" rx="18" ry="11.5" fill="none" stroke="#2b2216" stroke-width="8"/><ellipse cx="32" cy="34" rx="18" ry="11.5" fill="none" stroke="#e8b52a" stroke-width="5"/><ellipse cx="32" cy="33" rx="18" ry="11.5" fill="none" stroke="#ffe27a" stroke-width="1.4" stroke-dasharray="9 6"/></svg>';
+  return function(id){ return id==='collar'?A:prev(id); }; })(itemSVG);
 
 </script>
 
