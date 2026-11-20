@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v187 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v188 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1586,3 +1586,36 @@ openSub=(function(prev){ return function(key,btn){ if(key==='shop'){ closeSub();
   SP.push(fs); SPI.firescream=fs; ATK_MOUTH.krill=ATK_MOUTH.wing||ATK_MOUTH.bird;
 })();
 var ZBOSS={peaks:'firescream'};
+// ---------- Warhog: rare monster (shop only, 50 mushrooms) with Warcry ----------
+(function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
+  SK.warcry={n:'Warcry', el:'neutral', t:'self', k:'buff', buff:'wdef', v:P(.05,.23), wcry:P(.12,.4), turns:4, mp:P(15,60),
+    desc:"A bellowing warcry which reduces your enemy's physical attack by {wcry} and raises your own physical defense by {v} for {turns} turns."};
+  DEFAULT_SK.warcry=JSON.parse(JSON.stringify(SK.warcry));
+  ICON.mkwarcry='<path d="M5 9.5h3.2L13.6 5v14l-5.4-4.5H5Z" fill="#fff"/><path d="M16 8.2q2.4 3.8 0 7.6M18.4 6.2q3.8 5.8 0 11.6" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/>';
+  skIconKey=(function(prev){ return function(id){ return id==='warcry'?'mkwarcry':prev(id); }; })(skIconKey);
+  ST_ICON.wdef=['mkwarcry','#e8501e']; ST_ICON.wcry=['mkwarcry','#e8501e']; BUFF_N.wdef='Warcry'; BUFF_N.wcry='Warcry';
+  stDesc=(function(prev){ return function(m,k){ const T=t=>`${t} turn${t>1?'s':''}`, p=v=>Math.round((v||0)*100)+'%';
+    if(k==='wdef') return `Takes ${p(m.st.wdefV)} less physical damage (${T(m.st.wdef)})`; if(k==='wcry') return `Deals ${p(m.st.wcryV)} less physical damage (${T(m.st.wcry)})`; return prev(m,k); }; })(stDesc);
+  skillDesc=(function(prev){ return function(id,L){ if(id!=='warcry') return prev(id,L); const s=SK.warcry, pc=v=>Math.round(lv(v,L||1)*100)+'%'; return s.desc.replace('{wcry}',pc(s.wcry)).replace('{v}',pc(s.v)).replace('{turns}',s.turns); }; })(skillDesc);
+  FAM.warhog={n:'Rare', el:'neutral', shape:'warhog', base:{hp:84,atk:16,mp:52,spd:11}};
+  const sp={id:'warhog',n:'Warhog',fam:'warhog',col:['#f07aa0','#3ab8c8','#fff0f4'],tw:{},sk:['warcry','trample','furyfist','pounce'],rare:1};
+  SP.push(sp); SPI.warhog=sp; ATK_MOUTH.warhog=[1.4,2,1];
+  function warhogNew(c1,c2,c3,st,id){ const G=id+'a', dk=shade(c1,-30); let d=`<defs>${grad(G,c1)}</defs>`, g='';
+    g+=`<path d="M17 60 q-6 -2 -6 4 q2 3 5 0" fill="none" stroke="${OL3}" stroke-width="2.2" stroke-linecap="round"/>`;
+    g+=leg3(28,72,26,82,26,90,6.6,dk)+leg3(52,72,54,82,54,90,6.6,dk);
+    g+=`<path d="M16 64 Q14 46 34 42 Q56 38 66 50 Q72 62 64 72 Q44 80 24 74Z" fill="url(#${G})" ${s3}/>`;
+    for(let k=0;k<3+st;k++){ const x=26+k*9; g+=`<path d="M${x} 46 q4 12 0 26" fill="none" stroke="${c2}" stroke-width="3" stroke-linecap="round" opacity=".85"/>`; }
+    const mh=6+st*3; g+=`<path d="M24 46 Q30 ${38-mh} 38 ${42-mh*.6} Q44 ${34-mh} 50 ${40-mh*.6} Q58 ${34-mh*.8} 62 44 Q46 40 24 46Z" fill="${c2}" ${s3}/>`;
+    if(st>=1) g+=`<path d="M34 50 Q24 42 18 50 Q24 56 34 54Z" fill="#f4f0e4" ${s3} stroke-width="1.6"/>`;
+    g+=leg3(33,74,32,83,32,90,7,`url(#${G})`,1)+leg3(58,72,60,82,61,90,7,`url(#${G})`,1);
+    const hx=72, hy=56;
+    g+=`<path d="M${hx-12} ${hy-8} Q${hx-6} ${hy-16} ${hx+6} ${hy-12} Q${hx+16} ${hy-6} ${hx+16} ${hy+4} Q${hx+14} ${hy+12} ${hx+2} ${hy+12} Q${hx-10} ${hy+10} ${hx-12} ${hy-8}Z" fill="url(#${G})" ${s3}/>`;
+    g+=`<path d="M${hx-6} ${hy-12} l-3 -8 l7 5Z" fill="${c1}" ${s3} stroke-width="1.6"/>`;
+    g+=`<ellipse cx="${hx+14}" cy="${hy+5}" rx="5" ry="4.4" fill="${c3}" ${s3} stroke-width="1.6"/><circle cx="${hx+13}" cy="${hy+4}" r="1" fill="${OL3}"/><circle cx="${hx+16}" cy="${hy+4.6}" r="1" fill="${OL3}"/>`;
+    const tl=6+st*4; g+=`<path d="M${hx+8} ${hy+8} Q${hx+14+tl*.4} ${hy+8+tl*.3} ${hx+12+tl*.5} ${hy-tl*.6}" fill="none" stroke="${OL3}" stroke-width="5.2" stroke-linecap="round"/><path d="M${hx+8} ${hy+8} Q${hx+14+tl*.4} ${hy+8+tl*.3} ${hx+12+tl*.5} ${hy-tl*.6}" fill="none" stroke="#fff8e8" stroke-width="3" stroke-linecap="round"/>`;
+    g+=eye3(hx+4,hy-3,st===0?3.8:3.3,'#3a2a1a',st,4);
+    return d+g; }
+  monSVG=(function(prev){ return function(spId,lvl,cls){ const s=SPI[spId]; if(!s||s.fam!=='warhog') return prev(spId,lvl,cls);
+    const st=stageOf(lvl); const c1=mute(s.col[0],22), c2=mute(s.col[1],12), c3=mute(s.col[2],10); const id='m'+(GID++); const sc=[0.82,0.92,1][st];
+    return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${sc}) translate(-50 -92)">${warhogNew(c1,c2,c3,st,id)}</g></svg>`; }; })(monSVG);
+})();

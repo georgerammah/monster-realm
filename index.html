@@ -1852,7 +1852,7 @@ function beginTurn(b){
     const a = actor(b); const m=a.m;
     if(m.hp<=0){ b.turnIdx++; continue; }
     const st=m.st;
-    ['bubble','lsh','fsh','fwall','nsh','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','zap','acid','eshift','crush','taunt'].forEach(k=>{ if(st[k]>0){ if(st[k+'F']){ st[k+'F']=0; return; } st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
+    ['bubble','lsh','fsh','fwall','nsh','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','zap','acid','eshift','crush','taunt','wcry','wdef'].forEach(k=>{ if(st[k]>0){ if(st[k+'F']){ st[k+'F']=0; return; } st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
     if(m.pas.camel){ const g=Math.min(m.maxmp-m.mp, Math.round(m.pas.camel)); if(g>0){ m.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,end:1,ph:2}); } }
     for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm'],['frost','water','the blizzard'],['soul','nature','soul drain']]){
       if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el,dk:k,ph:1}); log(b,`${m.n} is hurt by ${nm}.`);
@@ -1900,6 +1900,8 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   if((!el||el==='neutral') && d.st.crush>0) dmg*=1+(d.st.crushV||0);
   if((!el||el==='neutral') && d.st.taunt>0) dmg*=1+(d.st.tauntV||0);
   if((!el||el==='neutral') && a.st && a.st.taunt>0) dmg*=1+(a.st.tauntV||0);
+  if((!el||el==='neutral') && a.st && a.st.wcry>0) dmg*=1-(a.st.wcryV||0);
+  if((!el||el==='neutral') && d.st.wdef>0) dmg*=1-(d.st.wdefV||0);
   if(el==='bolt' && d.st.zap>0) dmg*=1+(d.st.zapV||0);
   if(el==='nature' && d.st.acid>0) dmg*=1+(d.st.acidV||0);
   if(a.st.eshift>0 && (el==='bolt'||el==='neutral')) dmg*=1-(a.st.eshiftV||0);
@@ -2007,13 +2009,14 @@ function act(b, action){
     me.st[sk.sh]=sk.turns; me.st[sk.sh+'Hp']=Math.round(lv(sk.amt,L)); b.ev.push({k:'buff',s:a.s,i:a.i,b:sk.sh});
   } else if(sk.k==='buff'){
     me.st[sk.buff]=sk.turns; me.st[sk.buff+'V']=lv(sk.v,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:sk.buff});
+    if(sk.wcry){ const d=b.sides[foe].mons[tgt!=null&&b.sides[foe].mons[tgt]&&b.sides[foe].mons[tgt].hp>0?tgt:(b.sides[foe].active!=null?b.sides[foe].active:b.sides[foe].mons.findIndex(x=>x.hp>0))]; if(d&&d.hp>0){ d.st.wcry=sk.turns; d.st.wcryF=1; d.st.wcryV=lv(sk.wcry,L); b.ev.push({k:'buff',s:foe,i:tgt,b:'wcry'}); } }
   } else if(sk.k==='debuff'){
     const d=b.sides[foe].mons[tgt]; d.st[sk.buff]=sk.turns; d.st[sk.buff+'F']=1; d.st[sk.buff+'V']=Math.min(.75,lv(sk.v,L)); if(sk.v2) d.st[sk.buff+'R']=lv(sk.v2,L); b.ev.push({k:'buff',s:foe,i:tgt,b:sk.buff}); log(b,sk.buff==='cripple'?`${d.n} is crippled!`:`${d.n} is weakened!`);
   } else if(sk.k==='heal'){
     if(sk.hot){ me.st.roots=sk.turns; me.st.rootsV=lv(sk.hot,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
     if(sk.heal){ const hv=Math.round(me.maxhp*lv(sk.heal,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.healFlat){ const hv=Math.round(lv(sk.healFlat,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
-    if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','scorch','zap','acid','eshift','crush','taunt','soul'].forEach(k=>me.st[k]=0); me.st.soakS=[]; me.st.scorchS=[]; }
+    if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','scorch','zap','acid','eshift','crush','taunt','soul','wcry'].forEach(k=>me.st[k]=0); me.st.soakS=[]; me.st.scorchS=[]; }
   } else if(sk.k==='drain' && sk.stealHp){
     const d=b.sides[foe].mons[tgt];
     if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:foe,i:tgt}); log(b,`${a.n} missed!`); }
@@ -4882,7 +4885,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (187).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (188).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6532,7 +6535,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v187 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v188 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -7143,6 +7146,39 @@ openSub=(function(prev){ return function(key,btn){ if(key==='shop'){ closeSub();
   SP.push(fs); SPI.firescream=fs; ATK_MOUTH.krill=ATK_MOUTH.wing||ATK_MOUTH.bird;
 })();
 var ZBOSS={peaks:'firescream'};
+// ---------- Warhog: rare monster (shop only, 50 mushrooms) with Warcry ----------
+(function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
+  SK.warcry={n:'Warcry', el:'neutral', t:'self', k:'buff', buff:'wdef', v:P(.05,.23), wcry:P(.12,.4), turns:4, mp:P(15,60),
+    desc:"A bellowing warcry which reduces your enemy's physical attack by {wcry} and raises your own physical defense by {v} for {turns} turns."};
+  DEFAULT_SK.warcry=JSON.parse(JSON.stringify(SK.warcry));
+  ICON.mkwarcry='<path d="M5 9.5h3.2L13.6 5v14l-5.4-4.5H5Z" fill="#fff"/><path d="M16 8.2q2.4 3.8 0 7.6M18.4 6.2q3.8 5.8 0 11.6" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/>';
+  skIconKey=(function(prev){ return function(id){ return id==='warcry'?'mkwarcry':prev(id); }; })(skIconKey);
+  ST_ICON.wdef=['mkwarcry','#e8501e']; ST_ICON.wcry=['mkwarcry','#e8501e']; BUFF_N.wdef='Warcry'; BUFF_N.wcry='Warcry';
+  stDesc=(function(prev){ return function(m,k){ const T=t=>`${t} turn${t>1?'s':''}`, p=v=>Math.round((v||0)*100)+'%';
+    if(k==='wdef') return `Takes ${p(m.st.wdefV)} less physical damage (${T(m.st.wdef)})`; if(k==='wcry') return `Deals ${p(m.st.wcryV)} less physical damage (${T(m.st.wcry)})`; return prev(m,k); }; })(stDesc);
+  skillDesc=(function(prev){ return function(id,L){ if(id!=='warcry') return prev(id,L); const s=SK.warcry, pc=v=>Math.round(lv(v,L||1)*100)+'%'; return s.desc.replace('{wcry}',pc(s.wcry)).replace('{v}',pc(s.v)).replace('{turns}',s.turns); }; })(skillDesc);
+  FAM.warhog={n:'Rare', el:'neutral', shape:'warhog', base:{hp:84,atk:16,mp:52,spd:11}};
+  const sp={id:'warhog',n:'Warhog',fam:'warhog',col:['#f07aa0','#3ab8c8','#fff0f4'],tw:{},sk:['warcry','trample','furyfist','pounce'],rare:1};
+  SP.push(sp); SPI.warhog=sp; ATK_MOUTH.warhog=[1.4,2,1];
+  function warhogNew(c1,c2,c3,st,id){ const G=id+'a', dk=shade(c1,-30); let d=`<defs>${grad(G,c1)}</defs>`, g='';
+    g+=`<path d="M17 60 q-6 -2 -6 4 q2 3 5 0" fill="none" stroke="${OL3}" stroke-width="2.2" stroke-linecap="round"/>`;
+    g+=leg3(28,72,26,82,26,90,6.6,dk)+leg3(52,72,54,82,54,90,6.6,dk);
+    g+=`<path d="M16 64 Q14 46 34 42 Q56 38 66 50 Q72 62 64 72 Q44 80 24 74Z" fill="url(#${G})" ${s3}/>`;
+    for(let k=0;k<3+st;k++){ const x=26+k*9; g+=`<path d="M${x} 46 q4 12 0 26" fill="none" stroke="${c2}" stroke-width="3" stroke-linecap="round" opacity=".85"/>`; }
+    const mh=6+st*3; g+=`<path d="M24 46 Q30 ${38-mh} 38 ${42-mh*.6} Q44 ${34-mh} 50 ${40-mh*.6} Q58 ${34-mh*.8} 62 44 Q46 40 24 46Z" fill="${c2}" ${s3}/>`;
+    if(st>=1) g+=`<path d="M34 50 Q24 42 18 50 Q24 56 34 54Z" fill="#f4f0e4" ${s3} stroke-width="1.6"/>`;
+    g+=leg3(33,74,32,83,32,90,7,`url(#${G})`,1)+leg3(58,72,60,82,61,90,7,`url(#${G})`,1);
+    const hx=72, hy=56;
+    g+=`<path d="M${hx-12} ${hy-8} Q${hx-6} ${hy-16} ${hx+6} ${hy-12} Q${hx+16} ${hy-6} ${hx+16} ${hy+4} Q${hx+14} ${hy+12} ${hx+2} ${hy+12} Q${hx-10} ${hy+10} ${hx-12} ${hy-8}Z" fill="url(#${G})" ${s3}/>`;
+    g+=`<path d="M${hx-6} ${hy-12} l-3 -8 l7 5Z" fill="${c1}" ${s3} stroke-width="1.6"/>`;
+    g+=`<ellipse cx="${hx+14}" cy="${hy+5}" rx="5" ry="4.4" fill="${c3}" ${s3} stroke-width="1.6"/><circle cx="${hx+13}" cy="${hy+4}" r="1" fill="${OL3}"/><circle cx="${hx+16}" cy="${hy+4.6}" r="1" fill="${OL3}"/>`;
+    const tl=6+st*4; g+=`<path d="M${hx+8} ${hy+8} Q${hx+14+tl*.4} ${hy+8+tl*.3} ${hx+12+tl*.5} ${hy-tl*.6}" fill="none" stroke="${OL3}" stroke-width="5.2" stroke-linecap="round"/><path d="M${hx+8} ${hy+8} Q${hx+14+tl*.4} ${hy+8+tl*.3} ${hx+12+tl*.5} ${hy-tl*.6}" fill="none" stroke="#fff8e8" stroke-width="3" stroke-linecap="round"/>`;
+    g+=eye3(hx+4,hy-3,st===0?3.8:3.3,'#3a2a1a',st,4);
+    return d+g; }
+  monSVG=(function(prev){ return function(spId,lvl,cls){ const s=SPI[spId]; if(!s||s.fam!=='warhog') return prev(spId,lvl,cls);
+    const st=stageOf(lvl); const c1=mute(s.col[0],22), c2=mute(s.col[1],12), c3=mute(s.col[2],10); const id='m'+(GID++); const sc=[0.82,0.92,1][st];
+    return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${sc}) translate(-50 -92)">${warhogNew(c1,c2,c3,st,id)}</g></svg>`; }; })(monSVG);
+})();
 
 </script>
 
