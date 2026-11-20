@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v179 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v180 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1232,7 +1232,7 @@ function practiceTeam(){
   const gear=k=>{ const m=mine[k]||{}, b=m.bonus||{}; return {g:{rmp:b.rmp|0,rhp:b.rhp|0,dflat:b.dflat|0,tflat:b.tflat|0,belem:b.belem|0,bphys:b.bphys|0,dnat:b.dnat|0,dwat:b.dwat|0,dfir:b.dfir|0}, items:(m.items||[]).slice()}; };
   const abil=Math.max(1,Math.round(mine.reduce((t,m)=>{ const v=Object.values(m.skl||{}); return t+(v.length?v.reduce((a,b)=>a+b,0)/v.length:1); },0)/n));
   const myEls=mine.map(m=>FAM[SPI[m.sp].fam].el);
-  const pool=SP.filter(s=>FAM[s.fam]&&FAM[s.fam].shape!=='dummy'&&s.fam!=='dummy'&&!s.boss).map(s=>{ const el=FAM[s.fam].el;
+  const pool=SP.filter(s=>FAM[s.fam]&&FAM[s.fam].shape!=='dummy'&&s.fam!=='dummy'&&!s.boss&&!s.rare).map(s=>{ const el=FAM[s.fam].el;
     const sc=myEls.reduce((t,me)=>t+elemMult(el,me)-0.5*elemMult(me,el),0)+Math.random()*0.6; return {s,sc}; }).sort((a,b)=>b.sc-a.sc);
   const pickd=[], fams=new Set();
   for(const {s} of pool){ if(pickd.length>=3) break; if(fams.has(s.fam)) continue; fams.add(s.fam); pickd.push(s); }
@@ -1434,3 +1434,47 @@ document.addEventListener('click',e=>{ const hi=e.target.closest&&e.target.close
     vest:S0+`<path d="M20 8 L12 14 L10 54 Q20 58 30 56 L30 22 Z" fill="#3a8ad8" ${O}/><path d="M44 8 L52 14 L54 54 Q44 58 34 56 L34 22 Z" fill="#3a8ad8" ${O}/><path d="M11 30h19M11 36h19M11 42h19M34 30h19M34 36h19M34 42h19" stroke-width="5"/><path d="M11 30h19M34 30h19" stroke="#e3262d" stroke-width="5"/><path d="M11 36h19M34 36h19" stroke="#ffd84d" stroke-width="5"/><path d="M11 42h19M34 42h19" stroke="#5fd36a" stroke-width="5"/><path d="M20 8 L12 14 L10 54 Q20 58 30 56 L30 22 Z M44 8 L52 14 L54 54 Q44 58 34 56 L34 22 Z" fill="none" ${O}/><path d="M30 22 L30 56 M34 22 L34 56" stroke="#2a4a7a" stroke-width="3"/>`+E,
     gcrown:S0+`<path d="M12 48 Q10 28 16 8 Q22 28 24 44Z M26 44 Q28 20 32 4 Q36 20 38 44Z M40 44 Q42 28 48 8 Q54 28 52 48Z" fill="#f4f0e4" ${O}/><path d="M14 40 Q32 34 50 40 L52 54 Q32 48 12 54Z" fill="#e3c04a" ${O}/><path d="M20 46l3-4 3 4 3-4 3 4 3-4 3 4 3-4 3 4" fill="none" stroke="#a8781a" stroke-width="1.8"/><circle cx="32" cy="45" r="3" fill="#e3262d" ${O} stroke-width="1.4"/>`+E };
   itemSVG=(function(prev){ return function(id){ return ART[id]||prev(id); }; })(itemSVG); })();
+
+// ---------- Elric: rare monster (shop only, 50 mushrooms) and his MK moves ----------
+function EGGSP(){ return SP.filter(s=>!s.rare&&!s.boss&&s.fam!=='dummy'&&FAM[s.fam]&&FAM[s.fam].shape!=='dummy'); }
+(function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
+  SK.crushpunch={n:'Crush Punch', el:'neutral', t:'enemy', k:'hit', mp:P(3,11), m:[1,.03], crush:P(.06,.28), crushTurns:4,
+    desc:"Break the enemy's defense, attacking and reducing their physical defence by {crush} for 4 turns."};
+  SK.haymaker={n:'Haymaker', el:'neutral', t:'enemy', k:'hit', mp:P(3,11), m:[1.25,.05], stun:P(.05,.14),
+    desc:'Powerful attack that has a {stun} chance to stun the enemy for one turn.'};
+  Object.assign(SK.furyfist,{v:P(6,33)});
+  Object.assign(SK.firefocus,{v:P(.2,.7), turns:4, mp:P(12,100), desc:'Amplifies all damage by an additional {v} for {turns} turns.'});
+  ['crushpunch','haymaker','furyfist','firefocus'].forEach(k=>{ DEFAULT_SK[k]=JSON.parse(JSON.stringify(SK[k])); });
+  ST_ICON.crush=['fist','#8a5a3a']; BUFF_N.crush='Crush Punch';
+  stDesc=(function(prev){ return function(m,k){ if(k==='crush') return `Takes ${Math.round((m.st.crushV||0)*100)}% more physical damage (${m.st.crush} turn${m.st.crush>1?'s':''})`; return prev(m,k); }; })(stDesc);
+  skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; if(s&&s.desc&&(id==='crushpunch'||id==='haymaker'||id==='firefocus')){ const pc=v=>Math.round(v*100)+'%';
+    let t=s.desc; if(s.crush) t=t.replace('{crush}',pc(lv(s.crush,L))); if(s.stun) t=t.replace('{stun}',pc(lv(s.stun,L))); if(s.v) t=t.replace('{v}',pc(lv(s.v,L))); return t.replace('{turns}',s.turns||''); } return prev(id,L); }; })(skillDesc);
+  FAM.brawler={n:'Rare', el:'fire', shape:'brawler', base:{hp:70,atk:15,mp:30,spd:12}};
+  const sp={id:'elric',n:'Elric',fam:'brawler',col:['#c8743a','#ffb02e','#fff0dc'],tw:{},sk:['crushpunch','haymaker','furyfist','firefocus'],rare:1};
+  SP.push(sp); SPI.elric=sp; ATK_MOUTH.brawler=[1.4,2,1];
+  function brawlerNew(c1,c2,c3,st,id){ const G=id+'a', dk=shade(c1,-28); let d=`<defs>${grad(G,c1)}</defs>`, g='';
+    const tl=`M34 70 Q16 72 14 58 Q13 50 18 46`;
+    g+=`<path d="${tl}" fill="none" stroke="${OL3}" stroke-width="7" stroke-linecap="round"/><path d="${tl}" fill="none" stroke="${c1}" stroke-width="4" stroke-linecap="round"/>`;
+    const fl=6+st*3; g+=`<path d="M18 47 Q${12-st} ${40-fl} 19 ${36-fl} Q20 ${42-fl*.4} 24 ${38-fl*.5} Q25 44 18 47Z" fill="${c2}" ${s3} stroke-width="1.6"/><path d="M19 45 Q17 ${40-fl*.5} 20 ${38-fl*.6} Q22 42 19 45Z" fill="#fff3b0"/>`;
+    g+=leg3(42,76,40,84,39,91,6.4,dk)+leg3(58,76,60,84,61,91,6.4,dk);
+    g+=`<path d="M34 56 Q32 40 50 38 Q68 40 66 56 L64 74 Q50 82 36 74Z" fill="url(#${G})" ${s3}/><path d="M42 54 Q50 50 58 54 L57 70 Q50 74 43 70Z" fill="${c3}" opacity=".9"/>`;
+    if(st>=1) g+=`<path d="M44 58h12M45 63h10" stroke="${dk}" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>`;
+    const fr=7+st*1.6;
+    g+=`<path d="M36 48 Q26 52 24 62" fill="none" stroke="${OL3}" stroke-width="8.5" stroke-linecap="round"/><path d="M36 48 Q26 52 24 62" fill="none" stroke="${c1}" stroke-width="5.5" stroke-linecap="round"/>`;
+    g+=`<path d="M64 48 Q74 52 77 60" fill="none" stroke="${OL3}" stroke-width="8.5" stroke-linecap="round"/><path d="M64 48 Q74 52 77 60" fill="none" stroke="${c1}" stroke-width="5.5" stroke-linecap="round"/>`;
+    g+=`<circle cx="24" cy="${64+fr*.3}" r="${fr}" fill="${c2}" ${s3}/><path d="M${24-fr*.6} ${64} q${fr*.6} -${fr*.5} ${fr*1.2} 0" fill="none" stroke="${OL3}" stroke-width="1.4"/>`;
+    g+=`<circle cx="78" cy="${62+fr*.3}" r="${fr}" fill="${c2}" ${s3}/><path d="M${78-fr*.6} ${62} q${fr*.6} -${fr*.5} ${fr*1.2} 0" fill="none" stroke="${OL3}" stroke-width="1.4"/>`;
+    const hx=51, hy=30;
+    g+=`<path d="M${hx-9} ${hy-8} L${hx-14-st*2} ${hy-17-st*2} L${hx-5} ${hy-11}Z M${hx+9} ${hy-8} L${hx+14+st*2} ${hy-17-st*2} L${hx+5} ${hy-11}Z" fill="#f4ead8" ${s3} stroke-width="1.6"/>`;
+    g+=`<ellipse cx="${hx}" cy="${hy}" rx="13" ry="11.5" fill="url(#${G})" ${s3}/><path d="M${hx-8} ${hy+3} Q${hx} ${hy+9} ${hx+8} ${hy+3} Q${hx} ${hy+12} ${hx-8} ${hy+3}Z" fill="${c3}" ${s3} stroke-width="1.3"/>`;
+    g+=`<path d="M${hx-4} ${hy+5} l1.5 2.6 l1.5 -2.6 M${hx+1} ${hy+5} l1.5 2.6 l1.5 -2.6" fill="#fff" stroke="${OL3}" stroke-width=".9"/>`;
+    if(st>=2) g+=`<path d="M${hx-11} ${hy-4} Q${hx} ${hy-9} ${hx+11} ${hy-4}" fill="none" stroke="${c2}" stroke-width="2.6" stroke-linecap="round"/>`;
+    g+=`<path d="M${hx-9} ${hy-5} l6 2 M${hx+9} ${hy-5} l-6 2" stroke="${OL3}" stroke-width="2" stroke-linecap="round"/>`;
+    g+=eye3(hx-5,hy-1,st===0?3.6:3.2,'#c4231c',st,-3)+eye3(hx+5,hy-1,st===0?3.6:3.2,'#c4231c',st,3);
+    return d+g; }
+  monSVG=(function(prev){ return function(spId,lvl,cls){ const s=SPI[spId]; if(!s||s.fam!=='brawler') return prev(spId,lvl,cls);
+    const st=stageOf(lvl); const c1=mute(s.col[0],22), c2=mute(s.col[1],12), c3=mute(s.col[2],10); const id='m'+(GID++); const sc=[0.82,0.92,1][st];
+    return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${sc}) translate(-50 -92)">${brawlerNew(c1,c2,c3,st,id)}</g></svg>`; }; })(monSVG);
+})();
+function buyRare(id){ const s=SPI[id]; if(!s) return; if(S.mush<50) return toast('You need 50 🍄');
+  confirmBox(`Buy ${s.n} for 50 🍄?`,"Buy",()=>{ if(S.mush<50) return; S.mush-=50; const m=addMon(id,1); if(S.team.length<3) S.team.push(m.uid); persist(); render(); try{ drawShop(); }catch(_){} reveal(m,`${s.n} joined your team!`); }); }

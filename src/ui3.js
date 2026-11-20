@@ -405,7 +405,7 @@ function viewShop(){
 function eggCost(){ return 150+highLvl()*15; }
 function hatchCash(){
   const c=eggCost(); if((S.cash|0)<c) return toast(`You need $${c}`);
-  S.cash-=c; S.stats.hatches++; const sp=SP[Math.floor(Math.random()*SP.length)]; const m=addMon(sp.id, Math.max(1,Math.floor(highLvl()*0.4)));
+  S.cash-=c; S.stats.hatches++; const sp=(P=>P[Math.floor(Math.random()*P.length)])(EGGSP()); const m=addMon(sp.id, Math.max(1,Math.floor(highLvl()*0.4)));
   if(S.team.length<3) S.team.push(m.uid); persist(); render(); reveal(m,'Your egg hatched!');
 }
 function bindView(v){

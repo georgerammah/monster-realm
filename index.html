@@ -1588,6 +1588,9 @@ body{overscroll-behavior:none}
 .mi2-r .pabil,.mi2-items,.mi2-eff{display:flex!important;flex-direction:column;gap:5px}
 .mi2-eff .pab.exp .mi2-it{animation:stexp .9s ease-in-out infinite}
 #battle .hicons{cursor:pointer}
+
+.s2card .s2mon{width:72%;aspect-ratio:1;display:flex;align-items:center;justify-content:center}.s2card .s2mon svg{width:100%;height:100%}
+.s2card.rare{box-shadow:inset 0 0 0 3px #c99a1e}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -1849,7 +1852,7 @@ function beginTurn(b){
     const a = actor(b); const m=a.m;
     if(m.hp<=0){ b.turnIdx++; continue; }
     const st=m.st;
-    ['bubble','lsh','fsh','fwall','nsh','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','zap','acid','eshift'].forEach(k=>{ if(st[k]>0){ if(st[k+'F']){ st[k+'F']=0; return; } st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
+    ['bubble','lsh','fsh','fwall','nsh','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','zap','acid','eshift','crush'].forEach(k=>{ if(st[k]>0){ if(st[k+'F']){ st[k+'F']=0; return; } st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
     if(m.pas.camel){ const g=Math.min(m.maxmp-m.mp, Math.round(m.pas.camel)); if(g>0){ m.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,end:1,ph:2}); } }
     for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm'],['frost','water','the blizzard']]){
       if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el,dk:k,ph:1}); log(b,`${m.n} is hurt by ${nm}.`); }
@@ -1893,6 +1896,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   if(a.st.cripple>0) dmg*=1-a.st.crippleV;
   if(el==='water' && d.st.soak>0) dmg*=1+(d.st.soakV||0);
   if(el==='fire' && d.st.scorch>0) dmg*=1+(d.st.scorchV||0);
+  if((!el||el==='neutral') && d.st.crush>0) dmg*=1+(d.st.crushV||0);
   if(el==='bolt' && d.st.zap>0) dmg*=1+(d.st.zapV||0);
   if(el==='nature' && d.st.acid>0) dmg*=1+(d.st.acidV||0);
   if(a.st.eshift>0 && (el==='bolt'||el==='neutral')) dmg*=1-(a.st.eshiftV||0);
@@ -1971,6 +1975,7 @@ function act(b, action){
       if(d0.hp>0 && sk.acid){ d0.st.acid=sk.acidTurns||4; d0.st.acidV=lv(sk.acid,L); b.ev.push({k:'buff',s:foe,i:ti,b:'acid'}); }
       if(d0.hp>0 && sk.zap){ d0.st.zap=sk.zapTurns||6; d0.st.zapV=sk.zap; b.ev.push({k:'buff',s:foe,i:ti,b:'zap'}); }
       if(d0.hp>0 && sk.soak){ addStack(d0.st,'soak',Array.isArray(sk.soak)?lv(sk.soak,L):sk.soak,sk.soakTurns||6,skId); b.ev.push({k:'buff',s:foe,i:ti,b:'soak'}); }
+      if(d0.hp>0 && sk.crush){ d0.st.crush=sk.crushTurns||4; d0.st.crushF=1; d0.st.crushV=Array.isArray(sk.crush)?lv(sk.crush,L):sk.crush; b.ev.push({k:'buff',s:foe,i:ti,b:'crush'}); }
       if(d0.hp>0 && sk.scorch){ addStack(d0.st,'scorch',Array.isArray(sk.scorch)?lv(sk.scorch,L):sk.scorch,sk.scorchTurns||6,skId); b.ev.push({k:'buff',s:foe,i:ti,b:'scorch'}); }
       if(d0.hp>0 && sk.weaken){ d0.st.cripple=2; d0.st.crippleF=1; d0.st.crippleV=Math.max(d0.st.crippleV||0, lv(sk.weaken,L)); b.ev.push({k:'buff',s:foe,i:ti,b:'cripple'}); }
       const d=b.sides[foe].mons[ti]; if(d.hp<=0) return;
@@ -2002,7 +2007,7 @@ function act(b, action){
     if(sk.hot){ me.st.roots=sk.turns; me.st.rootsV=lv(sk.hot,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
     if(sk.heal){ const hv=Math.round(me.maxhp*lv(sk.heal,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.healFlat){ const hv=Math.round(lv(sk.healFlat,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
-    if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','scorch','zap','acid','eshift'].forEach(k=>me.st[k]=0); me.st.soakS=[]; me.st.scorchS=[]; }
+    if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','scorch','zap','acid','eshift','crush'].forEach(k=>me.st[k]=0); me.st.soakS=[]; me.st.scorchS=[]; }
   } else if(sk.k==='drain' && sk.stealHp){
     const d=b.sides[foe].mons[tgt];
     if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:foe,i:tgt}); log(b,`${a.n} missed!`); }
@@ -2698,7 +2703,7 @@ function openMon(uid){
 function hatch(){
   if(S.mush<10){ toast('You need 10 🍄'); return; }
   S.mush-=10; S.stats.hatches++;
-  const sp=SP[Math.floor(Math.random()*SP.length)]; const lvl=Math.max(1,Math.floor(highLvl()*0.6));
+  const sp=(P=>P[Math.floor(Math.random()*P.length)])(EGGSP()); const lvl=Math.max(1,Math.floor(highLvl()*0.6));
   const m=addMon(sp.id,lvl); if(S.team.length<3) S.team.push(m.uid);
   persist(); render();
   reveal(m,'Your egg hatched!');
@@ -2741,7 +2746,7 @@ function viewArena(){
 function rivalTeam(){
   const tm=teamMons(); const avg=Math.round(tm.reduce((t,m)=>t+m.lvl,0)/Math.max(1,tm.length));
   const names=['Rival Nour','Rival Sami','Rival Maya','Rival Karim','Rival Lina'];
-  return {name:names[Math.floor(Math.random()*names.length)], mons:[0,1,2].map(()=>({sp:SP[Math.floor(Math.random()*SP.length)].id, lvl:Math.max(1,avg+Math.floor(Math.random()*3)-1)}))};
+  return {name:names[Math.floor(Math.random()*names.length)], mons:[0,1,2].map(()=>({sp:(P=>P[Math.floor(Math.random()*P.length)])(EGGSP()).id, lvl:Math.max(1,avg+Math.floor(Math.random()*3)-1)}))};
 }
 function openLocal(){
   if(S.mons.length<1) return;
@@ -3625,7 +3630,7 @@ function viewShop(){
 function eggCost(){ return 150+highLvl()*15; }
 function hatchCash(){
   const c=eggCost(); if((S.cash|0)<c) return toast(`You need $${c}`);
-  S.cash-=c; S.stats.hatches++; const sp=SP[Math.floor(Math.random()*SP.length)]; const m=addMon(sp.id, Math.max(1,Math.floor(highLvl()*0.4)));
+  S.cash-=c; S.stats.hatches++; const sp=(P=>P[Math.floor(Math.random()*P.length)])(EGGSP()); const m=addMon(sp.id, Math.max(1,Math.floor(highLvl()*0.4)));
   if(S.team.length<3) S.team.push(m.uid); persist(); render(); reveal(m,'Your egg hatched!');
 }
 function bindView(v){
@@ -3938,7 +3943,7 @@ function openPanel(name){
 function hatch(){
   if(S.mush<10){ toast('You need 10 🍄'); return; }
   S.mush-=10; S.stats.hatches++;
-  const sp=SP[Math.floor(Math.random()*SP.length)]; const m=addMon(sp.id,Math.max(1,Math.floor(highLvl()*0.6)));
+  const sp=(P=>P[Math.floor(Math.random()*P.length)])(EGGSP()); const m=addMon(sp.id,Math.max(1,Math.floor(highLvl()*0.6)));
   if(S.team.length<3) S.team.push(m.uid);
   persist(); render(); reveal(m,'Your egg hatched!');
 }
@@ -3993,7 +3998,7 @@ function startBattle({mode, foe, meta, myName, oppRank}){
 function rivalTeam(){
   const tm=teamMons(); const avg=Math.round(tm.reduce((t,m)=>t+m.lvl,0)/Math.max(1,tm.length));
   const names=['Nour','Sami','Maya','Karim','Lina','Rami','Dana'];
-  return {name:names[Math.floor(Math.random()*names.length)], mons:[0,1,2].map(()=>({sp:SP[Math.floor(Math.random()*SP.length)].id, lvl:Math.max(1,avg+Math.floor(Math.random()*3)-1)}))};
+  return {name:names[Math.floor(Math.random()*names.length)], mons:[0,1,2].map(()=>({sp:(P=>P[Math.floor(Math.random()*P.length)])(EGGSP()).id, lvl:Math.max(1,avg+Math.floor(Math.random()*3)-1)}))};
 }
 
 // ---- intro ----
@@ -4871,7 +4876,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (179).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (180).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -5109,7 +5114,8 @@ function drawShop(){
         <p>${itemDesc(sel)}</p></div>`;
   } else if(SHOPTAB==='eggs'){
     body=`<div class="s2cards"><button class="s2card" id="hatch"><div class="egg"></div><b>Mystery Egg</b><span>Hatches a random monster</span><em>10 🍄</em></button>
-      <button class="s2card" id="hatchc"><div class="egg plain"></div><b>Monster Egg</b><span>A random monster, a few levels lower</span><em class="g">$${eggCost()}</em></button></div>`;
+      <button class="s2card" id="hatchc"><div class="egg plain"></div><b>Monster Egg</b><span>A random monster, a few levels lower</span><em class="g">$${eggCost()}</em></button>
+      ${SP.filter(s=>s.rare).map(s=>`<button class="s2card rare" data-rare="${s.id}"><div class="s2mon">${monSVG(s.id,1)}</div><b>${s.n}</b><span>Rare monster</span><em>50 🍄</em></button>`).join('')}</div>`;
   } else if(SHOPTAB==='energy'){
     body=`<div class="s2cards"><button class="s2card" id="refill"><div class="egg bolt">⚡</div><b>Energy Refill</b><span>Fill your energy to max</span><em>10 🍄</em></button></div>`;
   } else {
@@ -5130,6 +5136,7 @@ function drawShop(){
     const cur=m.eq[slot]; if(cur) S.inv[cur]=(S.inv[cur]|0)+1; S.inv[id]--; m.eq[slot]=id; persist(); sh.close(); openMon(m.uid); toast(`Equipped ${ITEMS[id].n}!`); };
   const h=q('#hatch'); if(h) h.onclick=()=>{ hatch(); drawShop(); };
   const hc=q('#hatchc'); if(hc) hc.onclick=()=>{ hatchCash(); drawShop(); };
+  document.querySelectorAll('[data-rare]').forEach(b=>b.onclick=()=>buyRare(b.dataset.rare));
   const rf=q('#refill'); if(rf) rf.onclick=()=>{ tickEnergy(); if(S.energy>=S.maxEnergy) return toast('Energy is already full'); if(S.mush<10) return toast('You need 10 🍄'); S.mush-=10; S.energy=S.maxEnergy; S.energyAt=Date.now(); persist(); drawShop(); toast('Energy refilled!'); };
   const cur=q('.s2item.sel'), row=q('.s2row'); if(cur&&row&&!row._init){ row._init=1; row.scrollLeft=cur.offsetLeft-(row.clientWidth-cur.offsetWidth)/2; }
 }
@@ -5267,7 +5274,7 @@ reveal2=function(m,title,done){
   const w=document.createElement('div'); w.className='abox-wrap nm-wrap';
   w.innerHTML=`<div class="nmpop"><button class="nm-x" aria-label="Close">✕</button><h2 class="nm-t">NEW MONSTER!</h2>
     <i class="nm-s s1">★</i><i class="nm-s s2">★</i><i class="nm-s s3">★</i><i class="nm-s s4">★</i>
-    <div class="nm-row"><div class="nm-art">${monSVG(m.sp,m.lvl)}</div><div class="nm-info"><h3>${partner?`Your partner is ${esc(sp.n)}!`:`You found a ${esc(sp.n)}!`}</h3>
+    <div class="nm-row"><div class="nm-art">${monSVG(m.sp,m.lvl)}</div><div class="nm-info"><h3>${partner?`Your partner is ${esc(sp.n)}!`:`You found ${/^[aeiou]/i.test(sp.n)?"an":"a"} ${esc(sp.n)}!`}</h3>
       <div class="nm-stats"><div><span>★</span>Attack<b>${st.atk}</b></div><div><span class="h">♥</span>Life<b>${st.hp}</b></div><div><span class="m">💧</span>Mana<b>${st.mp}</b></div></div></div></div></div>`;
   document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add('on')); try{ sfx('level'); }catch(_){}
   const close=()=>{ w.classList.remove('on'); setTimeout(()=>{ w.remove(); done&&done(); },200); };
@@ -6519,7 +6526,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v179 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v180 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -6776,7 +6783,7 @@ function practiceTeam(){
   const gear=k=>{ const m=mine[k]||{}, b=m.bonus||{}; return {g:{rmp:b.rmp|0,rhp:b.rhp|0,dflat:b.dflat|0,tflat:b.tflat|0,belem:b.belem|0,bphys:b.bphys|0,dnat:b.dnat|0,dwat:b.dwat|0,dfir:b.dfir|0}, items:(m.items||[]).slice()}; };
   const abil=Math.max(1,Math.round(mine.reduce((t,m)=>{ const v=Object.values(m.skl||{}); return t+(v.length?v.reduce((a,b)=>a+b,0)/v.length:1); },0)/n));
   const myEls=mine.map(m=>FAM[SPI[m.sp].fam].el);
-  const pool=SP.filter(s=>FAM[s.fam]&&FAM[s.fam].shape!=='dummy'&&s.fam!=='dummy'&&!s.boss).map(s=>{ const el=FAM[s.fam].el;
+  const pool=SP.filter(s=>FAM[s.fam]&&FAM[s.fam].shape!=='dummy'&&s.fam!=='dummy'&&!s.boss&&!s.rare).map(s=>{ const el=FAM[s.fam].el;
     const sc=myEls.reduce((t,me)=>t+elemMult(el,me)-0.5*elemMult(me,el),0)+Math.random()*0.6; return {s,sc}; }).sort((a,b)=>b.sc-a.sc);
   const pickd=[], fams=new Set();
   for(const {s} of pool){ if(pickd.length>=3) break; if(fams.has(s.fam)) continue; fams.add(s.fam); pickd.push(s); }
@@ -6978,6 +6985,50 @@ document.addEventListener('click',e=>{ const hi=e.target.closest&&e.target.close
     vest:S0+`<path d="M20 8 L12 14 L10 54 Q20 58 30 56 L30 22 Z" fill="#3a8ad8" ${O}/><path d="M44 8 L52 14 L54 54 Q44 58 34 56 L34 22 Z" fill="#3a8ad8" ${O}/><path d="M11 30h19M11 36h19M11 42h19M34 30h19M34 36h19M34 42h19" stroke-width="5"/><path d="M11 30h19M34 30h19" stroke="#e3262d" stroke-width="5"/><path d="M11 36h19M34 36h19" stroke="#ffd84d" stroke-width="5"/><path d="M11 42h19M34 42h19" stroke="#5fd36a" stroke-width="5"/><path d="M20 8 L12 14 L10 54 Q20 58 30 56 L30 22 Z M44 8 L52 14 L54 54 Q44 58 34 56 L34 22 Z" fill="none" ${O}/><path d="M30 22 L30 56 M34 22 L34 56" stroke="#2a4a7a" stroke-width="3"/>`+E,
     gcrown:S0+`<path d="M12 48 Q10 28 16 8 Q22 28 24 44Z M26 44 Q28 20 32 4 Q36 20 38 44Z M40 44 Q42 28 48 8 Q54 28 52 48Z" fill="#f4f0e4" ${O}/><path d="M14 40 Q32 34 50 40 L52 54 Q32 48 12 54Z" fill="#e3c04a" ${O}/><path d="M20 46l3-4 3 4 3-4 3 4 3-4 3 4 3-4 3 4" fill="none" stroke="#a8781a" stroke-width="1.8"/><circle cx="32" cy="45" r="3" fill="#e3262d" ${O} stroke-width="1.4"/>`+E };
   itemSVG=(function(prev){ return function(id){ return ART[id]||prev(id); }; })(itemSVG); })();
+
+// ---------- Elric: rare monster (shop only, 50 mushrooms) and his MK moves ----------
+function EGGSP(){ return SP.filter(s=>!s.rare&&!s.boss&&s.fam!=='dummy'&&FAM[s.fam]&&FAM[s.fam].shape!=='dummy'); }
+(function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
+  SK.crushpunch={n:'Crush Punch', el:'neutral', t:'enemy', k:'hit', mp:P(3,11), m:[1,.03], crush:P(.06,.28), crushTurns:4,
+    desc:"Break the enemy's defense, attacking and reducing their physical defence by {crush} for 4 turns."};
+  SK.haymaker={n:'Haymaker', el:'neutral', t:'enemy', k:'hit', mp:P(3,11), m:[1.25,.05], stun:P(.05,.14),
+    desc:'Powerful attack that has a {stun} chance to stun the enemy for one turn.'};
+  Object.assign(SK.furyfist,{v:P(6,33)});
+  Object.assign(SK.firefocus,{v:P(.2,.7), turns:4, mp:P(12,100), desc:'Amplifies all damage by an additional {v} for {turns} turns.'});
+  ['crushpunch','haymaker','furyfist','firefocus'].forEach(k=>{ DEFAULT_SK[k]=JSON.parse(JSON.stringify(SK[k])); });
+  ST_ICON.crush=['fist','#8a5a3a']; BUFF_N.crush='Crush Punch';
+  stDesc=(function(prev){ return function(m,k){ if(k==='crush') return `Takes ${Math.round((m.st.crushV||0)*100)}% more physical damage (${m.st.crush} turn${m.st.crush>1?'s':''})`; return prev(m,k); }; })(stDesc);
+  skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; if(s&&s.desc&&(id==='crushpunch'||id==='haymaker'||id==='firefocus')){ const pc=v=>Math.round(v*100)+'%';
+    let t=s.desc; if(s.crush) t=t.replace('{crush}',pc(lv(s.crush,L))); if(s.stun) t=t.replace('{stun}',pc(lv(s.stun,L))); if(s.v) t=t.replace('{v}',pc(lv(s.v,L))); return t.replace('{turns}',s.turns||''); } return prev(id,L); }; })(skillDesc);
+  FAM.brawler={n:'Rare', el:'fire', shape:'brawler', base:{hp:70,atk:15,mp:30,spd:12}};
+  const sp={id:'elric',n:'Elric',fam:'brawler',col:['#c8743a','#ffb02e','#fff0dc'],tw:{},sk:['crushpunch','haymaker','furyfist','firefocus'],rare:1};
+  SP.push(sp); SPI.elric=sp; ATK_MOUTH.brawler=[1.4,2,1];
+  function brawlerNew(c1,c2,c3,st,id){ const G=id+'a', dk=shade(c1,-28); let d=`<defs>${grad(G,c1)}</defs>`, g='';
+    const tl=`M34 70 Q16 72 14 58 Q13 50 18 46`;
+    g+=`<path d="${tl}" fill="none" stroke="${OL3}" stroke-width="7" stroke-linecap="round"/><path d="${tl}" fill="none" stroke="${c1}" stroke-width="4" stroke-linecap="round"/>`;
+    const fl=6+st*3; g+=`<path d="M18 47 Q${12-st} ${40-fl} 19 ${36-fl} Q20 ${42-fl*.4} 24 ${38-fl*.5} Q25 44 18 47Z" fill="${c2}" ${s3} stroke-width="1.6"/><path d="M19 45 Q17 ${40-fl*.5} 20 ${38-fl*.6} Q22 42 19 45Z" fill="#fff3b0"/>`;
+    g+=leg3(42,76,40,84,39,91,6.4,dk)+leg3(58,76,60,84,61,91,6.4,dk);
+    g+=`<path d="M34 56 Q32 40 50 38 Q68 40 66 56 L64 74 Q50 82 36 74Z" fill="url(#${G})" ${s3}/><path d="M42 54 Q50 50 58 54 L57 70 Q50 74 43 70Z" fill="${c3}" opacity=".9"/>`;
+    if(st>=1) g+=`<path d="M44 58h12M45 63h10" stroke="${dk}" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>`;
+    const fr=7+st*1.6;
+    g+=`<path d="M36 48 Q26 52 24 62" fill="none" stroke="${OL3}" stroke-width="8.5" stroke-linecap="round"/><path d="M36 48 Q26 52 24 62" fill="none" stroke="${c1}" stroke-width="5.5" stroke-linecap="round"/>`;
+    g+=`<path d="M64 48 Q74 52 77 60" fill="none" stroke="${OL3}" stroke-width="8.5" stroke-linecap="round"/><path d="M64 48 Q74 52 77 60" fill="none" stroke="${c1}" stroke-width="5.5" stroke-linecap="round"/>`;
+    g+=`<circle cx="24" cy="${64+fr*.3}" r="${fr}" fill="${c2}" ${s3}/><path d="M${24-fr*.6} ${64} q${fr*.6} -${fr*.5} ${fr*1.2} 0" fill="none" stroke="${OL3}" stroke-width="1.4"/>`;
+    g+=`<circle cx="78" cy="${62+fr*.3}" r="${fr}" fill="${c2}" ${s3}/><path d="M${78-fr*.6} ${62} q${fr*.6} -${fr*.5} ${fr*1.2} 0" fill="none" stroke="${OL3}" stroke-width="1.4"/>`;
+    const hx=51, hy=30;
+    g+=`<path d="M${hx-9} ${hy-8} L${hx-14-st*2} ${hy-17-st*2} L${hx-5} ${hy-11}Z M${hx+9} ${hy-8} L${hx+14+st*2} ${hy-17-st*2} L${hx+5} ${hy-11}Z" fill="#f4ead8" ${s3} stroke-width="1.6"/>`;
+    g+=`<ellipse cx="${hx}" cy="${hy}" rx="13" ry="11.5" fill="url(#${G})" ${s3}/><path d="M${hx-8} ${hy+3} Q${hx} ${hy+9} ${hx+8} ${hy+3} Q${hx} ${hy+12} ${hx-8} ${hy+3}Z" fill="${c3}" ${s3} stroke-width="1.3"/>`;
+    g+=`<path d="M${hx-4} ${hy+5} l1.5 2.6 l1.5 -2.6 M${hx+1} ${hy+5} l1.5 2.6 l1.5 -2.6" fill="#fff" stroke="${OL3}" stroke-width=".9"/>`;
+    if(st>=2) g+=`<path d="M${hx-11} ${hy-4} Q${hx} ${hy-9} ${hx+11} ${hy-4}" fill="none" stroke="${c2}" stroke-width="2.6" stroke-linecap="round"/>`;
+    g+=`<path d="M${hx-9} ${hy-5} l6 2 M${hx+9} ${hy-5} l-6 2" stroke="${OL3}" stroke-width="2" stroke-linecap="round"/>`;
+    g+=eye3(hx-5,hy-1,st===0?3.6:3.2,'#c4231c',st,-3)+eye3(hx+5,hy-1,st===0?3.6:3.2,'#c4231c',st,3);
+    return d+g; }
+  monSVG=(function(prev){ return function(spId,lvl,cls){ const s=SPI[spId]; if(!s||s.fam!=='brawler') return prev(spId,lvl,cls);
+    const st=stageOf(lvl); const c1=mute(s.col[0],22), c2=mute(s.col[1],12), c3=mute(s.col[2],10); const id='m'+(GID++); const sc=[0.82,0.92,1][st];
+    return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${sc}) translate(-50 -92)">${brawlerNew(c1,c2,c3,st,id)}</g></svg>`; }; })(monSVG);
+})();
+function buyRare(id){ const s=SPI[id]; if(!s) return; if(S.mush<50) return toast('You need 50 🍄');
+  confirmBox(`Buy ${s.n} for 50 🍄?`,"Buy",()=>{ if(S.mush<50) return; S.mush-=50; const m=addMon(id,1); if(S.team.length<3) S.team.push(m.uid); persist(); render(); try{ drawShop(); }catch(_){} reveal(m,`${s.n} joined your team!`); }); }
 
 </script>
 

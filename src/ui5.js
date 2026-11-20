@@ -25,7 +25,7 @@ function startBattle({mode, foe, meta, myName, oppRank}){
 function rivalTeam(){
   const tm=teamMons(); const avg=Math.round(tm.reduce((t,m)=>t+m.lvl,0)/Math.max(1,tm.length));
   const names=['Nour','Sami','Maya','Karim','Lina','Rami','Dana'];
-  return {name:names[Math.floor(Math.random()*names.length)], mons:[0,1,2].map(()=>({sp:SP[Math.floor(Math.random()*SP.length)].id, lvl:Math.max(1,avg+Math.floor(Math.random()*3)-1)}))};
+  return {name:names[Math.floor(Math.random()*names.length)], mons:[0,1,2].map(()=>({sp:(P=>P[Math.floor(Math.random()*P.length)])(EGGSP()).id, lvl:Math.max(1,avg+Math.floor(Math.random()*3)-1)}))};
 }
 
 // ---- intro ----

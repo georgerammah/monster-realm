@@ -227,7 +227,7 @@ function openMon(uid){
 function hatch(){
   if(S.mush<10){ toast('You need 10 🍄'); return; }
   S.mush-=10; S.stats.hatches++;
-  const sp=SP[Math.floor(Math.random()*SP.length)]; const lvl=Math.max(1,Math.floor(highLvl()*0.6));
+  const sp=(P=>P[Math.floor(Math.random()*P.length)])(EGGSP()); const lvl=Math.max(1,Math.floor(highLvl()*0.6));
   const m=addMon(sp.id,lvl); if(S.team.length<3) S.team.push(m.uid);
   persist(); render();
   reveal(m,'Your egg hatched!');
@@ -270,7 +270,7 @@ function viewArena(){
 function rivalTeam(){
   const tm=teamMons(); const avg=Math.round(tm.reduce((t,m)=>t+m.lvl,0)/Math.max(1,tm.length));
   const names=['Rival Nour','Rival Sami','Rival Maya','Rival Karim','Rival Lina'];
-  return {name:names[Math.floor(Math.random()*names.length)], mons:[0,1,2].map(()=>({sp:SP[Math.floor(Math.random()*SP.length)].id, lvl:Math.max(1,avg+Math.floor(Math.random()*3)-1)}))};
+  return {name:names[Math.floor(Math.random()*names.length)], mons:[0,1,2].map(()=>({sp:(P=>P[Math.floor(Math.random()*P.length)])(EGGSP()).id, lvl:Math.max(1,avg+Math.floor(Math.random()*3)-1)}))};
 }
 function openLocal(){
   if(S.mons.length<1) return;

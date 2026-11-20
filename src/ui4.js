@@ -234,7 +234,7 @@ function openPanel(name){
 function hatch(){
   if(S.mush<10){ toast('You need 10 🍄'); return; }
   S.mush-=10; S.stats.hatches++;
-  const sp=SP[Math.floor(Math.random()*SP.length)]; const m=addMon(sp.id,Math.max(1,Math.floor(highLvl()*0.6)));
+  const sp=(P=>P[Math.floor(Math.random()*P.length)])(EGGSP()); const m=addMon(sp.id,Math.max(1,Math.floor(highLvl()*0.6)));
   if(S.team.length<3) S.team.push(m.uid);
   persist(); render(); reveal(m,'Your egg hatched!');
 }
