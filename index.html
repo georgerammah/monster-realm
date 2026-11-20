@@ -4916,7 +4916,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (204).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (205).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6566,7 +6566,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v204 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v205 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -7360,6 +7360,60 @@ rerunMakeup();
 // Soul Drain heal buff on the caster
 ST_ICON.soulh=['swirl','#2fa84f']; BUFF_N.soulh='Soul Drain';
 stDesc=(function(prev){ return function(m,k){ if(k==='soulh') return `Heals ${m.st.soulhV||0} life each turn (${m.st.soulh} turn${m.st.soulh>1?'s':''})`; if(k==='soul') return `Takes ${Math.round(m.st.soulD||0)} damage each turn (${m.st.soul} turn${m.st.soul>1?'s':''})`; return prev(m,k); }; })(stDesc);
+// ---------- Cheep (piranha) and Crustan (crab): rares, shop only, 50 mushrooms ----------
+(function(){
+  FAM.cheep={n:'Rare', el:'water', shape:'fish', base:{hp:72,atk:14,mp:58,spd:14}};
+  FAM.crustan={n:'Rare', el:'water', shape:'crab', base:{hp:84,atk:13,mp:52,spd:11}};
+  const cheep={id:'cheep',n:'Cheep',fam:'cheep',col:['#3cb4e8','#f08a2a','#fff4e0'],tw:{},sk:['splash','hydrate','manashards','camelback'].filter(k=>SK[k]),rare:1};
+  const crustan={id:'crustan',n:'Crustan',fam:'crustan',col:['#e0342a','#f2e04a','#fff0e8'],tw:{},sk:['wave','purge','splash','camelback'].filter(k=>SK[k]),rare:1};
+  SP.push(cheep,crustan); SPI.cheep=cheep; SPI.crustan=crustan; ATK_MOUTH.fish=[1.2,1.8,.9]; ATK_MOUTH.crab=[1.3,1.9,1.0];
+  // one piranha centred on (x,y), facing right
+  function fish(x,y,s,c1,c2,G,G2,st){ const T=(a,b)=>`${x+a*s} ${y+b*s}`; let g='';
+    g+=`<path d="M${T(-16,0)} L${T(-27,-10)} Q${T(-24,0)} ${T(-27,10)}Z" fill="url(#${G})" ${s3}/>`;
+    g+=`<path d="M${T(-4,-11)} Q${T(2,-22)} ${T(8,-12)}Z" fill="url(#${G})" ${s3}/>`;
+    g+=`<path d="M${T(-17,0)} Q${T(-12,-14)} ${T(4,-13)} Q${T(17,-11)} ${T(18,0)} Q${T(17,11)} ${T(4,12)} Q${T(-12,13)} ${T(-17,0)}Z" fill="url(#${G})" ${s3}/>`;
+    g+=`<path d="M${T(-16,3)} Q${T(0,1)} ${T(17,3)} Q${T(15,11)} ${T(4,12)} Q${T(-12,13)} ${T(-16,3)}Z" fill="url(#${G2})"/>`;
+    g+=`<path d="M${T(-17,0)} Q${T(-12,-14)} ${T(4,-13)} Q${T(17,-11)} ${T(18,0)} Q${T(17,11)} ${T(4,12)} Q${T(-12,13)} ${T(-17,0)}Z" fill="none" ${s3}/>`;
+    g+=`<path d="M${T(-2,6)} Q${T(2,12)} ${T(-6,13)}" fill="${c2}" ${s3} stroke-width="1.4"/>`;
+    g+=`<path d="M${T(9,4)} L${T(17,3)} M${T(10,4)} l${1.2*s} ${2*s} l${1.4*s} ${-2*s} l${1.4*s} ${2*s} l${1.4*s} ${-2*s}" fill="none" stroke="#fff" stroke-width="${1.3*s}" stroke-linejoin="round"/>`;
+    g+=`<circle cx="${x+8*s}" cy="${y-4*s}" r="${3.2*s}" fill="#ffd84a" ${s3} stroke-width="1.3"/><circle cx="${x+9*s}" cy="${y-3.6*s}" r="${1.4*s}" fill="${OL3}"/>`;
+    g+=`<path d="M${T(4,-8.5)} L${T(12,-6.5)}" stroke="${OL3}" stroke-width="${1.8*s}" stroke-linecap="round"/>`;
+    [-8,-3].forEach(a=>{ g+=`<path d="M${T(a,-6)} q${2*s} ${4*s} 0 ${8*s}" fill="none" stroke="${shade(c1,-25)}" stroke-width="${1.2*s}" stroke-linecap="round" opacity=".7"/>`; });
+    return g; }
+  function cheepNew(c1,c2,c3,st,id){ const G=id+'a', G2=id+'b'; let d=`<defs>${grad(G,c1)}${grad(G2,c2)}</defs>`, g='';
+    if(st===0){ // fry: round head, curling tail
+      g+=`<path d="M44 66 Q30 70 30 82 Q32 90 42 86 Q36 84 38 78 Q42 72 50 72" fill="url(#${G})" ${s3}/><path d="M30 82 Q32 90 42 86 Q36 84 37 80Z" fill="url(#${G2})" ${s3} stroke-width="1.6"/>`;
+      g+=`<ellipse cx="55" cy="60" rx="15" ry="13" fill="url(#${G})" ${s3}/><path d="M44 66 Q54 74 66 66" fill="none" stroke="${c3}" stroke-width="2" opacity=".6"/>`;
+      g+=`<circle cx="60" cy="56" r="5.4" fill="#fff" ${s3}/><circle cx="61.4" cy="56.6" r="2.9" fill="${OL3}"/><circle cx="60.4" cy="55.4" r="1" fill="#fff"/>`+`<path d="M62 66 q3 2 6 0" fill="none" stroke="${OL3}" stroke-width="1.6" stroke-linecap="round"/>`; return d+g; }
+    if(st===1){ g+=fish(52,64,1.45,c1,c2,G,G2,st); return d+g; }
+    g+=fish(38,46,.85,c1,c2,G,G2,st)+fish(72,40,.62,c1,c2,G,G2,st)+fish(54,70,1.3,c1,c2,G,G2,st); return d+g; }
+  function claw(x,y,s,G,flip,big){ const f=flip?-1:1, T=(a,b)=>`${x+a*s*f} ${y+b*s}`; let g='';
+    g+=`<path d="M${T(0,0)} Q${T(-2,-8)} ${T(2,-14)}" fill="none" stroke="${OL3}" stroke-width="${5.4*s}" stroke-linecap="round"/><path d="M${T(0,0)} Q${T(-2,-8)} ${T(2,-14)}" fill="none" stroke="url(#${G})" stroke-width="${3.4*s}" stroke-linecap="round"/>`;
+    const r=big?1.25:1;
+    g+=`<path d="M${T(2,-12)} Q${T(-8*r,-18*r)} ${T(-4*r,-30*r)} Q${T(2,-26*r)} ${T(4,-20*r)} Q${T(10*r,-28*r)} ${T(14*r,-24*r)} Q${T(14*r,-14)} ${T(2,-12)}Z" fill="url(#${G})" ${s3}/>`;
+    g+=`<path d="M${T(-1*r,-26*r)} Q${T(1,-22*r)} ${T(3,-20*r)}" fill="none" stroke="#fff" stroke-width="${1.4*s}" stroke-linecap="round" opacity=".7"/>`;
+    return g; }
+  function crustanNew(c1,c2,c3,st,id){ const G=id+'a', dk=shade(c1,-30); let d=`<defs>${grad(G,c1)}</defs>`, g='';
+    const w=[20,24,27][st], top=[64,58,56][st], cy=top+12;
+    [[-1,0],[-1,1],[-1,2],[1,0],[1,1],[1,2]].forEach(([sd,k])=>{ const x0=50+sd*(w-6-k*3), x1=50+sd*(w+6+k*2); g+=`<path d="M${x0} ${cy+2+k*2} Q${x1} ${cy-2+k*3} ${x1+sd*3} ${cy+12+k*2}" fill="none" stroke="${OL3}" stroke-width="5" stroke-linecap="round"/><path d="M${x0} ${cy+2+k*2} Q${x1} ${cy-2+k*3} ${x1+sd*3} ${cy+12+k*2}" fill="none" stroke="${shade(c3,-8)}" stroke-width="3" stroke-linecap="round"/>`; });
+    const big=st>0, cs=[.8,1.05,1.15][st];
+    g+=claw(50-w-3,cy-3,cs,G,false,big)+claw(50+w+3,cy-3,cs,G,true,big);
+    g+=`<path d="M${50-w} ${cy} Q${50-w} ${top-4} 50 ${top-6} Q${50+w} ${top-4} ${50+w} ${cy} Q${50+w-2} ${cy+12} 50 ${cy+12} Q${50-w+2} ${cy+12} ${50-w} ${cy}Z" fill="url(#${G})" ${s3}/>`;
+    g+=`<path d="M${50-w+6} ${cy+4} Q50 ${cy+9} ${50+w-6} ${cy+4}" fill="none" stroke="${dk}" stroke-width="1.6" stroke-linecap="round"/>`;
+    if(st===2){ for(let k=-3;k<=3;k++){ const x=50+k*w/3.6; g+=`<path d="M${x-3} ${top-4+Math.abs(k)*1.4} L${x} ${top-11+Math.abs(k)*1.6} L${x+3} ${top-4+Math.abs(k)*1.4}Z" fill="${c3}" ${s3} stroke-width="1.4"/>`; } }
+    const ey=st===0?top-16:top-10, es=st===0?5.6:4.2;
+    [-1,1].forEach(sd=>{ const ex=50+sd*(st===0?7:8);
+      g+=`<path d="M${50+sd*4} ${top-3} L${ex} ${ey+es}" stroke="${OL3}" stroke-width="4.2" stroke-linecap="round"/><path d="M${50+sd*4} ${top-3} L${ex} ${ey+es}" stroke="${c1}" stroke-width="2.4" stroke-linecap="round"/>`;
+      if(st===0){ g+=`<circle cx="${ex}" cy="${ey}" r="${es}" fill="#fff" ${s3}/><circle cx="${ex+sd*1.2}" cy="${ey+.6}" r="${es*.45}" fill="${OL3}"/><circle cx="${ex+sd*1.2-1}" cy="${ey-.6}" r="${es*.15}" fill="#fff"/>`; }
+      else { g+=`<ellipse cx="${ex}" cy="${ey}" rx="${es}" ry="${es*.85}" fill="${c2}" ${s3}/><circle cx="${ex+sd*.6}" cy="${ey+.6}" r="${es*.35}" fill="${OL3}"/><path d="M${ex-es*sd} ${ey-es*.9} L${ex+es*sd*.8} ${ey-es*.1}" stroke="${OL3}" stroke-width="2" stroke-linecap="round"/>`; } });
+    g+= st===0? `<path d="M46 ${cy+3} q4 3 8 0" fill="none" stroke="${OL3}" stroke-width="1.6" stroke-linecap="round"/>`
+      : `<path d="M${st===2?40:43} ${cy+3} l3.4 3 l3.3 -3 l3.3 3 l3.3 -3 ${st===2?'l3.3 3 l3.3 -3':''}" fill="#fff" ${s3} stroke-width="1.4" stroke-linejoin="round"/>`;
+    return d+g; }
+  monSVG=(function(prev){ return function(spId,lvl,cls){ const s=SPI[spId]; if(!s||(s.fam!=='cheep'&&s.fam!=='crustan')) return prev(spId,lvl,cls);
+    const st=stageOf(lvl); const c1=mute(s.col[0],18), c2=mute(s.col[1],10), c3=mute(s.col[2],8); const id='m'+(GID++); const sc=[0.82,0.92,1][st];
+    const body=s.fam==='cheep'?cheepNew(c1,c2,c3,st,id):crustanNew(c1,c2,c3,st,id);
+    return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${sc}) translate(-50 -92)">${body}</g></svg>`; }; })(monSVG);
+})();
 
 </script>
 
