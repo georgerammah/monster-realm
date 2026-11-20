@@ -20,7 +20,7 @@ const ITEMS = {
   powersuit:{n:"Breta's Power Suit", cost:600, lv:14, b:{atk:18}},
   medallion:{n:"Lila's Medallion", cost:900, lv:18, b:{mp:78}},
   amulet:{n:"Jay's Amulet", cost:900, lv:18, b:{hp:78}},
-  blade:{n:"Krill's Sword", cost:300, lv:8, b:{}, fx:{dflat:34,tflat:17}},
+  blade:{n:"Krill's Sword", cost:300, lv:8, b:{}, fx:{dflat:33,tflat:17}},
   capacitor:{n:'Force Capacitor', cost:1100, lv:20, b:{atk:23}},
   gcrown:{n:"Goldphoro's Crown", cost:1400, lv:24, b:{atk:25}},
   gauntlets:{n:'Gauntlets', cost:600, lv:12, b:{}, fx:{dnat:24}},
