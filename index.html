@@ -1885,6 +1885,8 @@ function beginTurn(b){
       if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el,dk:k,ph:1}); log(b,`${m.n} is hurt by ${nm}.`);
         if(st[k+'H']&&st[k+'By']){ const c=b.sides[st[k+'By'][0]]&&b.sides[st[k+'By'][0]].mons[st[k+'By'][1]]; if(c&&c.hp>0){ const h=Math.min(c.maxhp-c.hp,st[k+'H']); c.hp+=h; b.ev.push({k:'heal',s:st[k+'By'][0],i:st[k+'By'][1],v:st[k+'H'],rv:h,ph:1}); } } }
     }
+    // Soul Drain's heal is the caster's own buff: it ticks on the caster's turns (frozen while benched) and Purge keeps it
+    if(st.soulh>0 && m.hp>0){ const h=Math.min(m.maxhp-m.hp,st.soulhV|0); m.hp+=h; st.soulh--; b.ev.push({k:'heal',s:a.s,i:a.i,v:st.soulhV|0,rv:h,end:1,ph:2}); }
     if(st.roots>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*st.rootsV)); m.hp=Math.min(m.maxhp,m.hp+h); st.roots--; b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
     if(st.nsh>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*0.04)); m.hp=Math.min(m.maxhp,m.hp+h); b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
     if(m.hp<=0){ log(b,`${m.n} fainted.`); if(checkOver(b)) return; if(b.single){ needPicks(b); return; } b.turnIdx++; continue; }
@@ -2032,7 +2034,7 @@ function act(b, action){
     const d=b.sides[foe].mons[tgt];
     if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:foe,i:tgt}); log(b,`${a.n} missed!`); }
     else if(sk.dot==='burn' && d.pas.sweaty && rnd(b)<0.5){ log(b,`${d.n} shrugged off the burn!`); b.ev.push({k:'miss',s:foe,i:tgt}); }
-    else { let mod=1; if(me.st.focus>0) mod*=1+me.st.focusV; d.st[sk.dot]=sk.turns; d.st[sk.dot+'D']=lv(sk.tick,L)*mod; if(sk.heal){ d.st[sk.dot+'H']=Math.round(lv(sk.heal,L)); d.st[sk.dot+'By']=[a.s,a.i]; } b.ev.push({k:'buff',s:foe,i:tgt,b:sk.dot==='burn'?'burnt':sk.dot}); log(b,`${d.n} is ${sk.dot==='burn'?'burning':sk.dot==='poison'?'poisoned':'under a storm cloud'}!`); }
+    else { let mod=1; if(me.st.focus>0) mod*=1+me.st.focusV; d.st[sk.dot]=sk.turns; d.st[sk.dot+'D']=lv(sk.tick,L)*mod; if(sk.heal){ d.st[sk.dot+'H']=0; me.st.soulh=sk.turns; me.st.soulhV=Math.round(lv(sk.heal,L)); b.ev.push({k:'buff',s:a.s,i:a.i,b:'soulh'}); } b.ev.push({k:'buff',s:foe,i:tgt,b:sk.dot==='burn'?'burnt':sk.dot}); log(b,`${d.n} is ${sk.dot==='burn'?'burning':sk.dot==='poison'?'poisoned':'under a storm cloud'}!`); }
   } else if(sk.k==='shield'){
     me.st[sk.sh]=sk.turns; me.st[sk.sh+'Hp']=Math.round(lv(sk.amt,L)); b.ev.push({k:'buff',s:a.s,i:a.i,b:sk.sh});
   } else if(sk.k==='buff'){
@@ -4914,7 +4916,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (203).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (204).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6564,7 +6566,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v203 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v204 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -7355,6 +7357,9 @@ rerunMakeup();
   DEFAULT_SK.trample=JSON.parse(JSON.stringify(SK.trample)); DEFAULT_SK.devour=JSON.parse(JSON.stringify(SK.devour));
   skillDesc=(function(prev){ return function(id,L){ if(id==='devour'&&SK.devour.hotFlat) return `Grab your prey and take a bite out of them causing physical damage and healing for ${Math.round(lv(SK.devour.hotFlat,L||1))} health for ${SK.devour.turns} turns.`; return prev(id,L); }; })(skillDesc);
 })();
+// Soul Drain heal buff on the caster
+ST_ICON.soulh=['swirl','#2fa84f']; BUFF_N.soulh='Soul Drain';
+stDesc=(function(prev){ return function(m,k){ if(k==='soulh') return `Heals ${m.st.soulhV||0} life each turn (${m.st.soulh} turn${m.st.soulh>1?'s':''})`; if(k==='soul') return `Takes ${Math.round(m.st.soulD||0)} damage each turn (${m.st.soul} turn${m.st.soul>1?'s':''})`; return prev(m,k); }; })(stDesc);
 
 </script>
 

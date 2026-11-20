@@ -228,6 +228,8 @@ function beginTurn(b){
       if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el,dk:k,ph:1}); log(b,`${m.n} is hurt by ${nm}.`);
         if(st[k+'H']&&st[k+'By']){ const c=b.sides[st[k+'By'][0]]&&b.sides[st[k+'By'][0]].mons[st[k+'By'][1]]; if(c&&c.hp>0){ const h=Math.min(c.maxhp-c.hp,st[k+'H']); c.hp+=h; b.ev.push({k:'heal',s:st[k+'By'][0],i:st[k+'By'][1],v:st[k+'H'],rv:h,ph:1}); } } }
     }
+    // Soul Drain's heal is the caster's own buff: it ticks on the caster's turns (frozen while benched) and Purge keeps it
+    if(st.soulh>0 && m.hp>0){ const h=Math.min(m.maxhp-m.hp,st.soulhV|0); m.hp+=h; st.soulh--; b.ev.push({k:'heal',s:a.s,i:a.i,v:st.soulhV|0,rv:h,end:1,ph:2}); }
     if(st.roots>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*st.rootsV)); m.hp=Math.min(m.maxhp,m.hp+h); st.roots--; b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
     if(st.nsh>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*0.04)); m.hp=Math.min(m.maxhp,m.hp+h); b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
     if(m.hp<=0){ log(b,`${m.n} fainted.`); if(checkOver(b)) return; if(b.single){ needPicks(b); return; } b.turnIdx++; continue; }
@@ -375,7 +377,7 @@ function act(b, action){
     const d=b.sides[foe].mons[tgt];
     if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:foe,i:tgt}); log(b,`${a.n} missed!`); }
     else if(sk.dot==='burn' && d.pas.sweaty && rnd(b)<0.5){ log(b,`${d.n} shrugged off the burn!`); b.ev.push({k:'miss',s:foe,i:tgt}); }
-    else { let mod=1; if(me.st.focus>0) mod*=1+me.st.focusV; d.st[sk.dot]=sk.turns; d.st[sk.dot+'D']=lv(sk.tick,L)*mod; if(sk.heal){ d.st[sk.dot+'H']=Math.round(lv(sk.heal,L)); d.st[sk.dot+'By']=[a.s,a.i]; } b.ev.push({k:'buff',s:foe,i:tgt,b:sk.dot==='burn'?'burnt':sk.dot}); log(b,`${d.n} is ${sk.dot==='burn'?'burning':sk.dot==='poison'?'poisoned':'under a storm cloud'}!`); }
+    else { let mod=1; if(me.st.focus>0) mod*=1+me.st.focusV; d.st[sk.dot]=sk.turns; d.st[sk.dot+'D']=lv(sk.tick,L)*mod; if(sk.heal){ d.st[sk.dot+'H']=0; me.st.soulh=sk.turns; me.st.soulhV=Math.round(lv(sk.heal,L)); b.ev.push({k:'buff',s:a.s,i:a.i,b:'soulh'}); } b.ev.push({k:'buff',s:foe,i:tgt,b:sk.dot==='burn'?'burnt':sk.dot}); log(b,`${d.n} is ${sk.dot==='burn'?'burning':sk.dot==='poison'?'poisoned':'under a storm cloud'}!`); }
   } else if(sk.k==='shield'){
     me.st[sk.sh]=sk.turns; me.st[sk.sh+'Hp']=Math.round(lv(sk.amt,L)); b.ev.push({k:'buff',s:a.s,i:a.i,b:sk.sh});
   } else if(sk.k==='buff'){
