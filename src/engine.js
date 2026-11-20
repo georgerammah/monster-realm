@@ -184,7 +184,7 @@ function makeMon(spId, lvl, extra){
   const skl=Object.assign({}, (extra&&extra.skl&&Object.keys(extra.skl).length)?extra.skl:autoSkl(spId,lvl));
   const o=Object.assign({sp:spId, n:sp.n, lvl, el:FAM[sp.fam].el, maxhp:hp, hp, maxmp:mp, mp, atk:s.atk+(bo.atk|0), spd:s.spd+(+bo.spd||0),
     sk: sp.sk.slice(0, slotsOf(lvl)), st:freshSt()}, extra||{});
-  o.fx={rmp:bo.rmp|0, rhp:bo.rhp|0, dflat:bo.dflat|0, tflat:bo.tflat|0, belem:bo.belem|0, bphys:bo.bphys|0};
+  o.fx={rmp:bo.rmp|0, rhp:bo.rhp|0, dflat:bo.dflat|0, tflat:bo.tflat|0, belem:bo.belem|0, bphys:bo.bphys|0, dnat:bo.dnat|0, dwat:bo.dwat|0, dfir:bo.dfir|0};
   delete o.bonus; o.skl=skl;
   o.pas={}; o.sk.forEach(id=>{ const k=SK[id]; if(k&&k.k==='passive') o.pas[k.p]=lv(k.v, skl[id]||1); });
   return o;
@@ -278,6 +278,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   if(a.pas.fury && b._sk==='basic') dmg+=a.pas.fury;
   if(d.st.pers>0) dmg*=1-d.st.persV;
   dmg += (a.fx&&a.fx.dflat||0) + (d.fx&&d.fx.tflat||0);
+  if(a.fx){ if(el==='nature') dmg+=a.fx.dnat|0; else if(el==='water') dmg+=a.fx.dwat|0; else if(el==='fire') dmg+=a.fx.dfir|0; }
   if(el==='neutral' && d.pas.hard) dmg*=1-d.pas.hard;
   dmg = Math.max(1, Math.round(dmg));
   let blocked=0;

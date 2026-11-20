@@ -15,12 +15,16 @@ const ITEMS = {
   blade:{n:"Krill's Swords", cost:300, lv:8, b:{}, fx:{dflat:34,tflat:17}},
   capacitor:{n:'Force Capacitor', cost:1100, lv:20, b:{atk:23}},
   gcrown:{n:"Goldphoro's Crown", cost:1400, lv:24, b:{atk:25}},
+  gauntlets:{n:'Gauntlets', cost:600, lv:12, b:{}, fx:{dnat:24}},
+  hydrant:{n:'Hydrant', cost:600, lv:12, b:{}, fx:{dwat:24}},
+  flamethrower:{n:'Flamethrower', cost:650, lv:12, b:{}, fx:{dfir:25}},
   vest:{n:"Bob's Vest", cost:1300, lv:22, b:{}, fx:{bphys:25,belem:15}},
   diploma:{n:"Professor Goh's Diploma", cost:1500, lv:25, b:{}, fx:{belem:25,bphys:15}}
 };
 const STAT_N={atk:'attack',hp:'life',mp:'mana',spd:'speed'};
 function itemDesc(id){ const it=ITEMS[id], b=it.b||{}, f=it.fx||{}; const p=Object.keys(b).map(k=>`+${b[k]} ${STAT_N[k]}`);
   if(f.rmp) p.push(`recovers ${f.rmp} mana after each turn`); if(f.rhp) p.push(`recovers ${f.rhp} life after each turn`);
+  ['dnat:nature','dwat:water','dfir:fire'].forEach(x=>{ const [k,n]=x.split(':'); if(f[k]) p.push(`+${f[k]} damage on every ${n} attack`); });
   if(f.belem||f.bphys) p.push(`blocks ${f.belem|0} elemental and ${f.bphys|0} physical damage from every attack`);
   if(f.dflat) p.push(`+${f.dflat} damage on every attack (not damage over time), but takes +${f.tflat} more damage`);
   return 'Gives your monster '+p.join(', '); }
@@ -62,7 +66,7 @@ function mySnap(){ return teamMons().map(snapOf); }
 function teamPower(){ return teamMons().reduce((t,m)=>{ const s=monStats(m); return t+Math.round(s.hp*0.4+s.atk*3); },0); }
 function sanitizeTeam(t){ return (Array.isArray(t)?t:[]).slice(0,3).filter(m=>m&&SPI[m.sp]&&SPI[m.sp].fam!=='dummy').map(m=>{ const lvl=Math.max(1,Math.min(MAXLVL,m.lvl|0)); const b=m.bonus||{};
   const cl=(v,mx)=>Math.max(0,Math.min(mx,v|0)); const skl={}; Object.keys(m.skl||{}).forEach(k=>{ if(SK[k]) skl[k]=Math.max(1,Math.min(MAXSKL,m.skl[k]|0)); });
-  const sk2={}; SPI[m.sp].sk.forEach(id=>sk2[id]=skl[id]||1); return {sp:m.sp, lvl, bonus:{atk:cl(b.atk,lvl*10+40), hp:cl(b.hp,lvl*40+160), mp:cl(b.mp,lvl*40+160), spd:Math.max(0,Math.min(5,+b.spd||0)), rmp:cl(b.rmp,80), rhp:cl(b.rhp,70), dflat:cl(b.dflat,140), tflat:cl(b.tflat,70), belem:cl(b.belem,100), bphys:cl(b.bphys,100)}, skl:sk2, items:(Array.isArray(m.items)?m.items:[]).filter(id=>ITEMS[id]).slice(0,4)}; }); }
+  const sk2={}; SPI[m.sp].sk.forEach(id=>sk2[id]=skl[id]||1); return {sp:m.sp, lvl, bonus:{atk:cl(b.atk,lvl*10+40), hp:cl(b.hp,lvl*40+160), mp:cl(b.mp,lvl*40+160), spd:Math.max(0,Math.min(5,+b.spd||0)), rmp:cl(b.rmp,80), rhp:cl(b.rhp,70), dflat:cl(b.dflat,140), tflat:cl(b.tflat,70), belem:cl(b.belem,100), bphys:cl(b.bphys,100), dnat:cl(b.dnat,125), dwat:cl(b.dwat,125), dfir:cl(b.dfir,125)}, skl:sk2, items:(Array.isArray(m.items)?m.items:[]).filter(id=>ITEMS[id]).slice(0,4)}; }); }
 NET.challenge = function(cid){
   if(!S.team.length) return toast('Add a monster to your team');
   const matchId=uidGen()+uidGen();

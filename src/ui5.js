@@ -141,6 +141,9 @@ function hudIcons(m){
   const f=m.fx||{};
   // item effects: one dot per effect type (same effects from several items are added together)
   if(f.dflat) out.push(`<span class="hi ifx" data-tip="Damage Dealt|Deals ${f.dflat} more damage to foes">${ITEM_FX_IC}</span>`);
+  if(f.dnat) out.push(`<span class="hi ifx" data-tip="Nature Damage|Deals ${f.dnat} more nature damage to foes">${ITEM_FX_IC}</span>`);
+  if(f.dwat) out.push(`<span class="hi ifx" data-tip="Water Damage|Deals ${f.dwat} more water damage to foes">${ITEM_FX_IC}</span>`);
+  if(f.dfir) out.push(`<span class="hi ifx" data-tip="Fire Damage|Deals ${f.dfir} more fire damage to foes">${ITEM_FX_IC}</span>`);
   if(f.belem) out.push(`<span class="hi ifx" data-tip="Elemental Block|Blocks ${f.belem} nature, fire, lightning and water damage from every attack">${ITEM_FX_IC}</span>`);
   if(f.bphys) out.push(`<span class="hi ifx" data-tip="Physical Block|Blocks ${f.bphys} physical damage from every attack">${ITEM_FX_IC}</span>`);
   if(f.tflat) out.push(`<span class="hi ifx" data-tip="Damage Taken|Takes ${f.tflat} more damage from foes">${ITEM_FX_IC}</span>`);

@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v177 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v178 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1229,7 +1229,7 @@ function practiceTeam(){
   const avg=k=>Math.round(mine.reduce((t,m)=>t+((m.bonus&&m.bonus[k])|0),0)/n);
   const bonus={atk:avg('atk'),hp:avg('hp'),mp:avg('mp')};
   // items aren't averaged: foe #k carries exactly what your monster #k carries
-  const gear=k=>{ const m=mine[k]||{}, b=m.bonus||{}; return {g:{rmp:b.rmp|0,rhp:b.rhp|0,dflat:b.dflat|0,tflat:b.tflat|0,belem:b.belem|0,bphys:b.bphys|0}, items:(m.items||[]).slice()}; };
+  const gear=k=>{ const m=mine[k]||{}, b=m.bonus||{}; return {g:{rmp:b.rmp|0,rhp:b.rhp|0,dflat:b.dflat|0,tflat:b.tflat|0,belem:b.belem|0,bphys:b.bphys|0,dnat:b.dnat|0,dwat:b.dwat|0,dfir:b.dfir|0}, items:(m.items||[]).slice()}; };
   const abil=Math.max(1,Math.round(mine.reduce((t,m)=>{ const v=Object.values(m.skl||{}); return t+(v.length?v.reduce((a,b)=>a+b,0)/v.length:1); },0)/n));
   const myEls=mine.map(m=>FAM[SPI[m.sp].fam].el);
   const pool=SP.filter(s=>FAM[s.fam]&&FAM[s.fam].shape!=='dummy'&&s.fam!=='dummy'&&!s.boss).map(s=>{ const el=FAM[s.fam].el;
@@ -1373,6 +1373,7 @@ act=(function(prev){ return function(b,action){
 function itemLine(id){ const it=ITEMS[id], f=it.fx||{}, b=it.b||{};
   if(f.rmp) return `Recovers ${f.rmp} mana after each turn`; if(f.rhp) return `Recovers ${f.rhp} life after each turn`;
   if(f.dflat) return `Deals ${f.dflat} more damage to foes, takes ${f.tflat} more damage from foes`;
+  if(f.dnat) return `Deals ${f.dnat} more nature damage to foes`; if(f.dwat) return `Deals ${f.dwat} more water damage to foes`; if(f.dfir) return `Deals ${f.dfir} more fire damage to foes`;
   if(f.belem||f.bphys) return `Blocks ${f.belem|0} elemental and ${f.bphys|0} physical damage`;
   return Object.keys(b).map(k=>`+${b[k]} ${STAT_N[k]||k}`).join(', '); }
 function itemCopies(fx,m){
@@ -1409,3 +1410,11 @@ animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(r
 
 document.addEventListener('click',e=>{ const hi=e.target.closest&&e.target.closest('#battle .hicons'); if(!hi||!B||!B.b) return; const p=hi.closest('.bhp'); if(!p) return;
   e.stopPropagation(); const s=+p.dataset.hs, sd=B.b.sides[s]; monInfo(B.b,s,sd.active!=null?sd.active:+p.dataset.hi||0); },true);
+
+// ---------- elemental damage items: Gauntlets (nature), Hydrant (water), Flamethrower (fire) ----------
+(function(){ const S0='<svg viewBox="0 0 64 64">', E='</svg>';
+  const ART={
+    gauntlets:S0+'<path d="M14 30 Q12 14 22 12 L26 12 L26 22 L30 10 L36 10 L36 22 L40 12 L46 14 L44 26 Q52 26 50 36 L44 50 Q40 56 30 56 L22 56 Q14 54 14 44Z" fill="#3fae4a" stroke="#1d5a24" stroke-width="2.5" stroke-linejoin="round"/><rect x="16" y="44" width="30" height="10" rx="3" fill="#8a5a2a" stroke="#4a2a0a" stroke-width="2"/><path d="M24 30 q6 -8 12 0 q-6 8 -12 0z" fill="#b6f07a" stroke="#1d5a24" stroke-width="1.4"/>'+E,
+    hydrant:S0+'<rect x="20" y="20" width="24" height="34" rx="5" fill="#2a8cff" stroke="#0a3a7a" stroke-width="2.5"/><path d="M18 20 Q32 4 46 20Z" fill="#2a8cff" stroke="#0a3a7a" stroke-width="2.5"/><rect x="10" y="30" width="10" height="9" rx="2" fill="#5fb0ff" stroke="#0a3a7a" stroke-width="2"/><rect x="44" y="30" width="10" height="9" rx="2" fill="#5fb0ff" stroke="#0a3a7a" stroke-width="2"/><rect x="16" y="52" width="32" height="6" rx="2" fill="#0a3a7a"/><circle cx="32" cy="35" r="5" fill="#d8eeff" stroke="#0a3a7a" stroke-width="1.6"/>'+E,
+    flamethrower:S0+'<rect x="8" y="30" width="34" height="12" rx="4" fill="#5a5a66" stroke="#22222a" stroke-width="2.5"/><rect x="14" y="40" width="9" height="14" rx="3" fill="#3a3a44" stroke="#22222a" stroke-width="2"/><rect x="40" y="32" width="8" height="8" fill="#8a8a96" stroke="#22222a" stroke-width="2"/><path d="M48 36 Q58 26 56 18 Q62 26 60 34 Q64 32 62 26 Q68 36 58 44 Q54 46 48 40Z" fill="#ff8a1a" stroke="#a83a0a" stroke-width="1.8"/><path d="M50 37 Q56 32 56 26 Q60 34 54 40Z" fill="#ffe14a"/>'+E };
+  itemSVG=(function(prev){ return function(id){ return ART[id]||prev(id); }; })(itemSVG); })();
