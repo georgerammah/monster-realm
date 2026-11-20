@@ -1586,18 +1586,29 @@ body{overscroll-behavior:none}
 .avgrid.icons{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px;max-height:calc(68*var(--vh));overflow-y:auto;overscroll-behavior:contain;padding:4px}
 .avo.ic2{padding:0;aspect-ratio:1;border-radius:6px;background:none}.avo.ic2 svg{width:100%;height:100%;display:block}.avo.ic2.sel{outline:3px solid #ffd84a;outline-offset:1px}
 
-/* monster profile: Monster Kingdom proportions (narrower card, smaller art and item slots) */
-.sheet.mkprof,.sheet:has(.prof.ro){width:min(640px,74vw)!important;max-width:none!important}
-.sheet.mkprof .ptop,.sheet:has(.prof.ro) .ptop{gap:14px!important}
-.sheet.mkprof .ppor,.sheet:has(.prof.ro) .ppor{width:30%!important}
-.sheet.mkprof .pinfo,.sheet:has(.prof.ro) .pinfo{max-width:62%}
-.sheet.mkprof .pname,.sheet:has(.prof.ro) .pname{font-size:min(calc(5*var(--vw)),24px)!important}
-.sheet.mkprof .pxp{height:18px!important}.sheet.mkprof .pxp em{font-size:12px!important}
-.sheet.mkprof .pstat,.sheet:has(.prof.ro) .pstat{padding:2px 0!important}
-.sheet.mkprof .pstat span,.sheet:has(.prof.ro) .pstat span{font-size:min(calc(4.2*var(--vw)),18px)!important}
-.sheet.mkprof .pstat b,.sheet:has(.prof.ro) .pstat b{font-size:min(calc(4*var(--vw)),17px)!important}
-.sheet.mkprof .eslots,body.rot .sheet.mkprof .eslots{grid-template-columns:repeat(5,min(16%,78px))!important;justify-content:start!important;gap:min(calc(1.4*var(--vw)),10px)!important;margin:10px 0 8px!important}
-.sheet.mkprof .ph{margin-top:6px}
+/* monster profile: measured from Monster Kingdom (panel 63.6% x 91.6% of the screen) */
+.sheet.panel.mkprof,.sheet.panel:has(.prof.ro){width:calc(63.6*var(--vw))!important;max-width:none!important;height:calc(91.6*var(--vh))!important;max-height:none!important;padding:calc(4.6*var(--vh)) calc(2.25*var(--vw)) calc(3*var(--vh))!important}
+.sheet.panel.mkprof .ptop,.sheet.panel:has(.prof.ro) .ptop{gap:calc(2.65*var(--vw))!important;margin:0!important;align-items:flex-start}
+.sheet.panel.mkprof .ppor,.sheet.panel:has(.prof.ro) .ppor{width:calc(18.4*var(--vw))!important;height:calc(43*var(--vh))!important;aspect-ratio:auto!important;flex:none!important}
+.sheet.panel.mkprof .ppor svg,.sheet.panel:has(.prof.ro) .ppor svg{width:100%;height:100%}
+.sheet.panel.mkprof .pinfo,.sheet.panel:has(.prof.ro) .pinfo{flex:none!important;width:calc(24.9*var(--vw))!important;max-width:none!important;position:relative}
+.sheet.panel.mkprof .pname,.sheet.panel:has(.prof.ro) .pname{font-size:calc(8.5*var(--vh))!important;line-height:1!important;gap:calc(0.8*var(--vw))!important;white-space:nowrap}
+.sheet.panel.mkprof .pname .lvb,.sheet.panel:has(.prof.ro) .pname .lvb{font-size:calc(4*var(--vh))!important}
+.sheet.panel.mkprof .pname .lvb.mst svg,.sheet.panel:has(.prof.ro) .pname .lvb.mst svg{width:calc(4*var(--vh))!important;height:calc(4*var(--vh))!important}
+.sheet.panel.mkprof .pstage,.sheet.panel:has(.prof.ro) .pstage{display:block;font-size:calc(4.2*var(--vh))!important;line-height:calc(4.6*var(--vh))!important;margin:0!important}
+.sheet.panel.mkprof .pxp,.sheet.panel:has(.prof.ro) .pxp{height:calc(5*var(--vh))!important;border-radius:calc(2.5*var(--vh))!important;margin:0!important}
+.sheet.panel.mkprof .pxp em,.sheet.panel:has(.prof.ro) .pxp em{font-size:calc(3.6*var(--vh))!important;line-height:calc(5*var(--vh))!important}
+.sheet.panel.mkprof .pfree,.sheet.panel:has(.prof.ro) .pfree{position:absolute;right:0;top:calc(8.7*var(--vh));font-size:calc(3.4*var(--vh))!important;margin:0!important}
+.sheet.panel.mkprof .pstat,.sheet.panel:has(.prof.ro) .pstat{position:relative;height:calc(8.4*var(--vh))!important;padding:0!important;margin:0!important;gap:0!important}
+.sheet.panel.mkprof .pxp + .pfree + .pstat, .pstage + .pstat,.sheet.panel:has(.prof.ro) .pxp + .pfree + .pstat, .pstage + .pstat{margin-top:calc(0.6*var(--vh))!important}
+.sheet.panel.mkprof .pstat span,.sheet.panel:has(.prof.ro) .pstat span{font-size:calc(6.3*var(--vh))!important}
+.sheet.panel.mkprof .pstat b,.sheet.panel:has(.prof.ro) .pstat b{font-size:calc(6*var(--vh))!important;min-width:0!important}
+.sheet.panel.mkprof .pbtns,.sheet.panel:has(.prof.ro) .pbtns{position:absolute;left:calc(100% + calc(1.4*var(--vw)));top:50%;transform:translateY(-50%);display:flex;gap:calc(0.6*var(--vw))}
+.sheet.panel.mkprof .eslots,.sheet.panel:has(.prof.ro) .eslots{display:grid!important;grid-template-columns:repeat(5,calc(10.2*var(--vw)))!important;grid-auto-rows:calc(22*var(--vh));gap:calc(1.1*var(--vw))!important;justify-content:start!important;width:auto!important;margin:calc(3*var(--vh)) 0 0!important}
+.sheet.panel.mkprof .eslot,.sheet.panel:has(.prof.ro) .eslot{width:calc(10.2*var(--vw))!important;height:calc(22*var(--vh))!important;aspect-ratio:auto!important}
+.sheet.panel.mkprof .eslot.open span,.sheet.panel:has(.prof.ro) .eslot.open span{font-size:calc(3.6*var(--vh))!important}
+.sheet.panel.mkprof .ph,.sheet.panel:has(.prof.ro) .ph{font-size:calc(7.5*var(--vh))!important;margin:calc(3.6*var(--vh)) 0 calc(2*var(--vh))!important;line-height:1.1}
+.sheet.panel.mkprof .ph .upav,.sheet.panel:has(.prof.ro) .ph .upav{font-size:calc(5.6*var(--vh))!important}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
