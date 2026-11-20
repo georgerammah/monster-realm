@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v205 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v206 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1823,3 +1823,9 @@ stDesc=(function(prev){ return function(m,k){ if(k==='soulh') return `Heals ${m.
     const body=s.fam==='cheep'?cheepNew(c1,c2,c3,st,id):crustanNew(c1,c2,c3,st,id);
     return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${sc}) translate(-50 -92)">${body}</g></svg>`; }; })(monSVG);
 })();
+// admin only: instantly max a monster to the top level (profile button next to the XP bar)
+drawMon=(function(prev){ return function(){ prev(); if(!MONSH||!ADMIN) return; const m=monBy(MONSH.uid); if(!m||m.lvl>=MAXLVL) return;
+  const xp=MONSH.sh.body.querySelector('.pxp'); if(!xp||xp.parentNode.querySelector('.admax')) return;
+  xp.insertAdjacentHTML('afterend','<button class="admax">Max Lv</button>');
+  const btn=xp.parentNode.querySelector('.admax'); btn.style.top=(xp.offsetTop)+'px'; btn.style.height=xp.offsetHeight+'px';
+  btn.onclick=e=>{ e.stopPropagation(); const r=giveXp(m,1e9); persist(); drawMon(); if(typeof showLevelUps==='function') showLevelUps(); toast(`${m.n||SPI[m.sp].n} is now level ${m.lvl}`); }; }; })(drawMon);
