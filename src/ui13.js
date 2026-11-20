@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v185 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v186 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1232,7 +1232,7 @@ function practiceTeam(){
   const gear=k=>{ const m=mine[k]||{}, b=m.bonus||{}; return {g:{rmp:b.rmp|0,rhp:b.rhp|0,dflat:b.dflat|0,tflat:b.tflat|0,belem:b.belem|0,bphys:b.bphys|0,dnat:b.dnat|0,dwat:b.dwat|0,dfir:b.dfir|0}, items:(m.items||[]).slice()}; };
   const abil=Math.max(1,Math.round(mine.reduce((t,m)=>{ const v=Object.values(m.skl||{}); return t+(v.length?v.reduce((a,b)=>a+b,0)/v.length:1); },0)/n));
   const myEls=mine.map(m=>FAM[SPI[m.sp].fam].el);
-  const pool=SP.filter(s=>FAM[s.fam]&&FAM[s.fam].shape!=='dummy'&&s.fam!=='dummy'&&!s.boss&&!s.rare).map(s=>{ const el=FAM[s.fam].el;
+  const pool=SP.filter(s=>FAM[s.fam]&&FAM[s.fam].shape!=='dummy'&&s.fam!=='dummy'&&!s.boss&&!s.rare&&!s.legacy).map(s=>{ const el=FAM[s.fam].el;
     const sc=myEls.reduce((t,me)=>t+elemMult(el,me)-0.5*elemMult(me,el),0)+Math.random()*0.6; return {s,sc}; }).sort((a,b)=>b.sc-a.sc);
   const pickd=[], fams=new Set();
   for(const {s} of pool){ if(pickd.length>=3) break; if(fams.has(s.fam)) continue; fams.add(s.fam); pickd.push(s); }
@@ -1500,4 +1500,63 @@ openSub=(function(prev){ return function(key,btn){ if(key==='shop'){ closeSub();
   skIconKey=(function(prev){ return function(id){ return id==='taunt'?'mklol':prev(id); }; })(skIconKey);
   stDesc=(function(prev){ return function(m,k){ if(k==='taunt'){ const p=Math.round((m.st.tauntV||0)*100)+'%'; return `Deals ${p} more physical damage and takes ${p} more physical damage (${m.st.taunt} turn${m.st.taunt>1?'s':''})`; } return prev(m,k); }; })(stDesc);
   skillDesc=(function(prev){ return function(id,L){ if(id==='taunt'){ const p=Math.round(lv(SK.taunt.taunt,L||1)*100)+'%'; return SK.taunt.desc.split('{taunt}').join(p); } return prev(id,L); }; })(skillDesc);
+})();
+// ---------- Monster Kingdom roster (phase 1): names, moves, colors and zone order from the MK wiki ----------
+(function(){
+  const MK=[ // id, MK name, family, colors [body, accent, belly], moves
+   ['shellby','Chelamon','shell',['#3fbf4a','#e8c25a','#f2ecc8'],['hydrate','perseverance','blizzard','grounded']],
+   ['tidepip','Chelydra','shell',['#e8b52a','#8ab83a','#f6eec8'],['bubble','lshield','wave','roots']],
+   ['coraldon','Chelopo','shell',['#d83a2a','#5aa84a','#f2ecc8'],['mshield','firefocus','camelback','pounce']],
+   ['brinemaw','Chelupa','shell',['#2a6ab8','#a99ad8','#ece6f6'],['absorb','splash','purge','sweaty']],
+   ['ampurr','Feliger','volt',['#5a5866','#3fbf4a','#c8c6d2'],['bolt','nshield','spark','sweaty']],
+   ['sparkpaw','Felida','volt',['#ece2c4','#e86a2a','#fff8e8'],['shock','firefocus','lshield','roots']],
+   ['thundra','Felixu','volt',['#f2d04a','#3a6ad8','#fff4d0'],['stormcloud','purge','cripple','thickskin']],
+   ['voltkit','Felinera','volt',['#8ab8dc','#f2a83a','#e8f2fa'],['shock','charge','aircurrent','pounce']],
+   ['ashfang','Red XIII','hound',['#e84a2a','#6a4a3a','#fff2e8'],['blast','furyfist','emberspit','double']],
+   ['rubblejaw','Ghost','hound',['#9a9aa2','#c4231c','#f2f2f4'],['moltencore','feed','flame','roots']],
+   ['gravelpup','Fangor','hound',['#d8cf8a','#8a7a3a','#fff8dc'],['burn','cripple','fshield','grounded']],
+   ['cragmaw','Barghest','hound',['#4a3e5a','#3ab8d8','#8a7e9a'],['flicker','poison','burn','thickskin']],
+   ['nutzap','Meeko','squirrel',['#efe6c8','#5a9ad8','#ffffff'],['zap','hardened','lshield','grounded']],
+   ['acorvolt','Zuko','squirrel',['#f2c42a','#2b2216','#fff4d0'],['bolt','cripple','spark','double']],
+   ['bristlet','Bariko','squirrel',['#b8743a','#3ab8d8','#fff2e0'],['shock','hydrate','aircurrent','sweaty']],
+   ['cloudtuft','Pipiko','squirrel',['#7a8ad0','#f2d04a','#eef0fa'],['thunder','regrowth','stormcloud','pounce']],
+   ['stripel','Tigera','tiger',['#e8c87a','#d87a2a','#fff6e0'],['bolt','stormcloud','spark','double']],
+   ['shadestripe','Panthera','tiger',['#f4f2f2','#c4231c','#ffffff'],['zap','flicker','cripple','sweaty']],
+   ['voltiger','Tigermon','tiger',['#f28a2a','#2b2216','#fff2e0'],['thunder','manaheal','aircurrent','roots']],
+   ['frostrype','Tigerix','tiger',['#c8f24a','#7a5ab8','#f6ffd8'],['shock','poison','lshield','pounce']],
+   ['trunkle','Elephia','elephant',['#a8a8b0','#3a8ad8','#eceef2'],['bubble','camelback','hydrate','grounded']],
+   ['tuskmoor','Elephoro','elephant',['#f28ad0','#6a3a8a','#fdeaf6'],['mshield','thunder','absorb','thickskin']],
+   ['mammoss','Elephera','elephant',['#a8aaa8','#6a9a3a','#eef0ea'],['blizzard','natureswill','bubble','double']],
+   ['quakeph','Elephury','elephant',['#8ab0d0','#d83a2a','#eaf2fa'],['manaheal','flicker','wave','pounce']],
+   ['zephyra','Chikamon','wing',['#f2e04a','#5ab83a','#fffbe0'],['firefocus','zap','burn','sweaty']],
+   ['gustling','Chikaru','wing',['#6a6a72','#d8b23a','#c8c8d0'],['emberspit','leech','blast','double']],
+   ['featherby','Chikazon','wing',['#3ae8b0','#d84ad8','#e8fff6'],['furyfist','bubble','moltencore','roots']],
+   ['squallix','Chikaki','wing',['#f4f4f8','#2a6ad8','#ffffff'],['firewall','flame','fshield','thickskin']],
+   ['emberling','Furymon','drake',['#3a6ad8','#f2d04a','#e8eefa'],['blast','charge','burn','double']],
+   ['magmaw','Furydon','drake',['#e8342a','#f28a2a','#ffe8d8'],['flame','hardened','fshield','thickskin']],
+   ['scorchet','Furyia','drake',['#3fbf3a','#2a8a2a','#e8f8d8'],['furyfist','firefocus','emberspit','pounce']],
+   ['pyrodrake','Furyzon','drake',['#6a4a8a','#c8f24a','#e8e0f2'],['firewall','flicker','moltencore','grounded']],
+   ['leafwing','Minnie','bug',['#d8282a','#f2d04a','#fff0e0'],['moltencore','burn','firefocus','thickskin']],
+   ['thornet','Uberlord','bug',['#2a5a5e','#e8c83a','#a8c8c8'],['nshield','poison','naturespower','feedback']],
+   ['mossbug','Algonzo','bug',['#f2b82a','#d8282a','#fff4d0'],['feedback','leech','feed','roots']],
+   ['buzzlet','Hunnybee','bug',['#c8f23a','#2b2216','#f6ffd8'],['double','bubble','pounce','lshield']]];
+  const order=[];
+  MK.forEach(([id,n,fam,col,sk])=>{ const s=SPI[id]; if(!s) return; Object.assign(s,{n,fam,col,sk:sk.filter(k=>SK[k])}); order.push(s); });
+  // monsters that aren't in Monster Kingdom stay with players who own them, but no longer appear anywhere new
+  ['pengu','ram','frog','lizard'].forEach(f=>SP.forEach(s=>{ if(s.fam===f) s.legacy=1; }));
+  const rest=SP.filter(s=>!order.includes(s)); SP.length=0; order.concat(rest).forEach(s=>SP.push(s));
+  Object.assign(FAM.hound,{base:{hp:80,atk:15,mp:44,spd:11}}); Object.assign(FAM.shell,{base:{hp:79,atk:15,mp:45,spd:8}}); Object.assign(FAM.volt,{base:{hp:71,atk:17,mp:45,spd:14}});
+  // MK zone order: Mochi Beach (Turtle), Felis Desert (Feline), Luna Woods (Cerberus), Sora Grasslands (Squirrel),
+  // Peppermint Forest (Tiger), Earthshaker Cliffs (Elephant), Vernon Village (Avian), Bolera Volcano (Dragon)
+  const PLAN=[['meadow','Training Camp',1],['beach','Mochi Beach',4],['desert','Felis Desert',8],['hollow','Luna Woods',12],['grasslands','Sora Grasslands',16],
+              ['mintwood','Peppermint Forest',20],['cliffs','Earthshaker Cliffs',23],['peaks','Vernon Village',26],['volcano','Bolera Volcano',28]];
+  const byId={}; ZONES.forEach(z=>byId[z.id]=z);
+  const next=PLAN.map(([id,n,lv])=>{ const z=byId[id]; if(!z) return null; const old=z.lv;
+    if(old!==lv&&ZTASKS[id]) ZTASKS[id]=ZTASKS[id].map(t=>{ const u=t.slice(); const r=lv/old; u[2]=Math.max(1,Math.min(lv+3,lv+(t[2]-old))); u[4]=Math.round(t[4]*r); u[5]=Math.round(t[5]*r);
+      if(u[3]&&typeof u[3]==='object'){ u[3]=Object.assign({},u[3]); ['mp','hp','atk'].forEach(k=>{ if(u[3][k]) u[3][k]=Math.round(u[3][k]*r); }); } return u; });
+    return Object.assign(z,{n,lv}); }).filter(Boolean);
+  ZONES.length=0; next.forEach(z=>ZONES.push(z));
+  zoneUnlocked=function(i){ return i===0 || (S.zones[ZONES[i-1].id]||0)>=4 || (S.zones[ZONES[i].id]||0)>0; };
+  const q12=QUESTS.find(q=>q.id==='q12'); if(q12) q12.n='Clear Sora Grasslands';
+  const prevEgg=EGGSP; EGGSP=function(){ return prevEgg().filter(s=>!s.legacy); };
 })();
