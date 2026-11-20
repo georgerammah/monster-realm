@@ -19,7 +19,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (191).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (192).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -126,7 +126,7 @@ sceneHTML=function(){
 
 // ---- Zone and Monster Select (ZONES opens straight here) ----
 const _nb12=newBattle; newBattle=function(a,b,o){ try{ if(o&&o.mode==='campaign'&&b&&b.mons){ S.found=S.found||[]; b.mons.forEach(x=>{ if(x.sp&&!S.found.includes(x.sp)) S.found.push(x.sp); }); } }catch(_){} return _nb12(a,b,o); };
-function curZone(){ if(S.lastZone!=null&&zoneUnlocked(S.lastZone)) return S.lastZone; let z=0; ZONES.forEach((_,i)=>{ if(zoneUnlocked(i)) z=i; }); return z; }
+function curZone(){ if(S.lastZone!=null&&!ZONES[S.lastZone]) S.lastZone=null; if(S.lastZone!=null&&zoneUnlocked(S.lastZone)) return S.lastZone; let z=0; ZONES.forEach((_,i)=>{ if(zoneUnlocked(i)) z=i; }); return z; }
 openPanel=(function(prev){ return function(name){ if(name==='zones'){ if(PANEL) PANEL.sh.close(); return openZoneSelect(curZone()); } return prev(name); }; })(openPanel);
 openZoneSelect=function(zi){
   ZMUS='z_'+ZONES[zi].id; playMusic(ZMUS);
