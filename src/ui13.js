@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v186 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v187 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1560,3 +1560,29 @@ openSub=(function(prev){ return function(key,btn){ if(key==='shop'){ closeSub();
   const q12=QUESTS.find(q=>q.id==='q12'); if(q12) q12.n='Clear Sora Grasslands';
   const prevEgg=EGGSP; EGGSP=function(){ return prevEgg().filter(s=>!s.legacy); };
 })();
+// ---------- MK level-10 numbers from in-game screenshots ----------
+(function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
+  Object.assign(SK.burn,{tick:P(10,72), turns:4, mp:P(20,64), desc:'Burns your opponent over {turns} turns, dealing {tick} damage each turn. Penetrates shields.'});
+  Object.assign(SK.flame,{dmg:null, pctCur:P(.1,.31), noCrit:1, burnBonus:0, mp:P(15,82), desc:"Casts a deadly flame that deals {pct} of the target's current life in damage. Does not critical hit."});
+  Object.assign(SK.thunder,{dmg:P(30,143), stun:P(.15,.4), mp:P(24,128), desc:'Powerful attack that deals {dmg} lightning damage and has a {stun} chance to stun the enemy for one turn.'});
+  Object.assign(SK.flicker,{v:P(.15,.35), turns:4, mp:P(14,83), desc:'Gives you a chance to evade attacks by {v} for {turns} turns.'});
+  Object.assign(SK.firefocus,{v:P(.2,.9), turns:4, mp:P(12,80)});
+  Object.assign(SK.blast,{dmg:P(22,219), mp:P(16,129), pierce:0, desc:'Hurls a fiery blast, dealing {dmg} fire damage.'});
+  SK.souldrain={n:'Soul Drain', el:'nature', t:'enemy', k:'dot', dot:'soul', tick:P(12,70), heal:P(11,68), turns:4, mp:P(14,83),
+    desc:"Poison your enemy's soul for {turns} turns, dealing {tick} damage and healing yourself for {heal} each turn. Penetrates shields."};
+  ['burn','flame','thunder','flicker','firefocus','blast','souldrain'].forEach(k=>{ DEFAULT_SK[k]=JSON.parse(JSON.stringify(SK[k])); });
+  ST_ICON.soul=['swirl','#2fa84f']; BUFF_N.soul='Soul Drain';
+  stDesc=(function(prev){ return function(m,k){ if(k==='soul') return `Takes ${Math.round(m.st.soulD||0)} damage each turn and heals the caster ${m.st.soulH||0} (${m.st.soul} turn${m.st.soul>1?'s':''})`; return prev(m,k); }; })(stDesc);
+  const MKD=['burn','flame','thunder','flicker','blast','souldrain'];
+  skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; if(!MKD.includes(id)||!s||!s.desc) return prev(id,L); const pc=v=>Math.round(v*100)+'%', n=v=>Math.round(lv(v,L));
+    let t=s.desc; if(s.tick) t=t.replace('{tick}',n(s.tick)); if(s.heal) t=t.replace('{heal}',n(s.heal)); if(s.dmg) t=t.replace('{dmg}',n(s.dmg)); if(s.stun) t=t.replace('{stun}',pc(lv(s.stun,L)));
+    if(s.pctCur) t=t.replace('{pct}',pc(lv(s.pctCur,L))); if(s.v) t=t.replace('{v}',pc(lv(s.v,L))); return t.replace('{turns}',s.turns||''); }; })(skillDesc);
+  // item level requirements from MK's equip screen
+  Object.assign(ITEMS.vest,{lv:10}); Object.assign(ITEMS.diploma,{lv:10}); Object.assign(ITEMS.blade,{lv:10});
+  Object.assign(ITEMS.hydrant,{lv:17}); Object.assign(ITEMS.gauntlets,{lv:17}); Object.assign(ITEMS.flamethrower,{lv:17});
+  // General Krill's creation: Firescream guards Vernon Village
+  FAM.krill={n:'Avian', el:'neutral', shape:'bird', base:{hp:84,atk:17,mp:58,spd:15}};
+  const fs={id:'firescream',n:'Firescream',fam:'krill',col:['#5ab0e8','#e85a2a','#e8f4fc'],tw:{},sk:['burn','flame','thunder','spark'],boss:1};
+  SP.push(fs); SPI.firescream=fs; ATK_MOUTH.krill=ATK_MOUTH.wing||ATK_MOUTH.bird;
+})();
+var ZBOSS={peaks:'firescream'};

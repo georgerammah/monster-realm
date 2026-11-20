@@ -1854,8 +1854,9 @@ function beginTurn(b){
     const st=m.st;
     ['bubble','lsh','fsh','fwall','nsh','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','zap','acid','eshift','crush','taunt'].forEach(k=>{ if(st[k]>0){ if(st[k+'F']){ st[k+'F']=0; return; } st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
     if(m.pas.camel){ const g=Math.min(m.maxmp-m.mp, Math.round(m.pas.camel)); if(g>0){ m.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,end:1,ph:2}); } }
-    for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm'],['frost','water','the blizzard']]){
-      if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el,dk:k,ph:1}); log(b,`${m.n} is hurt by ${nm}.`); }
+    for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm'],['frost','water','the blizzard'],['soul','nature','soul drain']]){
+      if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el,dk:k,ph:1}); log(b,`${m.n} is hurt by ${nm}.`);
+        if(st[k+'H']&&st[k+'By']){ const c=b.sides[st[k+'By'][0]]&&b.sides[st[k+'By'][0]].mons[st[k+'By'][1]]; if(c&&c.hp>0){ const h=Math.min(c.maxhp-c.hp,st[k+'H']); c.hp+=h; b.ev.push({k:'heal',s:st[k+'By'][0],i:st[k+'By'][1],v:st[k+'H'],rv:h,ph:1}); } } }
     }
     if(st.roots>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*st.rootsV)); m.hp=Math.min(m.maxhp,m.hp+h); st.roots--; b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
     if(st.nsh>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*0.04)); m.hp=Math.min(m.maxhp,m.hp+h); b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
@@ -1903,7 +1904,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   if(el==='nature' && d.st.acid>0) dmg*=1+(d.st.acidV||0);
   if(a.st.eshift>0 && (el==='bolt'||el==='neutral')) dmg*=1-(a.st.eshiftV||0);
   if(d.st.eshift>0 && (el==='fire'||el==='water')) dmg*=1+(d.st.eshiftR||0);
-  const crit = a.st.crit>0 && rnd(b)<a.st.critV; if(crit) dmg*=2;
+  const crit = !b._noCrit && a.st.crit>0 && rnd(b)<a.st.critV; if(crit) dmg*=2;
   if(a.pas.pounce) dmg*=1+a.pas.pounce;
   if(d.pas.thick) dmg*=1-d.pas.thick;
   if(el==='bolt' && d.pas.grounded) dmg*=1-d.pas.grounded;
@@ -1971,7 +1972,9 @@ function act(b, action){
       if(sk.missingBonus) tm*=1+sk.missingBonus*(1-me.hp/me.maxhp);
       if(sk.dbl && rnd(b)<sk.dbl) tm*=2;
       b._sk=skId;
-      for(let h=0;h<(sk.hits||1);h++) tot+=dealHit(b,a,foe,ti,skDmg(skId,L,me),sk.el,tm,sk.pierce);
+      b._noCrit=!!sk.noCrit;
+      for(let h=0;h<(sk.hits||1);h++) tot+=dealHit(b,a,foe,ti,sk.pctCur?Math.max(1,Math.round(d0.hp*lv(sk.pctCur,L))):skDmg(skId,L,me),sk.el,tm,sk.pierce);
+      b._noCrit=false;
       if(sk.stormTick && d0.hp>0){ d0.st.storm=sk.stormTurns; d0.st.stormD=lv(sk.stormTick,L); b.ev.push({k:'buff',s:foe,i:ti,b:'storm'}); }
       if(d0.hp>0 && sk.drainFrac){ const x=Math.min(d0.mp, Math.round(tot*sk.drainFrac)); d0.mp-=x; }
       if(d0.hp>0 && sk.acid){ d0.st.acid=sk.acidTurns||4; d0.st.acidV=lv(sk.acid,L); b.ev.push({k:'buff',s:foe,i:ti,b:'acid'}); }
@@ -1999,7 +2002,7 @@ function act(b, action){
     const d=b.sides[foe].mons[tgt];
     if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:foe,i:tgt}); log(b,`${a.n} missed!`); }
     else if(sk.dot==='burn' && d.pas.sweaty && rnd(b)<0.5){ log(b,`${d.n} shrugged off the burn!`); b.ev.push({k:'miss',s:foe,i:tgt}); }
-    else { let mod=1; if(me.st.focus>0) mod*=1+me.st.focusV; d.st[sk.dot]=sk.turns; d.st[sk.dot+'D']=lv(sk.tick,L)*mod; b.ev.push({k:'buff',s:foe,i:tgt,b:sk.dot==='burn'?'burnt':sk.dot}); log(b,`${d.n} is ${sk.dot==='burn'?'burning':sk.dot==='poison'?'poisoned':'under a storm cloud'}!`); }
+    else { let mod=1; if(me.st.focus>0) mod*=1+me.st.focusV; d.st[sk.dot]=sk.turns; d.st[sk.dot+'D']=lv(sk.tick,L)*mod; if(sk.heal){ d.st[sk.dot+'H']=Math.round(lv(sk.heal,L)); d.st[sk.dot+'By']=[a.s,a.i]; } b.ev.push({k:'buff',s:foe,i:tgt,b:sk.dot==='burn'?'burnt':sk.dot}); log(b,`${d.n} is ${sk.dot==='burn'?'burning':sk.dot==='poison'?'poisoned':'under a storm cloud'}!`); }
   } else if(sk.k==='shield'){
     me.st[sk.sh]=sk.turns; me.st[sk.sh+'Hp']=Math.round(lv(sk.amt,L)); b.ev.push({k:'buff',s:a.s,i:a.i,b:sk.sh});
   } else if(sk.k==='buff'){
@@ -2010,7 +2013,7 @@ function act(b, action){
     if(sk.hot){ me.st.roots=sk.turns; me.st.rootsV=lv(sk.hot,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
     if(sk.heal){ const hv=Math.round(me.maxhp*lv(sk.heal,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.healFlat){ const hv=Math.round(lv(sk.healFlat,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
-    if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','scorch','zap','acid','eshift','crush','taunt'].forEach(k=>me.st[k]=0); me.st.soakS=[]; me.st.scorchS=[]; }
+    if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','scorch','zap','acid','eshift','crush','taunt','soul'].forEach(k=>me.st[k]=0); me.st.soakS=[]; me.st.scorchS=[]; }
   } else if(sk.k==='drain' && sk.stealHp){
     const d=b.sides[foe].mons[tgt];
     if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:foe,i:tgt}); log(b,`${a.n} missed!`); }
@@ -3387,7 +3390,7 @@ function doTask(zi,k){
   const z=ZONES[zi]; let foe;
   if(t.special==='dummy') foe={name:'Straw Dummy', mons:[{sp:'strawdum',lvl:1,hpMul:.8}]};
   else { const fam=SP.filter(s=>s.fam===z.fam); const pick=fam[Math.floor(Math.random()*fam.length)];
-    if(t.t==='boss'){ foe={name:zi===0?"Lila's Mossbug":`${z.n} Boss`, mons:[{sp: zi===0?'mossbug':fam[3].id, lvl:t.lv+1, hpMul: zi===0?.85:1.35, skl: zi===0?{feedback:1,leech:1,feed:1,roots:1}:undefined}]}; }
+    if(t.t==='boss'){ const bz=typeof ZBOSS!=='undefined'&&ZBOSS[z.id]; foe={name:zi===0?"Lila's Mossbug":bz?SPI[bz].n:`${z.n} Boss`, mons:[{sp: zi===0?'mossbug':bz||fam[3].id, lvl:t.lv+1, hpMul: zi===0?.85:1.35, skl: zi===0?{feedback:1,leech:1,feed:1,roots:1}:undefined}]}; }
     else foe={name:'Wild '+pick.n, mons:[{sp:pick.id, lvl:t.lv, hpMul: zi===0?.75:1}]}; }
   const b=newBattle({name:S.name, mons:[snapOf(m)]}, foe, {mode:'campaign'});
   B={b, mode:'campaign', meta:{zi, task:k, uid:m.uid}, mySide:0, ctl:['human','ai'], tgt:{}};
@@ -4879,7 +4882,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (186).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (187).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6529,7 +6532,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v186 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v187 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -7114,6 +7117,32 @@ openSub=(function(prev){ return function(key,btn){ if(key==='shop'){ closeSub();
   const q12=QUESTS.find(q=>q.id==='q12'); if(q12) q12.n='Clear Sora Grasslands';
   const prevEgg=EGGSP; EGGSP=function(){ return prevEgg().filter(s=>!s.legacy); };
 })();
+// ---------- MK level-10 numbers from in-game screenshots ----------
+(function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
+  Object.assign(SK.burn,{tick:P(10,72), turns:4, mp:P(20,64), desc:'Burns your opponent over {turns} turns, dealing {tick} damage each turn. Penetrates shields.'});
+  Object.assign(SK.flame,{dmg:null, pctCur:P(.1,.31), noCrit:1, burnBonus:0, mp:P(15,82), desc:"Casts a deadly flame that deals {pct} of the target's current life in damage. Does not critical hit."});
+  Object.assign(SK.thunder,{dmg:P(30,143), stun:P(.15,.4), mp:P(24,128), desc:'Powerful attack that deals {dmg} lightning damage and has a {stun} chance to stun the enemy for one turn.'});
+  Object.assign(SK.flicker,{v:P(.15,.35), turns:4, mp:P(14,83), desc:'Gives you a chance to evade attacks by {v} for {turns} turns.'});
+  Object.assign(SK.firefocus,{v:P(.2,.9), turns:4, mp:P(12,80)});
+  Object.assign(SK.blast,{dmg:P(22,219), mp:P(16,129), pierce:0, desc:'Hurls a fiery blast, dealing {dmg} fire damage.'});
+  SK.souldrain={n:'Soul Drain', el:'nature', t:'enemy', k:'dot', dot:'soul', tick:P(12,70), heal:P(11,68), turns:4, mp:P(14,83),
+    desc:"Poison your enemy's soul for {turns} turns, dealing {tick} damage and healing yourself for {heal} each turn. Penetrates shields."};
+  ['burn','flame','thunder','flicker','firefocus','blast','souldrain'].forEach(k=>{ DEFAULT_SK[k]=JSON.parse(JSON.stringify(SK[k])); });
+  ST_ICON.soul=['swirl','#2fa84f']; BUFF_N.soul='Soul Drain';
+  stDesc=(function(prev){ return function(m,k){ if(k==='soul') return `Takes ${Math.round(m.st.soulD||0)} damage each turn and heals the caster ${m.st.soulH||0} (${m.st.soul} turn${m.st.soul>1?'s':''})`; return prev(m,k); }; })(stDesc);
+  const MKD=['burn','flame','thunder','flicker','blast','souldrain'];
+  skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1; if(!MKD.includes(id)||!s||!s.desc) return prev(id,L); const pc=v=>Math.round(v*100)+'%', n=v=>Math.round(lv(v,L));
+    let t=s.desc; if(s.tick) t=t.replace('{tick}',n(s.tick)); if(s.heal) t=t.replace('{heal}',n(s.heal)); if(s.dmg) t=t.replace('{dmg}',n(s.dmg)); if(s.stun) t=t.replace('{stun}',pc(lv(s.stun,L)));
+    if(s.pctCur) t=t.replace('{pct}',pc(lv(s.pctCur,L))); if(s.v) t=t.replace('{v}',pc(lv(s.v,L))); return t.replace('{turns}',s.turns||''); }; })(skillDesc);
+  // item level requirements from MK's equip screen
+  Object.assign(ITEMS.vest,{lv:10}); Object.assign(ITEMS.diploma,{lv:10}); Object.assign(ITEMS.blade,{lv:10});
+  Object.assign(ITEMS.hydrant,{lv:17}); Object.assign(ITEMS.gauntlets,{lv:17}); Object.assign(ITEMS.flamethrower,{lv:17});
+  // General Krill's creation: Firescream guards Vernon Village
+  FAM.krill={n:'Avian', el:'neutral', shape:'bird', base:{hp:84,atk:17,mp:58,spd:15}};
+  const fs={id:'firescream',n:'Firescream',fam:'krill',col:['#5ab0e8','#e85a2a','#e8f4fc'],tw:{},sk:['burn','flame','thunder','spark'],boss:1};
+  SP.push(fs); SPI.firescream=fs; ATK_MOUTH.krill=ATK_MOUTH.wing||ATK_MOUTH.bird;
+})();
+var ZBOSS={peaks:'firescream'};
 
 </script>
 
