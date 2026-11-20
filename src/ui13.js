@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v184 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v185 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1489,3 +1489,15 @@ itemSVG=(function(prev){ const A='<svg viewBox="0 0 64 64">'+[...Array(12)].map(
   return function(id){ return id==='collar'?A:prev(id); }; })(itemSVG);
 // home Shop button opens the shop straight away (no pop-up list)
 openSub=(function(prev){ return function(key,btn){ if(key==='shop'){ closeSub(); SHOPTAB='items'; openShop(); return; } return prev(key,btn); }; })(openSub);
+
+// ---------- Taunt (MK): hit, then the foe hits harder physically but takes more physical damage for 4 turns ----------
+(function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
+  ICON.mklol='<path d="M4.2 5.5 Q4.2 3.6 6.2 3.6 H17.8 Q19.8 3.6 19.8 5.5 V13.6 Q19.8 15.5 17.8 15.5 H10.4 L6.6 19.6 L7.4 15.5 H6.2 Q4.2 15.5 4.2 13.6Z" fill="#fff"/><text x="12" y="12.6" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="6.6" fill="#e8501e" transform="rotate(-8 12 10)">LOL!</text>';
+  SK.taunt={n:'Taunt', el:'neutral', t:'enemy', k:'hit', mp:P(3,11), m:[1,.03], taunt:P(.1,.47), tauntTurns:4,
+    desc:'Attack the enemy and drive them crazy, increasing their physical attacks by {taunt} and reducing their physical defense by {taunt} for 4 turns.'};
+  DEFAULT_SK.taunt=JSON.parse(JSON.stringify(SK.taunt));
+  MK_ICON.taunt='mklol'; ST_ICON.taunt=['mklol','#e8501e']; BUFF_N.taunt='Taunt';
+  skIconKey=(function(prev){ return function(id){ return id==='taunt'?'mklol':prev(id); }; })(skIconKey);
+  stDesc=(function(prev){ return function(m,k){ if(k==='taunt'){ const p=Math.round((m.st.tauntV||0)*100)+'%'; return `Deals ${p} more physical damage and takes ${p} more physical damage (${m.st.taunt} turn${m.st.taunt>1?'s':''})`; } return prev(m,k); }; })(stDesc);
+  skillDesc=(function(prev){ return function(id,L){ if(id==='taunt'){ const p=Math.round(lv(SK.taunt.taunt,L||1)*100)+'%'; return SK.taunt.desc.split('{taunt}').join(p); } return prev(id,L); }; })(skillDesc);
+})();
