@@ -1585,6 +1585,19 @@ body{overscroll-behavior:none}
 
 .avgrid.icons{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px;max-height:calc(68*var(--vh));overflow-y:auto;overscroll-behavior:contain;padding:4px}
 .avo.ic2{padding:0;aspect-ratio:1;border-radius:6px;background:none}.avo.ic2 svg{width:100%;height:100%;display:block}.avo.ic2.sel{outline:3px solid #ffd84a;outline-offset:1px}
+
+/* monster profile: Monster Kingdom proportions (narrower card, smaller art and item slots) */
+.sheet.mkprof,.sheet:has(.prof.ro){width:min(640px,74vw)!important;max-width:none!important}
+.sheet.mkprof .ptop,.sheet:has(.prof.ro) .ptop{gap:14px!important}
+.sheet.mkprof .ppor,.sheet:has(.prof.ro) .ppor{width:30%!important}
+.sheet.mkprof .pinfo,.sheet:has(.prof.ro) .pinfo{max-width:62%}
+.sheet.mkprof .pname,.sheet:has(.prof.ro) .pname{font-size:min(calc(5*var(--vw)),24px)!important}
+.sheet.mkprof .pxp{height:18px!important}.sheet.mkprof .pxp em{font-size:12px!important}
+.sheet.mkprof .pstat,.sheet:has(.prof.ro) .pstat{padding:2px 0!important}
+.sheet.mkprof .pstat span,.sheet:has(.prof.ro) .pstat span{font-size:min(calc(4.2*var(--vw)),18px)!important}
+.sheet.mkprof .pstat b,.sheet:has(.prof.ro) .pstat b{font-size:min(calc(4*var(--vw)),17px)!important}
+.sheet.mkprof .eslots,body.rot .sheet.mkprof .eslots{grid-template-columns:repeat(5,min(16%,78px))!important;justify-content:start!important;gap:min(calc(1.4*var(--vw)),10px)!important;margin:10px 0 8px!important}
+.sheet.mkprof .ph{margin-top:6px}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
