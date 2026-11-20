@@ -137,7 +137,7 @@ const ITEM_FX_IC=`<svg viewBox="0 0 40 40" width="30" height="30"><circle cx="20
 function hudIcons(m){
   if(!m) return '';
   const out=[];
-  Object.keys(m.pas||{}).forEach(p=>{ const id=Object.keys(SK).find(k=>SK[k].p===p); out.push(`<span class="hi" data-tip="${id?esc(SK[id].n+' (passive, Lv '+(m.skl[id]||1)+')|'+skillDesc(id,m.skl[id]||1)):''}">${icon(p==='roots'?'plus':PAS_IC[p]||'star','#e3262d',30)}</span>`); });
+  Object.keys(m.pas||{}).forEach(p=>{ const id=Object.keys(SK).find(k=>SK[k].p===p); out.push(`<span class="hi" data-tip="${id?esc(SK[id].n+' (passive, Lv '+(m.skl[id]||1)+')|'+skillDesc(id,m.skl[id]||1)):''}">${(id?icon(skIconKey(id),(EL[SK[id].el]||EL.neutral).c,30):icon(PAS_IC[p]||'star','#e3262d',30))}</span>`); });
   const f=m.fx||{};
   // item effects: one dot per effect type (same effects from several items are added together)
   if(f.dflat) out.push(`<span class="hi ifx" data-tip="Damage Dealt|Deals ${f.dflat} more damage to foes">${ITEM_FX_IC}</span>`);

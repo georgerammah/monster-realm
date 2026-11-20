@@ -429,9 +429,9 @@ Object.assign(ICON,{
   mkabsorb:'<path d="M5 13 Q5 6 12 6 Q16 6 18 9" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M19.5 6 L18.4 10.3 L14.6 8.6Z" fill="#fff"/><path d="M19 11 Q19 18 12 18 Q8 18 6 15" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M4.5 18 L5.6 13.7 L9.4 15.4Z" fill="#fff"/>',
   mksplash:'<circle cx="15.5" cy="11" r="5" fill="#fff"/><circle cx="9" cy="12.5" r="2.8" fill="#fff"/><circle cx="5" cy="12" r="1.6" fill="#fff"/><circle cx="9" cy="17" r="1.4" fill="#fff"/>',
   mkfury:'<path d="M6 7 h2.5 v-2.5 h2 v2.5 h2.5 v2 h-2.5 v2.5 h-2 v-2.5 h-2.5Z" fill="#fff"/><path d="M14 20 Q9 19 10 14 Q11 11 13.5 9 Q13 12.5 15 13 Q15 10 18 8 Q17 11.5 19 14 Q20 19 14 20Z" fill="#fff"/>',
-  mkstatic:'<path d="M5 11 Q4 6 9 6 Q11 3 15 5 Q20 5 19 10 Q21 13 17 14 L7 14 Q4 14 5 11Z" fill="#fff"/><path d="M9 10.5 Q10 9.5 11 10.5 M13 10.5 Q14 9.5 15 10.5" stroke="#e8a000" stroke-width="1.1" fill="none" stroke-linecap="round"/><path d="M10 12.8 Q12 11.5 14 12.8" stroke="#e8a000" stroke-width="1" fill="none"/><path d="M12.5 14 L10.5 17.5 L12.5 17.5 L11 21 L15 16.5 L13 16.5 L14 14Z" fill="#fff"/>',
+  mkstatic:'<path d="M9 2.8h6.4l-3.1 3.6h3.1l-6 5.8 1.9-3.9H8.5z" fill="#fff"/><path d="M3.4 10.6l2.3 1.1-1.6.9 2.2 1.1M20.6 10.6l-2.3 1.1 1.6.9-2.2 1.1" stroke="#fff" stroke-width="1.2" fill="none" stroke-linejoin="round"/><path d="M5.2 20.2a6.8 6.3 0 0 1 13.6 0" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round"/><path d="M8.9 20.2a3.1 2.8 0 0 1 6.2 0" stroke="#fff" stroke-width="1.3" fill="none" stroke-linecap="round"/>',
   mkspark:'<path d="M9 3 L10.4 8.6 L16 10 L10.4 11.4 L9 17 L7.6 11.4 L2 10 L7.6 8.6Z" fill="#fff"/><path d="M17 12 L17.8 15.2 L21 16 L17.8 16.8 L17 20 L16.2 16.8 L13 16 L16.2 15.2Z" fill="#fff"/><path d="M17 3 L17.6 5.4 L20 6 L17.6 6.6 L17 9 L16.4 6.6 L14 6 L16.4 5.4Z" fill="#fff"/>',
-  mkpounce:'<path d="M4 15 Q5 6 14 6 L14 3.5 L19 8 L14 12.5 L14 10 Q8 10 7 16Z" fill="#fff"/><path d="M13 20 l2 -5 M16 20 l1.5 -4.5 M19 19 l1 -4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>',
+  mkpounce:'<path d="M3.6 10.2C7.8 5 14 5.8 15.6 12.2" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M11.4 11.6l9.2-2.6-1.4 9.8z" fill="#fff"/><path d="M15.6 19.8l2.5-1.4M16.8 21.8l1.9-2.4M19.6 21.9l.3-2.7M13.4 18.4l3.6-.5" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>',
   mkbolt:'<path d="M13.5 2.5 L6 13 L11 13 L9.5 21.5 L18 10 L13 10Z" fill="#fff"/>',
   mkburn:'<path d="M12 21 Q5.5 20 6 13.5 Q6.5 9 10 6 Q9.5 10 12 11 Q11.5 6.5 15 3 Q14.5 8 17.5 11 Q19.5 14.5 17.5 18 Q15.5 21 12 21Z" fill="#fff"/>',
   mkbone:'<path d="M7.6 5.2 a2.2 2.2 0 1 0 -2.4 2.4 L15.4 17.8 a2.2 2.2 0 1 0 2.4 -2.4 a2.2 2.2 0 1 0 1.4 -3.8 a2.2 2.2 0 0 0 -2.6 1.2 L10.8 7 a2.2 2.2 0 0 0 1.2 -2.6 a2.2 2.2 0 1 0 -3.8 1.4 a2.2 2.2 0 0 0 -0.6 -0.6Z" fill="#fff"/>',
@@ -568,7 +568,7 @@ skillDesc=(function(prev){ return function(id,L){ const s=SK[id]; L=L||1;
 
 // Crustan screenshot (lv 10): Wave, Purge, Splash, Camel Back
 Object.assign(ICON,{mkpurge:'<path d="M12 3 Q17.5 10 17.5 14.2 A5.5 5.5 0 0 1 6.5 14.2 Q6.5 10 12 3Z" fill="#fff"/><path d="M11 11 H13 V13.2 H15.2 V15.2 H13 V17.4 H11 V15.2 H8.8 V13.2 H11Z" fill="#22a6e3"/>',
-  mkcamel:'<path d="M4 7.5 Q8 5.5 12 7.5 T20 7.5 V10.5 Q16 8.5 12 10.5 T4 10.5Z M4 12.5 Q8 10.5 12 12.5 T20 12.5 V15.5 Q16 13.5 12 15.5 T4 15.5Z M4 17.5 Q8 15.5 12 17.5 T20 17.5 V20 Q16 18 12 20 T4 20Z" fill="#fff"/>'});
+  mkcamel:'<g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M4 7.4c2.7-2.3 5.3-2.3 8 0s5.3 2.3 8 0"/><path d="M4 12.4c2.7-2.3 5.3-2.3 8 0s5.3 2.3 8 0"/><path d="M4 17.4c2.7-2.3 5.3-2.3 8 0s5.3 2.3 8 0"/></g>'});
 Object.assign(MK_ICON,{purge:'mkpurge',camelback:'mkcamel'});
 Object.assign(SK.wave,{mp:[16,9],dmg:[15,12],soak:.33,soakTurns:6,desc:"Deals {dmg} water damage and reduces enemy's water resistance by 33% for 6 turns."}); delete SK.wave.weaken;
 Object.assign(SK.purge,{mp:[12,4],healFlat:[15,9],desc:'Heals {amt} life and removes all negative effects.'}); delete SK.purge.heal;
@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v198 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v199 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1744,3 +1744,6 @@ function purgeRetired(){ if(typeof S==='undefined'||!S||!Array.isArray(S.mons)) 
   return gone.length; }
 if(purgeRetired()){ try{ persist(); render(); }catch(e){} }
 persist=(function(prev){ return function(){ purgeRetired(); return prev.apply(this,arguments); }; })(persist);
+
+// Camel Back passive shows its own three-wave icon in battle
+PAS_IC.camel='mkcamel';
