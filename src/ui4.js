@@ -12,7 +12,15 @@ const ITEMS = {
   orb:{n:'Storm Orb', cost:760, lv:18, b:{mp:55}},
   manabowl:{n:'Mana Bowl', cost:0, mush:20, lv:4, b:{mp:8}, fx:{rmp:16}},
   lifebowl:{n:'Life Bowl', cost:0, mush:20, lv:4, b:{hp:8}, fx:{rhp:16}},
-  blade:{n:"Krill's Swords", cost:300, lv:8, b:{}, fx:{dflat:34,tflat:17}},
+  manaplant:{n:"Starlite's Mana Plant", cost:220, lv:6, b:{mp:28}},
+  potion:{n:"Tinka's Potion", cost:220, lv:6, b:{hp:34}},
+  blaster:{n:"Dante's Blaster", cost:260, lv:7, b:{atk:11}},
+  talisman:{n:"Torvald's Talisman", cost:480, lv:12, b:{mp:50}},
+  medipod:{n:"Gunther's Medi-Pod", cost:480, lv:12, b:{hp:56}},
+  powersuit:{n:"Breta's Power Suit", cost:600, lv:14, b:{atk:18}},
+  medallion:{n:"Lila's Medallion", cost:900, lv:18, b:{mp:78}},
+  amulet:{n:"Jay's Amulet", cost:900, lv:18, b:{hp:78}},
+  blade:{n:"Krill's Sword", cost:300, lv:8, b:{}, fx:{dflat:34,tflat:17}},
   capacitor:{n:'Force Capacitor', cost:1100, lv:20, b:{atk:23}},
   gcrown:{n:"Goldphoro's Crown", cost:1400, lv:24, b:{atk:25}},
   gauntlets:{n:'Gauntlets', cost:600, lv:12, b:{}, fx:{dnat:24}},
@@ -25,7 +33,7 @@ const STAT_N={atk:'attack',hp:'life',mp:'mana',spd:'speed'};
 function itemDesc(id){ const it=ITEMS[id], b=it.b||{}, f=it.fx||{}; const p=Object.keys(b).map(k=>`+${b[k]} ${STAT_N[k]}`);
   if(f.rmp) p.push(`recovers ${f.rmp} mana after each turn`); if(f.rhp) p.push(`recovers ${f.rhp} life after each turn`);
   ['dnat:nature','dwat:water','dfir:fire'].forEach(x=>{ const [k,n]=x.split(':'); if(f[k]) p.push(`+${f[k]} damage on every ${n} attack`); });
-  if(f.belem||f.bphys) p.push(`blocks ${f.belem|0} elemental and ${f.bphys|0} physical damage from every attack`);
+  if(f.belem||f.bphys) return `Reduces incoming physical damage by ${f.bphys|0} and all elemental damage by ${f.belem|0}. Does not apply to passive damage.`;
   if(f.dflat) p.push(`+${f.dflat} damage on every attack (not damage over time), but takes +${f.tflat} more damage`);
   return 'Gives your monster '+p.join(', '); }
 function itemSVG(id){
