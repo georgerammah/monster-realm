@@ -144,8 +144,8 @@ function hudIcons(m){
   if(f.dnat) out.push(`<span class="hi ifx" data-tip="Nature Damage|Deals ${f.dnat} more nature damage to foes">${icon('up',EL.nature.c,26)}</span>`);
   if(f.dwat) out.push(`<span class="hi ifx" data-tip="Water Damage|Deals ${f.dwat} more water damage to foes">${icon('up',EL.water.c,26)}</span>`);
   if(f.dfir) out.push(`<span class="hi ifx" data-tip="Fire Damage|Deals ${f.dfir} more fire damage to foes">${icon('up',EL.fire.c,26)}</span>`);
-  if(f.belem) out.push(`<span class="hi ifx" data-tip="Elemental Block|Blocks ${f.belem} nature, fire, lightning and water damage from every attack">${ITEM_FX_IC}</span>`);
-  if(f.bphys) out.push(`<span class="hi ifx" data-tip="Physical Block|Blocks ${f.bphys} physical damage from every attack">${ITEM_FX_IC}</span>`);
+  if(f.belem) out.push(`<span class="hi ifx" data-tip="|Reduces fire, lightning, water, nature attack damage by ${f.belem}">${ITEM_FX_IC}</span>`);
+  if(f.bphys) out.push(`<span class="hi ifx" data-tip="|Reduces physical attack damage by ${f.bphys}">${ITEM_FX_IC}</span>`);
   if(f.tflat) out.push(`<span class="hi ifx" data-tip="Damage Taken|Takes ${f.tflat} more damage from foes">${ITEM_FX_IC}</span>`);
   if(f.rhp) out.push(`<span class="hi" data-tip="Life Bowl|Recovers ${f.rhp} life after each turn">${icon('plus','#e0475b',30)}</span>`);
   if(f.rmp) out.push(`<span class="hi" data-tip="Mana Bowl|Recovers ${f.rmp} mana after each turn">${icon('plus','#4a9cf0',30)}</span>`);

@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v189 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v190 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1598,7 +1598,7 @@ var ZBOSS={peaks:'firescream'};
     if(k==='wdef') return `Takes ${p(m.st.wdefV)} less physical damage (${T(m.st.wdef)})`; if(k==='wcry') return `Deals ${p(m.st.wcryV)} less physical damage (${T(m.st.wcry)})`; return prev(m,k); }; })(stDesc);
   skillDesc=(function(prev){ return function(id,L){ if(id!=='warcry') return prev(id,L); const s=SK.warcry, pc=v=>Math.round(lv(v,L||1)*100)+'%'; return s.desc.replace('{wcry}',pc(s.wcry)).replace('{v}',pc(s.v)).replace('{turns}',s.turns); }; })(skillDesc);
   FAM.warhog={n:'Rare', el:'neutral', shape:'warhog', base:{hp:84,atk:16,mp:52,spd:11}};
-  const sp={id:'warhog',n:'Warhog',fam:'warhog',col:['#f07aa0','#3ab8c8','#fff0f4'],tw:{},sk:['warcry','trample','furyfist','pounce'],rare:1};
+  const sp={id:'warhog',n:'Warhog',fam:'warhog',col:['#f07aa0','#3ab8c8','#fff0f4'],tw:{},sk:['warcry','trample','devour','pounce'],rare:1};
   SP.push(sp); SPI.warhog=sp; ATK_MOUTH.warhog=[1.4,2,1];
   function warhogNew(c1,c2,c3,st,id){ const G=id+'a', dk=shade(c1,-30); let d=`<defs>${grad(G,c1)}</defs>`, g='';
     g+=`<path d="M17 60 q-6 -2 -6 4 q2 3 5 0" fill="none" stroke="${OL3}" stroke-width="2.2" stroke-linecap="round"/>`;
