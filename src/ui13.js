@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v221 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v222 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1887,3 +1887,12 @@ addEventListener('mr-fix',e=>{ const f=e.detail||{}; if(typeof S==='undefined'||
 // this device's key doesn't match the account (e.g. a second phone set up before account keys existed)
 addEventListener('mr-forbidden',()=>{ if(window.__forbidShown) return; window.__forbidShown=1;
   confirmBox("This device can't save to your account. Open Menu on the phone you play on, copy its transfer code, and restore it here.","Restore",()=>openRestore()); });
+// Rankings list every player (from the server), online ones marked; ONLINE NOW is unchanged
+openFriends=(function(prev){ return function(tab){ prev(tab); const sh=PANEL_LAST_FULL(); if(!sh||!window.MR_ACCT||!MR_ACCT.top) return;
+  let all=null; const myId=String(window.MR_UID||'').slice(-6);
+  const paint=()=>{ const on=sh.body.querySelector('.fr-t.blue.on'); const box=sh.body.querySelector('.fr-list'); if(!on||!box||!all||box._top) return; box._top=1;
+    const online=new Set(NET.peers.filter(p=>!p.me).map(p=>(p.name||'').toLowerCase()));
+    const list=all.map(p=>p.id===myId?Object.assign({},p,{me:true,rank:myRank(),name:S.name||p.name}):p).sort((a,b)=>b.rank-a.rank);
+    box.innerHTML=list.map((p,i)=>`<div class="fr-row ${p.me?'me':''}"><div class="fr-dot ${online.has(p.name.toLowerCase())||p.me?'':'off'}"><i></i></div><div class="fr-rk"><b class="fr-pos">${i+1}</b>${rankBadge(p.rank,26)}<span>${p.rank}</span></div><div class="fr-n">${esc(p.name)}${p.me?' <small>you</small>':''}</div></div>`).join(''); };
+  MR_ACCT.top().then(r=>{ if(r&&r.ok&&Array.isArray(r.players)){ all=r.players; if(!all.some(p=>p.id===myId)) all.push({id:myId,name:S.name||'You',rank:myRank()}); paint(); } }).catch(()=>{});
+  new MutationObserver(paint).observe(sh.body,{childList:true,subtree:true}); }; })(openFriends);

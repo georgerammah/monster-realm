@@ -35,7 +35,7 @@
     set:v=>call({a:'set', k:path+'/'+k, v:JSON.stringify(v), uid}).then(r=>{ if(r&&r.fix) window.dispatchEvent(new CustomEvent('mr-fix',{detail:r.fix})); if(r&&r.err==='forbidden') window.dispatchEvent(new Event('mr-forbidden')); return r; })
   }) }) };
   const user={ id:async()=>uid, me:async()=>({id:uid}), isOwner:()=>true, canEdit:()=>true, can:()=>true };
-  window.MR_ACCT={ claim:name=>call({a:'claim', name, uid}), whoami:()=>call({a:'whoami', uid}), adm:(op,o)=>call(Object.assign({a:'adm', op, uid}, o||{})) };
+  window.MR_ACCT={ claim:name=>call({a:'claim', name, uid}), whoami:()=>call({a:'whoami', uid}), adm:(op,o)=>call(Object.assign({a:'adm', op, uid}, o||{})), top:()=>call({a:'top'}) };
   window.claude={ use: async n => !URL ? null : n==='db'?db : n==='user'?user : n==='room'?(lobbyRoom=lobbyRoom||mkRoom('lobby')) : null };
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden' && lobbyRoom){} });
 })();
