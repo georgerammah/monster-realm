@@ -974,7 +974,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v232 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v233 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -2011,3 +2011,75 @@ openFriends=(function(prev){ return function(tab){ prev(tab); const sh=PANEL_LAS
 // Rankings/Online rows: route through openTrainer (loader + cache), and warm up the top few profiles
 openFriends=(function(prev){ return function(tab){ prev(tab); const sh=PANEL_LAST_FULL(); if(!sh||!window.MR_ACCT||!MR_ACCT.top) return;
   MR_ACCT.top().then(r=>{ if(r&&r.ok) (r.players||[]).filter(p=>p.uid&&p.uid!==window.MR_UID).slice(0,8).forEach(p=>window.__prefetchProfile(p.uid)); }).catch(()=>{}); }; })(openFriends);
+// ---------- MK zones 10-11: Valley of the Wind (Marlboro) and Creepvine Jungle (Gorilla), original art ----------
+function marlNew(c1,c2,c3,st,id){ const G=id+'a', L=id+'l'; const dk=shade(c1,-30); let d=`<defs>${grad(G,c1)}${grad(L,c2)}</defs>`, g='';
+  const stripes=(pts)=>pts.map(([x,y,r])=>`<path d="M${x-4} ${y} q4 ${-r} 8 0" fill="none" stroke="${c2}" stroke-width="3" stroke-linecap="round" opacity=".9"/>`).join('');
+  if(st===0){ // bulb
+    [[-1,-24],[0,0],[1,24]].forEach(([k,a])=>{ g+=`<path d="M50 60 Q${44+k*10} 44 ${48+k*16} 38 Q${52+k*6} 48 52 60Z" fill="url(#${L})" ${s3} transform="rotate(${a*.3} 50 60)"/>`; });
+    g+=`<path d="M50 56 Q66 58 68 76 Q66 92 50 92 Q34 92 32 76 Q34 58 50 56Z" fill="url(#${G})" ${s3}/>`+stripes([[40,70,3],[58,72,3],[48,84,3]]);
+    g+=`<circle cx="45" cy="71" r="5" fill="#fff" ${s3}/><circle cx="46.5" cy="71.75" r="2.75" fill="${OL3}"/><circle cx="45" cy="69.5" r="1.1" fill="#fff"/>`+`<circle cx="57" cy="71" r="5" fill="#fff" ${s3}/><circle cx="58.5" cy="71.75" r="2.75" fill="${OL3}"/><circle cx="57" cy="69.5" r="1.1" fill="#fff"/>`+`<path d="M44 82 Q51 88 58 82" fill="#fff" ${s3} stroke-width="1.4"/><path d="M47 83 l1 2 l1 -2 M51 84 l1 2 l1 -2 M55 83 l1 2 l1 -2" stroke="${OL3}" stroke-width=".9" fill="none"/>`; return d+g; }
+  if(st===1){ // sprout serpent
+    g+=`<path d="M38 92 q-8 -2 -10 -6 q8 0 12 2 M60 92 q8 -2 10 -6 q-8 0 -12 2" fill="url(#${L})" ${s3}/>`;
+    g+=`<path d="M40 92 Q30 80 42 72 Q56 64 50 56 Q46 50 52 44 L62 46 Q58 52 62 58 Q70 70 56 78 Q46 84 58 92Z" fill="url(#${G})" ${s3}/>`+stripes([[44,74,3],[55,66,3],[50,86,3],[57,52,2]]);
+    g+=`<path d="M56 30 Q64 22 70 30" fill="none" stroke="${c2}" stroke-width="3" stroke-linecap="round"/><ellipse cx="60" cy="40" rx="12" ry="10" fill="url(#${G})" ${s3}/>`;
+    g+=`<circle cx="56" cy="36" r="4.6" fill="#fff" ${s3}/><circle cx="57.38" cy="36.69" r="2.53" fill="${OL3}"/><circle cx="56" cy="34.62" r="1.012" fill="#fff"/>`+`<circle cx="66" cy="35" r="4.6" fill="#fff" ${s3}/><circle cx="67.38" cy="35.69" r="2.53" fill="${OL3}"/><circle cx="66" cy="33.62" r="1.012" fill="#fff"/>`+`<path d="M56 45 Q63 50 70 44" fill="#fff" ${s3} stroke-width="1.3"/>`; return d+g; }
+  // flytrap
+  [[30,92,-1],[44,94,-.4],[60,94,.4],[72,92,1]].forEach(([x,y,k])=>{ g+=`<path d="M50 74 Q${x-k*6} ${y-14} ${x} ${y} Q${x+4} ${y-4} ${x+6} ${y-2}" fill="none" stroke="${OL3}" stroke-width="7.4" stroke-linecap="round"/><path d="M50 74 Q${x-k*6} ${y-14} ${x} ${y} Q${x+4} ${y-4} ${x+6} ${y-2}" fill="none" stroke="${c1}" stroke-width="4" stroke-linecap="round"/>`; });
+  g+=`<path d="M44 80 Q36 66 46 56 L58 60 Q52 68 56 80Z" fill="url(#${G})" ${s3}/>`+stripes([[46,72,3],[50,64,2]]);
+  g+=`<path d="M40 30 Q30 14 46 12 Q42 22 48 28Z M58 26 Q66 10 78 18 Q66 20 64 30Z" fill="url(#${L})" ${s3}/>`;
+  g+=`<path d="M36 42 Q40 54 92 60 L94 34 Q60 38 36 42Z" fill="#7a1a2a" ${s3} stroke-width="1.4"/>`;
+  g+=`<path d="M32 44 Q30 16 62 16 Q90 18 96 34 Q66 36 36 42Z" fill="url(#${G})" ${s3}/><path d="M34 48 Q38 76 64 74 Q90 72 94 60 Q64 58 38 50Z" fill="url(#${G})" ${s3}/>`;
+  let t=''; for(let k=0;k<7;k++){ const x=42+k*7.4, yt=41-k*0.8, yb=50+k*1.4; t+=`<path d="M${x} ${yt} l3.4 7 l3.4 -7.4Z M${x+1} ${yb} l3.4 -7 l3.4 7.4Z" fill="#fff" stroke="${OL3}" stroke-width=".9"/>`; } g+=t;
+  g+=stripes([[46,28,3],[62,24,3],[50,64,-3],[66,66,-3]])+eye3(56,27,4,'#2a3a5a',2,-6)+eye3(67,25,3.8,'#2a3a5a',2,4);
+  return d+g; }
+function gorNew(c1,c2,c3,st,id){ const G=id+'a', P=id+'p', M=id+'m'; const face=shade(c1,38); let d=`<defs>${grad(G,c1)}${grad(P,c2)}${grad(M,c3)}</defs>`, g='';
+  if(st===0){ // little boxer kid
+    g+=leg3(44,80,43,86,42,91,6,shade(c1,-20))+leg3(56,80,57,86,58,91,6,shade(c1,-20));
+    g+=`<path d="M40 70 Q40 62 50 62 Q60 62 60 70 L60 76 Q50 80 40 76Z" fill="url(#${G})" ${s3}/><path d="M39 74 L61 74 L62 84 L52 84 L50 80 L48 84 L38 84Z" fill="url(#${P})" ${s3}/>`;
+    g+=`<path d="M40 66 Q32 60 30 52 M60 66 Q68 60 70 52" fill="none" stroke="${OL3}" stroke-width="6.4" stroke-linecap="round"/><path d="M40 66 Q32 60 30 52 M60 66 Q68 60 70 52" fill="none" stroke="${c1}" stroke-width="3.6" stroke-linecap="round"/>`;
+    g+=`<circle cx="30" cy="50" r="4.6" fill="url(#${M})" ${s3}/><circle cx="70" cy="50" r="4.6" fill="url(#${M})" ${s3}/>`;
+    g+=`<ellipse cx="50" cy="48" rx="14" ry="13" fill="url(#${G})" ${s3}/><ellipse cx="51" cy="52" rx="10" ry="8" fill="${face}"/>`;
+    g+=eye3(46,46,4.6,'#3aa83a',0,-4)+eye3(56,46,4.6,'#3aa83a',0,4)+`<path d="M44 54 Q51 61 58 54Z" fill="#fff" ${s3} stroke-width="1.3"/><path d="M48 55 v3 M51 55.4 v3.4 M54 55 v3" stroke="${OL3}" stroke-width=".8"/>`; return d+g; }
+  if(st===1){ // knuckle-walking
+    g+=leg3(34,78,32,85,30,91,8,shade(c1,-20))+leg3(48,80,48,86,48,91,8,shade(c1,-20));
+    g+=`<path d="M24 76 Q20 50 44 44 Q66 40 72 56 Q74 70 64 78 Q44 84 24 76Z" fill="url(#${G})" ${s3}/><path d="M26 72 L52 76 L50 84 L28 82Z" fill="url(#${P})" ${s3}/>`;
+    g+=`<path d="M62 60 Q72 72 70 88" fill="none" stroke="${OL3}" stroke-width="10.6" stroke-linecap="round"/><path d="M62 60 Q72 72 70 88" fill="none" stroke="${c1}" stroke-width="7" stroke-linecap="round"/><ellipse cx="71" cy="89" rx="6" ry="3.2" fill="url(#${G})" ${s3}/>`;
+    g+=`<ellipse cx="70" cy="50" rx="11" ry="10" fill="url(#${G})" ${s3}/><path d="M64 52 Q72 48 80 52 Q80 60 72 60 Q64 60 64 52Z" fill="${face}" ${s3} stroke-width="1.2"/>`;
+    g+=`<path d="M62 44 Q71 40 80 44" fill="none" stroke="${OL3}" stroke-width="3" stroke-linecap="round"/>`+eye3(68,47,3,'#3aa83a',1,-2)+eye3(75,47,3,'#3aa83a',1,4)+`<path d="M70 56 Q74 58 78 55" fill="none" stroke="${OL3}" stroke-width="1.4" stroke-linecap="round"/>`; return d+g; }
+  // champion boxer
+  g+=leg3(40,78,38,85,36,91,9,shade(c1,-20))+leg3(60,78,62,85,64,91,9,shade(c1,-20));
+  g+=`<path d="M30 60 Q28 34 50 30 Q72 34 70 60 Q70 76 50 78 Q30 76 30 60Z" fill="url(#${G})" ${s3}/><path d="M38 44 Q50 50 62 44 Q62 62 50 64 Q38 62 38 44Z" fill="${face}" opacity=".85"/>`;
+  g+=`<path d="M31 70 L69 70 L70 84 L54 84 L50 80 L46 84 L30 84Z" fill="url(#${P})" ${s3}/><path d="M30 64 Q50 70 70 64 L70 71 Q50 77 30 71Z" fill="#f2c83a" ${s3} stroke-width="1.5"/><ellipse cx="50" cy="69" rx="7" ry="5" fill="#ffe27a" ${s3} stroke-width="1.4"/><path d="M47 69 l3 -3 l3 3 l-3 2z" fill="#c99a1e"/>`;
+  [[30,46,22,60,1],[70,46,78,58,-1]].forEach(([x0,y0,x1,y1])=>{ g+=`<path d="M${x0} ${y0} Q${x1} ${y0+4} ${x1} ${y1}" fill="none" stroke="${OL3}" stroke-width="11" stroke-linecap="round"/><path d="M${x0} ${y0} Q${x1} ${y0+4} ${x1} ${y1}" fill="none" stroke="${c1}" stroke-width="7.4" stroke-linecap="round"/><ellipse cx="${x1}" cy="${y1+6}" rx="8" ry="9" fill="url(#${M})" ${s3}/><path d="M${x1-6} ${y1+10} q6 3 12 0" fill="none" stroke="#fff" stroke-width="1.6" opacity=".7"/>`; });
+  g+=`<ellipse cx="52" cy="24" rx="11" ry="10" fill="url(#${G})" ${s3}/><path d="M45 27 Q52 23 59 27 Q59 34 52 34 Q45 34 45 27Z" fill="${face}" ${s3} stroke-width="1.2"/>`;
+  g+=`<path d="M43 19 Q52 15 61 19" fill="none" stroke="${OL3}" stroke-width="3.2" stroke-linecap="round"/>`+eye3(48,22,2.8,'#3aa83a',2,-2)+eye3(56,22,2.8,'#3aa83a',2,4)+`<path d="M48 31 Q52 29 56 31" fill="none" stroke="${OL3}" stroke-width="1.4" stroke-linecap="round"/>`;
+  return d+g; }
+(function(){
+  Object.assign(FAM,{ marlboro:{n:'Marlboro', el:'nature', shape:'marlboro', base:{hp:78,atk:15,mp:50,spd:10}}, gorilla:{n:'Gorilla', el:'neutral', shape:'gorilla', base:{hp:86,atk:17,mp:40,spd:9}} });
+  [['marly','Marly','marlboro',['#8fd4c4','#a070c8','#f6eefc'],['poison','firewall','nshield','roots']],
+   ['marlow','Marlow','marlboro',['#9ad84a','#e8e04a','#f6fbe0'],['poison','absorb','regrowth','thickskin']],
+   ['marina','Marina','marlboro',['#9ac8e8','#f070b8','#fdeef6'],['poison','invuln','hardened','sweaty']],
+   ['marvuu','Marvuu','marlboro',['#f2d03a','#f08a2a','#fff6dc'],['perseverance','bolt','feedback','pounce']],
+   ['gorzanga','Gorzanga','gorilla',['#b89ad8','#e0342a','#e0342a'],['regrowth','burn','nshield','thickskin']],
+   ['gorgamel','Gorgamel','gorilla',['#9aa0d8','#3a7ae0','#f2c83a'],['feedback','splash','feed','grounded']],
+   ['gorbamba','Gorbamba','gorilla',['#7a5a4a','#f2c83a','#6a7ad8'],['natureswill','cripple','invuln','sweaty']],
+   ['gorgie','Gorgie','gorilla',['#9ad0f0','#f05a9a','#5ad85a'],['feed','invuln','natureswill','double']]
+  ].forEach(([id,n,fam,col,sk])=>{ if(SPI[id]) return; const sp={id,n,fam,col,tw:{},sk:sk.filter(k=>SK[k])}; SP.push(sp); SPI[id]=sp; });
+  Object.assign(ATK_MOUTH,{marlboro:[1.7,1.4,1.0],gorilla:[1.6,1.2,1.0]});
+  monSVG=(function(prev){ const F={marlboro:marlNew,gorilla:gorNew}; return function(spId,lvl,cls){ const sp=SPI[spId]; const shape=sp&&FAM[sp.fam]&&FAM[sp.fam].shape; if(!F[shape]) return prev(spId,lvl,cls);
+    const st=stageOf(lvl); const c1=mute(sp.col[0],20), c2=mute(sp.col[1],10), c3=mute(sp.col[2],8); const id='m'+(GID++); const sc=[0.8,0.92,1][st];
+    return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${sc}) translate(-50 -92)">${F[shape](c1,c2,c3,st,id)}</g></svg>`; }; })(monSVG);
+  if(!ZONES.some(z=>z.id==='valley')) ZONES.push({id:'valley', n:'Valley of the Wind', fam:'marlboro', lv:29, sizes:[3,3,3,3], c:'#8fd4a0'});
+  if(!ZONES.some(z=>z.id==='jungle')) ZONES.push({id:'jungle', n:'Creepvine Jungle', fam:'gorilla', lv:30, sizes:[3,3,3,3], c:'#3a9a4a'});
+  Object.assign(ZTASKS,{
+    valley:[['act','Ride the valley winds',29,0,260,330,2,3],['fight','Battle a wild marlboro',29,0,290,360,3,1],['act','Water the snapping sprouts',30,{mp:340},290,360,2,3],['fight','Face the flytrap patch',30,0,330,410,3,1],['boss','Valley of the Wind Boss',30,0,620,780,5,1]],
+    jungle:[['act','Swing through the creepvines',30,0,270,340,2,3],['fight','Battle a wild gorilla',30,0,300,380,3,1],['act','Spar at the jungle gym',30,{atk:60},300,380,2,3],['fight','Face the jungle champions',30,0,340,420,3,1],['boss','Creepvine Jungle Boss',30,0,650,800,5,1]] });
+  Object.assign(ZSCENE,{ valley:{sky:['#a8e0ff','#eaf8ff'],orb:'#ffffff',ox:72,oy:20,hills:['#8fd4a0','#5aa86a'],x:'valley'}, jungle:{sky:['#7ac88a','#d8f4d8'],orb:'#fff6c8',ox:24,oy:18,hills:['#3a9a4a','#226a30'],x:'jungle'} });
+  Object.assign(ZCOL,{valley:['#eaf8ee','#c4e8cc'],jungle:['#e0f4e0','#b4dcb8']});
+  Object.assign(TRACKS,{z_valley:TRACKS.z_beach, z_jungle:TRACKS.z_hollow});
+  zoneScene=(function(prev){ const X={
+      valley:()=>`<g fill="#fff" opacity=".85"><path d="M20 30 q20 -6 40 0 q-20 4 -40 0z M120 22 q24 -6 48 0 q-24 4 -48 0z"/></g><g fill="none" stroke="#fff" stroke-width="1.4" opacity=".8" stroke-linecap="round"><path d="M10 50 q14 -6 28 0 t28 0"/><path d="M130 46 q14 -6 28 0 t28 0"/></g><g fill="#5aa86a">${[16,30,170,186].map(x=>`<path d="M${x} 92 q-3 -12 0 -20 q3 8 0 20z"/>`).join('')}</g>`,
+      jungle:()=>`<g fill="#1e5a28"><path d="M0 0 H200 V10 Q180 22 160 10 Q140 24 120 10 Q100 22 80 10 Q60 24 40 10 Q20 22 0 10Z"/></g><g fill="none" stroke="#2e7a3a" stroke-width="2.4" stroke-linecap="round"><path d="M30 8 q-4 20 4 36"/><path d="M90 8 q4 16 -2 30"/><path d="M168 8 q-6 22 4 40"/></g><g fill="#3a9a4a"><ellipse cx="34" cy="46" rx="5" ry="3"/><ellipse cx="172" cy="50" rx="5" ry="3"/></g>`};
+    return function(id){ const z=ZSCENE[id]; if(!z||!X[z.x]) return prev(id); const g='zg'+id, ex=X[z.x](z);
+      return `<svg class="zscene" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${z.sky[0]}"/><stop offset="1" stop-color="${z.sky[1]}"/></linearGradient></defs><rect width="200" height="100" fill="url(#${g})"/><circle cx="${z.ox}" cy="${z.oy}" r="9" fill="${z.orb}"/><path d="M0 70 Q50 56 100 66 T200 62 V100 H0Z" fill="${z.hills[0]}"/><path d="M0 84 Q60 72 120 82 T200 80 V100 H0Z" fill="${z.hills[1]}"/>${ex}</svg>`; }; })(zoneScene);
+})();
