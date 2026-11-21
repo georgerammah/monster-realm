@@ -101,9 +101,9 @@ function peers(R, me){
 
 
 // ---- unique usernames + admins ----
-// Admin usernames come from Script Property ADMIN_NAMES (comma separated); defaults to "george".
+// Admin usernames come from Script Property ADMIN_NAMES (comma separated); defaults to "george,br6pack".
 function normName(n){ return String(n||'').trim().toLowerCase().replace(/\s+/g,' '); }
-function adminNames(){ const v = PropertiesService.getScriptProperties().getProperty('ADMIN_NAMES') || 'george'; return v.split(',').map(normName).filter(String); }
+function adminNames(){ const v = PropertiesService.getScriptProperties().getProperty('ADMIN_NAMES') || 'george,br6pack'; return v.split(',').map(normName).filter(String); }
 function isAdminUid(uid){ if(!uid) return false; const n = rawGet('uname/'+uid); return !!n && adminNames().indexOf(n) >= 0; }
 function claim(p){
   const name = String(p.name||'').trim(), key = normName(name);
