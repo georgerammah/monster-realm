@@ -156,7 +156,7 @@ function adm(p){
       if (k.indexOf('uname/') === 0 && v) get(k.slice(6)).name = String(v);
       else if (k.indexOf('ban/') === 0) { if (v === '1' || v === 1) get(k.slice(4)).banned = true; }
       else { const m = /^data\/users\/([A-Za-z0-9_-]+)\/save$/.exec(k); if (m) { const x = get(m[1]); x.seen = r[1] ? new Date(r[1]).getTime() : 0;
-        try { const s = JSON.parse(v); const ms = s.mons || []; x.mons = ms.length; x.lv = ms.reduce((a,b) => Math.max(a, +b.lv||0), 0); if (!x.name && s.name) x.name = '(' + s.name + ')'; } catch (_) {} } } });
+        try { let s = JSON.parse(v); if (s && typeof s.save === 'string') s = JSON.parse(s.save); const ms = s.mons || []; x.mons = ms.length; x.lv = ms.reduce((a,b) => Math.max(a, +b.lvl||0), 0); if (!x.name && s.name) x.name = '(' + s.name + ')'; } catch (_) {} } } });
     const q = normName(p.q||''); let list = Object.keys(P).map(u => P[u]);
     if (q) list = list.filter(x => (x.name||'').toLowerCase().indexOf(q) >= 0 || x.uid.toLowerCase().indexOf(q) >= 0);
     list.sort((a,b) => b.seen - a.seen);
