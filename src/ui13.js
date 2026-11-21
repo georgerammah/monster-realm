@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v227 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v228 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1936,7 +1936,7 @@ openFriends=(function(prev){ return function(tab){ prev(tab); const sh=PANEL_LAS
     c.sides.forEach((sd,k)=>{ const sign=k===s?1:-1; sd.mons.forEach(m=>{ v+=sign*monVal(c,m,sd,k,s); }); }); return v; }
   function options(b){ const a=actor(b); const m=a.m; const opts=[];
     ['basic',...usable(m)].forEach(id=>{ let ts=[]; try{ ts=validTargets(b,a.s,id)||[]; }catch(_){ ts=[]; } if(!ts.length) ts=[null]; ts.forEach(t=>opts.push({skill:id,target:t})); });
-    if(b.single){ try{ benchOf(b,a.s).forEach(i=>opts.push({swap:i})); }catch(_){} }
+    if(b.single&&!b.swapped){ try{ benchOf(b,a.s).forEach(i=>opts.push({swap:i})); }catch(_){} }
     return opts; }
   function sim(c,o){ c.ev=[]; c.log=[]; if(!act(c,o)) return false; settle(c); return true; }
   function bestReplyValue(c,s){ // opponent picks the reply that is worst for us (one quick sample each)
@@ -1950,8 +1950,14 @@ openFriends=(function(prev){ return function(tab){ prev(tab); const sh=PANEL_LAS
     for(let k=0;k<N;k++){ const c=clone(b); c.rng=((b.rng|0)+7919*(k+1))|0; if(!sim(c,o)) return -1e9;
       tot+=0.35*evalFor(c,s)+0.65*bestReplyValue(c,s); }
     let v=tot/N; if(o.swap!=null) v-=6; return v; }
-  function smart2(b){ try{ const a=actor(b); if(!a) return base(b); const t0=Date.now(); let best=null,bs=-Infinity;
-      for(const o of options(b)){ const v=score(b,a.s,o); if(v>bs){ bs=v; best=o; } if(Date.now()-t0>900) break; }
+  // a swap is only worth it if the monster coming in then does clearly better than staying (it still has to act this turn)
+  function swapValue(b,s,o){ const c=clone(b); if(!sim(c,o)) return -1e9; let bv=-Infinity; for(const o2 of options(c)){ if(o2.swap!=null) continue; const v=score(c,s,o2); if(v>bv) bv=v; } return bv; }
+  function smart2(b){ try{ const a=actor(b); if(!a) return base(b); const t0=Date.now(); let best=null,bs=-Infinity, bestSw=null, sw=-Infinity;
+      for(const o of options(b)){ if(o.swap!=null) continue; const v=score(b,a.s,o); if(v>bs){ bs=v; best=o; } }
+      if(b.single&&!b.swapped&&a.m.hp>0){ for(const o of options(b)){ if(o.swap==null) continue; if(Date.now()-t0>1200) break; const v=swapValue(b,a.s,o); if(v>sw){ sw=v; bestSw=o; } } }
+      // needs a real reason: a clear gain, more so while the current monster is still healthy
+      const margin=25+40*(a.m.hp/a.m.maxhp);
+      if(bestSw&&sw>bs+margin) return bestSw;
       return best||base(b); }catch(e){ console.warn('smart AI fell back',e); return base(b); } }
   window.__aiSmart1=window.__aiSmart; window.__aiSmart=smart2;
   // every computer opponent uses it: practice, rivals, challenges and zone fights
