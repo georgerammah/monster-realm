@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v222 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v223 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1896,3 +1896,20 @@ openFriends=(function(prev){ return function(tab){ prev(tab); const sh=PANEL_LAS
     box.innerHTML=list.map((p,i)=>`<div class="fr-row ${p.me?'me':''}"><div class="fr-dot ${online.has(p.name.toLowerCase())||p.me?'':'off'}"><i></i></div><div class="fr-rk"><b class="fr-pos">${i+1}</b>${rankBadge(p.rank,26)}<span>${p.rank}</span></div><div class="fr-n">${esc(p.name)}${p.me?' <small>you</small>':''}</div></div>`).join(''); };
   MR_ACCT.top().then(r=>{ if(r&&r.ok&&Array.isArray(r.players)){ all=r.players; if(!all.some(p=>p.id===myId)) all.push({id:myId,name:S.name||'You',rank:myRank()}); paint(); } }).catch(()=>{});
   new MutationObserver(paint).observe(sh.body,{childList:true,subtree:true}); }; })(openFriends);
+// tap a trainer in Online Now or Rankings to open their profile
+function profileFromSave(save,rank){ const S0=save||{}; const byU={}; (S0.mons||[]).forEach(m=>byU[m.uid]=m);
+  const team=(S0.team||[]).map(u=>byU[u]).filter(m=>m&&SPI[m.sp]).slice(0,3).map(m0=>{ const m=JSON.parse(JSON.stringify(m0)); try{ return snapOf(m); }catch(_){ return {sp:m.sp,lvl:m.lvl}; } });
+  const st=S0.stats||{};
+  return cleanProfile({name:S0.name, avatar:S0.avatar, rank:rank!=null?rank:(S0.rank==null?200:S0.rank), motto:S0.motto, team,
+    stats:{wins:st.wins, arenaWins:st.arenaWins, pvpWins:st.pvpWins, mons:(S0.mons||[]).length, kinds:new Set((S0.mons||[]).filter(m=>SPI[m.sp]&&!SPI[m.sp].legacy).map(m=>m.sp)).size, quests:Object.keys(S0.quests||{}).length}}); }
+openFriends=(function(prev){ return function(tab){ prev(tab); const sh=PANEL_LAST_FULL(); if(!sh) return; let top=null;
+  if(window.MR_ACCT&&MR_ACCT.top) MR_ACCT.top().then(r=>{ if(r&&r.ok) top=r.players||[]; }).catch(()=>{});
+  sh.body.addEventListener('click',async e=>{ const row=e.target.closest('.fr-row'); if(!row||e.target.closest('button')) return;
+    if(row.classList.contains('me')) return openProfile({me:true});
+    const name=(row.querySelector('.fr-n')||{}).childNodes; const nm=name&&name[0]?String(name[0].textContent||'').trim():''; if(!nm) return;
+    const peer=NET.peers.find(p=>!p.me&&(p.name||'').trim().toLowerCase()===nm.toLowerCase());
+    if(peer) return openProfile(cleanProfile(peer));
+    const t=(top||[]).find(p=>(p.name||'').toLowerCase()===nm.toLowerCase()); if(!t||!t.uid) return toast('Profile not available yet');
+    try{ const db=window.claude&&await window.claude.use('db'); const v=db&&await withTimeout(db.collection('data/users/'+t.uid).doc('save').get(),10000); const save=parseDoc(v);
+      if(!save) return toast("Couldn't load that profile"); openProfile(profileFromSave(save,t.rank)); }catch(_){ toast("Couldn't load that profile"); } });
+  }; })(openFriends);

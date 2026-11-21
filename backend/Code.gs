@@ -247,7 +247,7 @@ function top(){
     else if (k.indexOf('ban/') === 0 && (r[2] === '1' || r[2] === 1)) banned[k.slice(4)] = 1; });
   rows.forEach(r => { const m = /^data\/users\/([A-Za-z0-9_-]+)\/save$/.exec(String(r[0])); if (!m || banned[m[1]]) return;
     try { const s = JSON.parse(JSON.parse(r[2]).save); const name = names[m[1]] || s.name; if (!name) return;
-      list.push({id: m[1].slice(-6), name: String(name).slice(0, 16), rank: Math.max(0, Math.round(+(s.rank == null ? 200 : s.rank) || 0)), avatar: s.avatar || null}); } catch (_) {} });
+      list.push({id: m[1].slice(-6), uid: m[1], name: String(name).slice(0, 16), rank: Math.max(0, Math.round(+(s.rank == null ? 200 : s.rank) || 0)), avatar: s.avatar || null}); } catch (_) {} });
   list.sort((a, b) => b.rank - a.rank);
   const res = {ok:1, players: list.slice(0, 100)}; CACHE.put('top', JSON.stringify(res), 60); return res;
 }
