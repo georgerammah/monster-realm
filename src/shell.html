@@ -1672,6 +1672,16 @@ body{overscroll-behavior:none}
 .s2item .s2art{display:flex;align-items:center;justify-content:center}
 .s2item .s2art>svg{transform:scale(1.35);transform-origin:50% 70%}
 .s2item .s2art .s2m{width:calc(13*var(--vh));height:calc(13*var(--vh))}
+.minfo2.mi3{display:flex!important;flex-direction:column!important;gap:calc(2*var(--vh))!important;max-height:calc(84*var(--vh));overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-right:4px}
+.mi3 .mi3-top{display:flex;gap:min(calc(3*var(--vw)),22px);align-items:flex-start;flex:none}
+.mi3 .mi-art{flex:0 0 32%;height:calc(36*var(--vh))!important;border-radius:14px;box-shadow:inset 0 0 0 2.5px #3a2a1a;background:radial-gradient(#fffaf0,#f0dfb8)}
+.mi3 .mi3-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:calc(1.1*var(--vh))}
+.mi3 .mi-nm b{font:min(calc(7.4*var(--vh)),32px) "Lilita One",system-ui!important}
+.mi3 .mi3-stage{font:min(calc(4*var(--vh)),17px) Georgia,serif;color:#6a5a48;margin-top:calc(-1.2*var(--vh))}
+.mi3 .mi3-stats{display:flex;flex-direction:column;gap:2px;max-width:320px}
+.mi3 .mi3-stats div{display:flex;justify-content:space-between;font:min(calc(4.8*var(--vh)),21px) "Lilita One",system-ui}.mi3 .mi3-stats b{font-weight:400}
+.mi3 .mi2-r{max-height:none!important;overflow:visible!important;padding:0!important;flex:none}
+.mi3 .mi-atk{display:none}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
