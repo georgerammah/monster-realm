@@ -1614,6 +1614,26 @@ body{overscroll-behavior:none}
 .fr-dot.off i{background:#9a9aa2!important;box-shadow:none!important}
 .friends .fr-row{cursor:pointer}
 .friends .fr-row.fr-press{filter:brightness(.93)}
+.tp-m .lvb{display:none!important}
+.tp-team.tp-free{position:absolute;inset:0;display:block}
+.tp-team.tp-free .tp-m{position:absolute;left:0;top:0;width:min(calc(17*var(--vw)),calc(30*var(--vh)));transform-origin:50% 100%;will-change:transform}
+.tp-team.tp-free .tp-m .flip{transition:transform .25s}.tp-team.tp-free .tp-m .flip.l{transform:scaleX(-1)}
+.tp-team.tp-free .tp-m svg{animation:none!important}.tp-team.tp-free .tp-m.walk svg{animation:walkbob .38s ease-in-out infinite!important}
+.tp-team.tp-free .tp-m .shadow{position:absolute;left:18%;right:18%;bottom:-2%;height:9%;border-radius:50%;background:rgba(0,0,0,.18)}
+.fnd{display:flex;flex-direction:column;gap:10px;min-height:0;height:100%}.fnd h2{margin:0}
+.fnd input{font:16px -apple-system,system-ui;padding:11px 14px;border-radius:12px;border:0;box-shadow:inset 0 0 0 1.5px #c9b88a;background:#fff}
+.fnd-list{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.fnd-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:#fff;border:0;text-align:left;font:16px -apple-system,system-ui;color:#2a1d16}
+.fnd-row b{font-weight:700}.fnd-rk{min-width:36px;color:#6b5a48}.fnd-msg{color:#8a7a68;text-align:center;margin:18px 0}
+.sheet.rklsheet{width:min(calc(96*var(--vw)),980px)!important}
+.rkl h2{font:min(calc(9*var(--vh)),40px)/1 "Lilita One",system-ui!important;color:#3a2410;letter-spacing:.5px}
+.rkl-grid{grid-template-columns:repeat(9,1fr)!important;gap:min(calc(1*var(--vw)),8px)!important}
+.rkl-c{flex-direction:column;justify-content:flex-start;gap:min(calc(1.4*var(--vh)),8px)!important;padding:calc(2.4*var(--vh)) 2px calc(2*var(--vh))!important;text-align:center;border-radius:14px!important}
+.rkl-c .rbadge{width:min(calc(13*var(--vh)),calc(6.5*var(--vw)),54px)!important;height:min(calc(13*var(--vh)),calc(6.5*var(--vw)),54px)!important}
+.rkl-c b{font:min(calc(4.6*var(--vh)),calc(2.1*var(--vw)),19px)/1.05 "Lilita One",system-ui!important;color:#3a2410;white-space:nowrap}
+.rkl-c span{font:min(calc(5.4*var(--vh)),calc(2.5*var(--vw)),22px)/1 "Lilita One",system-ui!important;opacity:1!important;color:#fff;-webkit-text-stroke:min(.5vh,3px) #3a2410;paint-order:stroke fill}
+.rkl-c.on span{color:#ffd23f}
+.rkl-me{font:min(calc(4.6*var(--vh)),19px) "Lilita One",system-ui!important;color:#3a2410}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

@@ -476,7 +476,7 @@ rankBadge=(function(prev){ return function(r,size){ const [,n]=rankOf(r); size=s
 
 // ---------- tap your rank: the full rank ladder ----------
 function openRanks(){ const me=myRank(), cur=rankOf(me)[1];
-  sheet(`<div class="rkl"><h2>Ranks</h2><div class="rkl-grid">${RANKS.map((r,i)=>{ const nx=RANKS[i+1]; return `<div class="rkl-c ${r[1]===cur?'on':''}">${rankBadge(r[0],40)}<div><b>${r[1]}</b><span>${nx?`${r[0]} – ${nx[0]-1}`:`${r[0]}+`}</span></div></div>`; }).join('')}</div>
+  sheet(`<div class="rkl"><h2>Ranks</h2><div class="rkl-grid">${RANKS.map((r,i)=>{ const w=String(r[1]).split(' '); return `<div class="rkl-c ${r[1]===cur?'on':''}">${rankBadge(r[0],40)}<b>${w[0]}<br>${w.slice(1).join(' ')}</b><span>${r[0]}</span></div>`; }).join('')}</div>
     <p class="rkl-me">You: ${rankBadge(me,20)} <b>${me}</b> · Every season starts at 200</p></div>`,{cls:'rklsheet'}); }
 document.addEventListener('click',e=>{ const t=e.target.closest&&e.target.closest('.hbar.rank, .cc-rank, .ares-r'); if(!t) return; e.stopPropagation(); openRanks(); },true);
 
@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v225 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v227 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1876,7 +1876,7 @@ animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(r
     const g=evs.find(e=>e.hyd); if(g&&ac){ setTimeout(()=>fxAura(ar.left+ar.width/2,ar.top+ar.height/2,ar.height,'water',Math.max(50,ar.width*.55)),Math.max(0,(g._d||1400)-520)); } }catch(_){}
   return r; }; })(animateBattle);
 // everything above (every monster, incl. rares) is defined once this runs; only then may saves be cleaned up
-setTimeout(()=>{ window.__defsReady=true; try{ const n=purgeRetired(); fixTeam(); if(n){ persist(); render(); } }catch(_){} },0);
+setTimeout(()=>{ window.__defsReady=true; try{ const n=purgeRetired(); fixTeam(); if(n) persist(); if(!B) render(); /* early renders ran before the rares existed, leaving empty roamers */ }catch(_){} },0);
 
 // the server corrects impossible numbers (and adds gifted mushrooms); take its values
 addEventListener('mr-fix',e=>{ const f=e.detail||{}; if(typeof S==='undefined'||!S) return; let gift=0;
@@ -1957,3 +1957,39 @@ openFriends=(function(prev){ return function(tab){ prev(tab); const sh=PANEL_LAS
   // every computer opponent uses it: practice, rivals, challenges and zone fights
   aiChoose=function(b){ const ours=typeof B!=='undefined'&&B&&B.b===b&&B.mode!=='pvp'; return ours?smart2(b):base(b); };
 })();
+// trainer profile: no level badges, and the team of 3 wanders the field like on the home screen
+function roamProfile(field){ if(!field||field._roam) return; field._roam=1;
+  const els=[...field.querySelectorAll('.tp-m')]; if(!els.length) return;
+  const team=field.querySelector('.tp-team'); if(team) team.classList.add('tp-free');
+  const R=els.map((el,k)=>({el, x:22+k*28+Math.random()*6, y:72+Math.random()*16, dir:1, tx:null, ty:null, wait:400+Math.random()*1800, walk:false}));
+  R.forEach(r=>{ r.el.style.animation='none'; r.el.insertAdjacentHTML('afterbegin','<i class="shadow"></i>'); const s=r.el.querySelector('svg'); if(s){ s.outerHTML=`<div class="flip">${s.outerHTML}</div>`; } });
+  let last=0; const tick=t=>{ if(!field.isConnected) return; requestAnimationFrame(tick); if(t-last<30) return; const dt=Math.min(80,t-(last||t)); last=t;
+    const W=field.clientWidth, H=field.clientHeight;
+    R.forEach(r=>{ if(r.wait>0){ r.wait-=dt; if(r.walk){ r.walk=false; r.el.classList.remove('walk'); } if(r.wait<=0){ r.tx=10+Math.random()*80; r.ty=66+Math.random()*24; } }
+      else if(r.tx==null) r.wait=1000+Math.random()*3000;
+      else { const dx=r.tx-r.x, dy=r.ty-r.y, d=Math.hypot(dx,dy*1.6);
+        if(d<0.6){ r.tx=null; r.wait=1200+Math.random()*3500; }
+        else { const sp=0.0045*dt; r.x+=dx/d*sp; r.y+=dy/d*sp*0.6; const nd=dx<0?-1:1; if(nd!==r.dir){ r.dir=nd; const f=r.el.querySelector('.flip'); f&&f.classList.toggle('l',nd<0); } if(!r.walk){ r.walk=true; r.el.classList.add('walk'); } } }
+      const sc=(0.8+(r.y-66)/24*0.3).toFixed(3);
+      r.el.style.transform=`translate3d(${(r.x/100*W).toFixed(1)}px,${(r.y/100*H).toFixed(1)}px,0) translate(-50%,-100%) scale(${sc})`; r.el.style.zIndex=Math.round(r.y); }); };
+  requestAnimationFrame(tick); }
+openProfile=(function(prev){ return function(p){ const r=prev(p); setTimeout(()=>{ const box=[...document.querySelectorAll('.tprof')].pop(); if(!box) return;
+  const go=()=>roamProfile(box.querySelector('.tp-field')); go(); new MutationObserver(go).observe(box,{childList:true}); },30); return r; }; })(openProfile);
+// someone else's monster: just the stage, no owner name
+openMonRO=(function(prev){ return function(t,owner){ return prev(t); }; })(openMonRO);
+
+// FIND: search every trainer by name and open their profile
+async function openTrainer(t){ const peer=NET.peers.find(p=>!p.me&&(p.name||'').trim().toLowerCase()===(t.name||'').toLowerCase());
+  if(peer) return openProfile(cleanProfile(peer)); if(!t.uid) return toast('Profile not available yet');
+  try{ const db=window.claude&&await window.claude.use('db'); const v=db&&await withTimeout(db.collection('data/users/'+t.uid).doc('save').get(),10000); const save=parseDoc(v);
+    if(!save) return toast("Couldn't load that profile"); openProfile(profileFromSave(save,t.rank)); }catch(_){ toast("Couldn't load that profile"); } }
+function openFind(){ let all=null; const myId=String(window.MR_UID||'');
+  const sh=sheet(`<div class="fnd"><h2>Find a trainer</h2><input id="fq" placeholder="Search by username" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="fnd-list" id="fl"><p class="fnd-msg">Loading trainers…</p></div></div>`);
+  const $f=x=>sh.body.querySelector(x);
+  const draw=()=>{ if(!all) return; const q=($f('#fq').value||'').trim().toLowerCase(); const list=all.filter(p=>p.uid!==myId&&(!q||(p.name||'').toLowerCase().includes(q))).slice(0,30);
+    $f('#fl').innerHTML=list.length?list.map((p,i)=>`<button class="fnd-row" data-i="${all.indexOf(p)}">${rankBadge(p.rank,22)}<span class="fnd-rk">${p.rank}</span><b>${esc(p.name)}</b></button>`).join(''):`<p class="fnd-msg">${q?'No trainers found.':'No other trainers yet.'}</p>`;
+    sh.body.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>openTrainer(all[+b.dataset.i])); };
+  $f('#fq').addEventListener('input',draw);
+  (window.MR_ACCT&&MR_ACCT.top?MR_ACCT.top():Promise.resolve(null)).then(r=>{ all=(r&&r.ok&&r.players)||[]; if(!r||!r.ok) $f('#fl').innerHTML='<p class="fnd-msg">Couldn\'t reach the server.</p>'; else draw(); }).catch(()=>{ $f('#fl').innerHTML='<p class="fnd-msg">Couldn\'t reach the server.</p>'; }); }
+openFriends=(function(prev){ return function(tab){ prev(tab); const sh=PANEL_LAST_FULL(); if(!sh) return;
+  sh.body.addEventListener('click',e=>{ if(e.target.closest('#frf')){ e.stopImmediatePropagation(); e.preventDefault(); openFind(); } },true); }; })(openFriends);
