@@ -974,7 +974,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v249 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v250 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -2437,3 +2437,18 @@ icon=(function(prev){ return function(key,bg,size){ return key==='mkroots'?prev(
 // Leech steals a fixed amount of mana (63 at level 10), not half the damage
 (function(){ Object.assign(SK.leech,{mpSteal:[8,+((63-8)/9).toFixed(4)]}); DEFAULT_SK.leech=JSON.parse(JSON.stringify(SK.leech));
   skillDesc=(function(prev){ return function(id,L){ if(id==='leech'){ L=L||1; return `A natural attack that deals ${Math.round(lv(SK.leech.dmg,L))} damage and steals ${Math.round(lv(SK.leech.mpSteal,L))} mana.`; } return prev(id,L); }; })(skillDesc); })();
+// Regrowth (MK): heals 123 life every turn for 4 turns, 82 mana at level 10; green plus icon; swirling leaves on the caster
+(function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
+  Object.assign(SK.regrowth,{hot:P(14,123),hotIsFlat:1,turns:4,mp:P(14,82)}); DEFAULT_SK.regrowth=JSON.parse(JSON.stringify(SK.regrowth));
+  if(SK.pollenbloom) Object.assign(SK.pollenbloom,{hot:SK.regrowth.hot,hotIsFlat:1});
+  skillDesc=(function(prev){ return function(id,L){ if(id==='regrowth') return `Heals your life by ${Math.round(lv(SK.regrowth.hot,L||1))} every turn for ${SK.regrowth.turns} turns.`; return prev(id,L); }; })(skillDesc);
+  MK_ICON.regrowth='mkregrow';
+  icon=(function(prev){ return function(key,bg,size){ return key==='mkregrow'?prev('plus','#22a046',size):prev(key,bg,size); }; })(icon); })();
+function fxLeaves(x,y,size){ const n=9; for(let i=0;i<n;i++){ const d=fxAt(x,y,'leaf',`<svg width="${size*.5}" height="${size*.3}" viewBox="0 0 20 12"><path d="M1 6 Q8 -2 19 6 Q8 14 1 6Z" fill="#5ae05a" fill-opacity=".85" stroke="#d8ffd0" stroke-width="1"/><path d="M2 6 L17 6" stroke="#2a9a3a" stroke-width=".8"/></svg>`);
+    d.style.cssText+=`;width:${size*.5}px;height:${size*.3}px;margin:${-size*.15}px 0 0 ${-size*.25}px;pointer-events:none;z-index:60`;
+    const a0=i/n*Math.PI*2, R=size*.55;
+    d.animate([0,.25,.5,.75,1].map(t=>{ const a=a0+t*Math.PI*2.2, r=R*(0.4+0.6*Math.sin(Math.PI*Math.min(1,t*1.3))); return {transform:`translate(${Math.cos(a)*r}px,${Math.sin(a)*r*.7 - t*size*.4}px) rotate(${a*57}deg) scale(${0.6+0.6*Math.sin(Math.PI*t)})`,opacity:t<.85?1:0}; }),{duration:1200,delay:i*40,easing:'ease-out',fill:'both'}).onfinish=()=>d.remove(); }
+  fxFlash(x,y,'nature',size*1.2); }
+animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(root,b,animating); if(!animating) return r;
+  try{ const a=(b.ev||[]).find(e=>e.k==='act'); if(!a||(a.sk!=='regrowth'&&a.sk!=='pollenbloom')) return r; const ac=fEl(a.s,a.i); if(!ac) return r; const rr=localRect(ac.querySelector('.fart'));
+    setTimeout(()=>fxLeaves(rr.left+rr.width/2,rr.top+rr.height/2,Math.max(60,rr.width*.8)),100); }catch(_){} return r; }; })(animateBattle);

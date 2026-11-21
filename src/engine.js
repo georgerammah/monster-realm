@@ -387,7 +387,7 @@ function act(b, action){
   } else if(sk.k==='debuff'){
     const d=b.sides[foe].mons[tgt]; d.st[sk.buff]=sk.turns; d.st[sk.buff+'F']=1; d.st[sk.buff+'V']=Math.min(.75,lv(sk.v,L)); if(sk.v2) d.st[sk.buff+'R']=lv(sk.v2,L); b.ev.push({k:'buff',s:foe,i:tgt,b:sk.buff}); log(b,sk.buff==='cripple'?`${d.n} is crippled!`:`${d.n} is weakened!`);
   } else if(sk.k==='heal'){
-    if(sk.hot){ me.st.roots=sk.turns; me.st.rootsV=lv(sk.hot,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
+    if(sk.hot){ me.st.roots=sk.turns; me.st.rootsV=sk.hotIsFlat?lv(sk.hot,L)/me.maxhp:lv(sk.hot,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
     if(sk.heal){ const hv=Math.round(me.maxhp*lv(sk.heal,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.healFlat){ const hv=Math.round(lv(sk.healFlat,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','scorch','zap','acid','eshift','crush','taunt','soul','wcry'].forEach(k=>me.st[k]=0); me.st.soakS=[]; me.st.scorchS=[]; }
