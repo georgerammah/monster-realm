@@ -223,7 +223,6 @@ function beginTurn(b){
     if(m.hp<=0){ b.turnIdx++; continue; }
     const st=m.st;
     ['bubble','lsh','fsh','fwall','nsh','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','zap','acid','eshift','crush','taunt','wcry','wdef'].forEach(k=>{ if(st[k]>0){ if(st[k+'F']){ st[k+'F']=0; return; } st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
-    if(m.pas.camel){ const g=Math.min(m.maxmp-m.mp, Math.round(m.pas.camel)); if(g>0){ m.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,end:1,ph:2}); } }
     for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm'],['frost','water','the blizzard'],['soul','nature','soul drain']]){
       if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el,dk:k,ph:1}); log(b,`${m.n} is hurt by ${nm}.`);
         if(st[k+'H']&&st[k+'By']){ const c=b.sides[st[k+'By'][0]]&&b.sides[st[k+'By'][0]].mons[st[k+'By'][1]]; if(c&&c.hp>0){ const h=Math.min(c.maxhp-c.hp,st[k+'H']); c.hp+=h; b.ev.push({k:'heal',s:st[k+'By'][0],i:st[k+'By'][1],v:st[k+'H'],rv:h,ph:1}); } } }
@@ -399,6 +398,7 @@ function act(b, action){
   }
   if(me.hp>0 && !b.over){
     if(me.pas.roots!=null){ const h=Math.min(me.maxhp-me.hp, Math.round(me.maxhp*me.pas.roots)); me.hp+=h; b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
+    if(me.pas.camel){ const g=Math.min(me.maxmp-me.mp, Math.round(me.pas.camel)); if(g>0){ me.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,end:1,ph:2}); } }
     if(me.fx.rhp&&me.hp>0){ const h=Math.min(me.maxhp-me.hp, me.fx.rhp); me.hp+=h; b.ev.push({k:'heal',s:a.s,i:a.i,v:me.fx.rhp,rv:h,end:1,ph:3}); }
     if(me.fx.rmp&&me.hp>0){ const g=Math.min(me.maxmp-me.mp, me.fx.rmp); me.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:me.fx.rmp,rv:g,end:1,ph:3}); }
   }
