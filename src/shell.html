@@ -1634,6 +1634,17 @@ body{overscroll-behavior:none}
 .rkl-c span{font:min(calc(5.4*var(--vh)),calc(2.5*var(--vw)),22px)/1 "Lilita One",system-ui!important;opacity:1!important;color:#fff;-webkit-text-stroke:min(.5vh,3px) #3a2410;paint-order:stroke fill}
 .rkl-c.on span{color:#ffd23f}
 .rkl-me{font:min(calc(4.6*var(--vh)),19px) "Lilita One",system-ui!important;color:#3a2410}
+.pload{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0);transition:background .2s;pointer-events:auto}
+.pload.on{background:rgba(0,0,0,.28)}.pload-b{display:flex;align-items:center;gap:12px;padding:14px 22px;border-radius:16px;background:#f6eed8;box-shadow:0 8px 30px rgba(0,0,0,.3);font:min(calc(5*var(--vh)),20px) "Lilita One",system-ui;color:#3a2410;transform:scale(.9);opacity:0;transition:.2s}
+.pload.on .pload-b{transform:none;opacity:1}.pload-s{width:22px;height:22px;border-radius:50%;border:3px solid #e0cfa0;border-top-color:#e0702a;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sheet.rklsheet.rklv{width:min(calc(46*var(--vw)),440px)!important;padding-top:calc(2.4*var(--vh))!important;padding-bottom:calc(2.4*var(--vh))!important}
+.rkl-v h2{font-size:min(calc(7.4*var(--vh)),34px)!important;margin:0 0 calc(1.2*var(--vh))!important}
+.rkl-v .rkl-grid{grid-template-columns:1fr!important;gap:calc(.7*var(--vh))!important}
+.rkl-v .rkl-c{flex-direction:row!important;align-items:center;gap:12px!important;padding:0 14px!important;height:calc(7.6*var(--vh));border-radius:12px!important;text-align:left}
+.rkl-v .rkl-c .rbadge{width:calc(6*var(--vh))!important;height:calc(6*var(--vh))!important}
+.rkl-v .rkl-c b{flex:1;font-size:min(calc(4.6*var(--vh)),20px)!important}
+.rkl-v .rkl-c span{font-size:min(calc(5*var(--vh)),22px)!important}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

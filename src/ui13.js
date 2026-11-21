@@ -476,8 +476,7 @@ rankBadge=(function(prev){ return function(r,size){ const [,n]=rankOf(r); size=s
 
 // ---------- tap your rank: the full rank ladder ----------
 function openRanks(){ const me=myRank(), cur=rankOf(me)[1];
-  sheet(`<div class="rkl"><h2>Ranks</h2><div class="rkl-grid">${RANKS.map((r,i)=>{ const w=String(r[1]).split(' '); return `<div class="rkl-c ${r[1]===cur?'on':''}">${rankBadge(r[0],40)}<b>${w[0]}<br>${w.slice(1).join(' ')}</b><span>${r[0]}</span></div>`; }).join('')}</div>
-    <p class="rkl-me">You: ${rankBadge(me,20)} <b>${me}</b> · Every season starts at 200</p></div>`,{cls:'rklsheet'}); }
+  sheet(`<div class="rkl rkl-v"><h2>Ranks</h2><div class="rkl-grid">${RANKS.map(r=>`<div class="rkl-c ${r[1]===cur?'on':''}">${rankBadge(r[0],40)}<b>${r[1]}</b><span>${r[0]}</span></div>`).join('')}</div></div>`,{cls:'rklsheet rklv'}); }
 document.addEventListener('click',e=>{ const t=e.target.closest&&e.target.closest('.hbar.rank, .cc-rank, .ares-r'); if(!t) return; e.stopPropagation(); openRanks(); },true);
 
 // ---------- attack pose face: angry brow + open, toothy mouth (shown only during the attack pose) ----------
@@ -975,7 +974,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v228 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v229 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1915,8 +1914,7 @@ openFriends=(function(prev){ return function(tab){ prev(tab); const sh=PANEL_LAS
     const peer=NET.peers.find(p=>!p.me&&(p.name||'').trim().toLowerCase()===nm.toLowerCase());
     if(peer) return openProfile(cleanProfile(peer));
     if(!top) await topP; const t=(top||[]).find(p=>(p.name||'').toLowerCase()===nm.toLowerCase()); if(!t||!t.uid) return toast('Profile not available yet');
-    try{ const db=window.claude&&await window.claude.use('db'); const v=db&&await withTimeout(db.collection('data/users/'+t.uid).doc('save').get(),10000); const save=parseDoc(v);
-      if(!save) return toast("Couldn't load that profile"); openProfile(profileFromSave(save,t.rank)); }catch(_){ toast("Couldn't load that profile"); } });
+    openTrainer(t); });
   }; })(openFriends);
 // ---------- Smarter AI v2: considers swaps, your best reply (not your average one), and reads buffs/debuffs/stacks ----------
 (function(){
@@ -1999,3 +1997,17 @@ function openFind(){ let all=null; const myId=String(window.MR_UID||'');
   (window.MR_ACCT&&MR_ACCT.top?MR_ACCT.top():Promise.resolve(null)).then(r=>{ all=(r&&r.ok&&r.players)||[]; if(!r||!r.ok) $f('#fl').innerHTML='<p class="fnd-msg">Couldn\'t reach the server.</p>'; else draw(); }).catch(()=>{ $f('#fl').innerHTML='<p class="fnd-msg">Couldn\'t reach the server.</p>'; }); }
 openFriends=(function(prev){ return function(tab){ prev(tab); const sh=PANEL_LAST_FULL(); if(!sh) return;
   sh.body.addEventListener('click',e=>{ if(e.target.closest('#frf')){ e.stopImmediatePropagation(); e.preventDefault(); openFind(); } },true); }; })(openFriends);
+// opening someone's profile: instant feedback while it loads, and remember profiles we've already fetched
+(function(){ const cache={};
+  function loader(name){ const d=document.createElement('div'); d.className='pload'; d.innerHTML=`<div class="pload-b"><i class="pload-s"></i><span>Loading ${esc(name||'trainer')}…</span></div>`; document.body.appendChild(d); requestAnimationFrame(()=>d.classList.add('on')); return ()=>{ d.classList.remove('on'); setTimeout(()=>d.remove(),200); }; }
+  async function fetchSave(uid){ if(cache[uid]&&Date.now()-cache[uid].at<120000) return cache[uid].save;
+    const db=window.claude&&await window.claude.use('db'); const v=db&&await withTimeout(db.collection('data/users/'+uid).doc('save').get(),10000); const save=parseDoc(v); if(save) cache[uid]={save,at:Date.now()}; return save; }
+  window.__prefetchProfile=uid=>{ if(uid&&!cache[uid]) fetchSave(uid).catch(()=>{}); };
+  openTrainer=async function(t){ const peer=NET.peers.find(p=>!p.me&&(p.name||'').trim().toLowerCase()===(t.name||'').toLowerCase());
+    if(peer) return openProfile(cleanProfile(peer)); if(!t.uid) return toast('Profile not available yet');
+    const done=cache[t.uid]?()=>{}:loader(t.name);
+    try{ const save=await fetchSave(t.uid); done(); if(!save) return toast("Couldn't load that profile"); openProfile(profileFromSave(save,t.rank)); }catch(_){ done(); toast("Couldn't load that profile"); } };
+})();
+// Rankings/Online rows: route through openTrainer (loader + cache), and warm up the top few profiles
+openFriends=(function(prev){ return function(tab){ prev(tab); const sh=PANEL_LAST_FULL(); if(!sh||!window.MR_ACCT||!MR_ACCT.top) return;
+  MR_ACCT.top().then(r=>{ if(r&&r.ok) (r.players||[]).filter(p=>p.uid&&p.uid!==window.MR_UID).slice(0,8).forEach(p=>window.__prefetchProfile(p.uid)); }).catch(()=>{}); }; })(openFriends);
