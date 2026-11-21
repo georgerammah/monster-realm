@@ -359,7 +359,9 @@ function act(b, action){
       const d=b.sides[foe].mons[ti]; if(d.hp<=0) return;
       if(sk.burn && rnd(b)<lv(sk.burn,L) && !(d.pas.sweaty && rnd(b)<0.5)){ d.st.burn=3; d.st.burnD=sk.btick?lv(sk.btick,L):8; log(b,`${d.n} was burned!`); }
       if(sk.stun && rnd(b)<lv(sk.stun,L)){ d.st.stun=1; log(b,`${d.n} is stunned!`); }
-      if(sk.burnmp){ const x=Math.min(d.mp, Math.round(lv(sk.burnmp,L))); d.mp-=x; }
+      if(sk.burnmp){ const x=Math.min(d.mp, Math.round(lv(sk.burnmp,L))); d.mp-=x;
+        // show the mana burn before the damage: slot it ahead of this target's hit
+        if(x>0){ let hi=-1; for(let q=b.ev.length-1;q>=0;q--){ const e=b.ev[q]; if(e.k==='act') break; if(e.k==='hit'&&e.s===foe&&e.i===ti){ hi=q; break; } } const me2={k:'mana',s:foe,i:ti,v:-x,rv:-x,msh:1,burn:1}; if(hi>=0) b.ev.splice(hi,0,me2); else b.ev.push(me2); } }
     });
     if(sk.mpAtk && tot>0 && me.hp>0){ const d1=b.sides[foe].mons[targets[0]]; const x=Math.min(d1?d1.mp:0, Math.round(me.atk*lv(sk.mpAtk,L))); if(x>0){ d1.mp-=x; me.mp=Math.min(me.maxmp,me.mp+x); } }
     if(sk.hotFlat && me.hp>0){ me.st.roots=sk.turns||2; me.st.rootsV=lv(sk.hotFlat,L)/me.maxhp; b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
