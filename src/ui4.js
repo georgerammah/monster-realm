@@ -7,7 +7,7 @@ const ITEMS = {
   crystal:{n:'Mana Crystal', cost:160, lv:6, b:{mp:22}},
   ironshell:{n:'Iron Shell', cost:170, lv:6, b:{hp:32}},
   fang:{n:'Sharp Fang', cost:190, lv:8, b:{atk:6}},
-  collar:{n:'Spiked Collar', cost:5600, lv:7, b:{atk:10}},
+  collar:{n:'Spiked Collar', cost:500, lv:7, b:{atk:10}},
   crown:{n:'Golden Crown', cost:700, lv:16, b:{atk:10,hp:45}},
   orb:{n:'Storm Orb', cost:760, lv:18, b:{mp:55}},
   manabowl:{n:'Mana Bowl', cost:0, mush:20, lv:4, b:{mp:8}, fx:{rmp:16}},
@@ -34,7 +34,7 @@ function itemDesc(id){ const it=ITEMS[id], b=it.b||{}, f=it.fx||{}; const p=Obje
   if(f.rmp) p.push(`recovers ${f.rmp} mana after each turn`); if(f.rhp) p.push(`recovers ${f.rhp} life after each turn`);
   ['dnat:nature','dwat:water','dfir:fire'].forEach(x=>{ const [k,n]=x.split(':'); if(f[k]) p.push(`+${f[k]} damage on every ${n} attack`); });
   if(f.belem||f.bphys) return `Reduces incoming physical damage by ${f.bphys|0} and all elemental damage by ${f.belem|0}. Does not apply to passive damage.`;
-  if(f.dflat) p.push(`+${f.dflat} damage on every attack (not damage over time), but takes +${f.tflat} more damage`);
+  if(f.dflat) p.push(`+${f.dflat} damage on every attack (excluding damage over time), but takes +${f.tflat} more damage`);
   return 'Gives your monster '+p.join(', '); }
 function itemSVG(id){
   const P={

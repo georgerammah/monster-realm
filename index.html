@@ -3757,7 +3757,7 @@ const ITEMS = {
   crystal:{n:'Mana Crystal', cost:160, lv:6, b:{mp:22}},
   ironshell:{n:'Iron Shell', cost:170, lv:6, b:{hp:32}},
   fang:{n:'Sharp Fang', cost:190, lv:8, b:{atk:6}},
-  collar:{n:'Spiked Collar', cost:5600, lv:7, b:{atk:10}},
+  collar:{n:'Spiked Collar', cost:500, lv:7, b:{atk:10}},
   crown:{n:'Golden Crown', cost:700, lv:16, b:{atk:10,hp:45}},
   orb:{n:'Storm Orb', cost:760, lv:18, b:{mp:55}},
   manabowl:{n:'Mana Bowl', cost:0, mush:20, lv:4, b:{mp:8}, fx:{rmp:16}},
@@ -3784,7 +3784,7 @@ function itemDesc(id){ const it=ITEMS[id], b=it.b||{}, f=it.fx||{}; const p=Obje
   if(f.rmp) p.push(`recovers ${f.rmp} mana after each turn`); if(f.rhp) p.push(`recovers ${f.rhp} life after each turn`);
   ['dnat:nature','dwat:water','dfir:fire'].forEach(x=>{ const [k,n]=x.split(':'); if(f[k]) p.push(`+${f[k]} damage on every ${n} attack`); });
   if(f.belem||f.bphys) return `Reduces incoming physical damage by ${f.bphys|0} and all elemental damage by ${f.belem|0}. Does not apply to passive damage.`;
-  if(f.dflat) p.push(`+${f.dflat} damage on every attack (not damage over time), but takes +${f.tflat} more damage`);
+  if(f.dflat) p.push(`+${f.dflat} damage on every attack (excluding damage over time), but takes +${f.tflat} more damage`);
   return 'Gives your monster '+p.join(', '); }
 function itemSVG(id){
   const P={
@@ -4705,7 +4705,7 @@ bindView=function(v){ _bind8(v); v=v||document; v.querySelectorAll('[data-snd]')
 // ===== V9: arena result screen + trainer profiles =====
 const MOTTO_MAX=60;
 function myProfile(){ return {me:true, name:S.name, avatar:myAvatar(), rank:myRank(), motto:S.motto||'', team:(typeof teamMsg==='function'?teamMsg():teamMons().map(m=>({sp:m.sp,lvl:m.lvl}))),
-  stats:{wins:S.stats.wins|0, arenaWins:S.stats.arenaWins|0, pvpWins:S.stats.pvpWins|0, mons:S.mons.length, kinds:new Set(S.mons.map(m=>m.sp)).size, quests:Object.keys(S.quests||{}).length}}; }
+  stats:{wins:S.stats.wins|0, arenaWins:S.stats.arenaWins|0, pvpWins:S.stats.pvpWins|0, mons:S.mons.length, kinds:new Set(S.mons.filter(m=>SPI[m.sp]&&!SPI[m.sp].legacy).map(m=>m.sp)).size, quests:Object.keys(S.quests||{}).length}}; }
 function cleanProfile(p){
   p=p||{}; const st=p.stats||{}; const n=v=>Math.max(0,Math.min(99999,v|0));
   return {name:String(p.name||'Trainer').slice(0,16), avatar:sanitizeAv(p.avatar)||{t:'trainer',i:0}, rank:Math.max(0,Math.min(9999,p.rank|0))||1000,
@@ -4781,7 +4781,7 @@ function openProfile(p){
       if(k==='stats') sheet(`<h2 class="game-h">${esc(P.name)}'s Stats</h2><div class="list">
         <div class="row"><div><b>Battles won</b></div><b>${st.wins|0}</b></div><div class="row"><div><b>Arena wins</b></div><b>${st.arenaWins|0}</b></div>
         <div class="row"><div><b>Live wins</b></div><b>${st.pvpWins|0}</b></div><div class="row"><div><b>Monsters owned</b></div><b>${st.mons|0}</b></div>
-        <div class="row"><div><b>Kinds discovered</b></div><b>${st.kinds|0} / ${SP.length}</b></div><div class="row"><div><b>Rank</b></div><b>${P.rank} · ${rankOf(P.rank)[1]}</b></div></div>`);
+        <div class="row"><div><b>Monsters discovered</b></div><b>${st.kinds|0} / ${SP.filter(s=>!s.legacy&&!s.boss&&s.fam!=='dummy'&&!s.npc).length}</b></div><div class="row"><div><b>Rank</b></div><b>${P.rank} · ${rankOf(P.rank)[1]}</b></div></div>`);
       else if(k==='awards'){ const done=me?QUESTS.filter(q=>S.quests[q.id]):null; const n=me?done.length:(st.quests|0);
         sheet(`<h2 class="game-h">Awards</h2><p class="muted">${n} of ${QUESTS.length} earned</p>${me?`<div class="list">${QUESTS.map(q=>`<div class="row ${S.quests[q.id]?'':'done'}"><div><b>${q.n}</b></div>${S.quests[q.id]?'<span class="ok">🏆</span>':'<span class="muted small">Locked</span>'}</div>`).join('')}</div>`:''}`); }
       else if(k==='spar'){ sh.close(); NET.challenge(P.cid, true); }
@@ -4917,7 +4917,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (207).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (208).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -5156,7 +5156,7 @@ function drawShop(){
   } else if(SHOPTAB==='eggs'){
     body=`<div class="s2cards"><button class="s2card" id="hatch"><div class="egg"></div><b>Mystery Egg</b><span>Hatches a random monster</span><em>10 🍄</em></button>
       <button class="s2card" id="hatchc"><div class="egg plain"></div><b>Monster Egg</b><span>A random monster, a few levels lower</span><em class="g">$${eggCost()}</em></button>
-      ${SP.filter(s=>s.rare).map(s=>`<button class="s2card rare" data-rare="${s.id}"><div class="s2mon">${monSVG(s.id,1)}</div><b>${s.n}</b><span>Rare monster</span><em>50 🍄</em></button>`).join('')}</div>`;
+      ${SP.filter(s=>s.rare).map(s=>`<button class="s2card rare" data-rare="${s.id}"><div class="s2mon">${monSVG(s.id,1)}</div><b>${s.n}</b><span>Rare monster</span><em>${typeof RARE_COST!=='undefined'?RARE_COST:500} 🍄</em></button>`).join('')}</div>`;
   } else if(SHOPTAB==='energy'){
     body=`<div class="s2cards"><button class="s2card" id="refill"><div class="egg bolt">⚡</div><b>Energy Refill</b><span>Fill your energy to max</span><em>10 🍄</em></button></div>`;
   } else {
@@ -6567,7 +6567,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v207 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v208 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -7068,8 +7068,9 @@ function EGGSP(){ return SP.filter(s=>!s.rare&&!s.boss&&s.fam!=='dummy'&&FAM[s.f
     const st=stageOf(lvl); const c1=mute(s.col[0],22), c2=mute(s.col[1],12), c3=mute(s.col[2],10); const id='m'+(GID++); const sc=[0.82,0.92,1][st];
     return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${sc}) translate(-50 -92)">${brawlerNew(c1,c2,c3,st,id)}</g></svg>`; }; })(monSVG);
 })();
-function buyRare(id){ const s=SPI[id]; if(!s) return; if(S.mush<50) return toast('You need 50 🍄');
-  confirmBox(`Buy ${s.n} for 50 🍄?`,"Buy",()=>{ if(S.mush<50) return; S.mush-=50; const m=addMon(id,1); if(S.team.length<3) S.team.push(m.uid); persist(); render(); try{ drawShop(); }catch(_){} reveal(m,`${s.n} joined your team!`); }); }
+var RARE_COST=500;
+function buyRare(id){ const s=SPI[id]; if(!s) return; if(S.mush<RARE_COST) return toast(`You need ${RARE_COST} 🍄`);
+  confirmBox(`Buy ${s.n} for ${RARE_COST} 🍄?`,"Buy",()=>{ if(S.mush<RARE_COST) return; S.mush-=RARE_COST; const m=addMon(id,1); if(S.team.length<3) S.team.push(m.uid); persist(); render(); try{ drawShop(); }catch(_){} reveal(m,`${s.n} joined your team!`); }); }
 // Cripple uses MK's symbol: a white bone lying flat on an orange disc
 ICON.mkbone='<g transform="translate(0.5 3.6) rotate(-45 12 12)">'+ICON.mkbone+'</g>';
 icon=(function(prev){ return function(key,bg,size){ return prev(key, key==='mkbone'?'#f39a2b':bg, size); }; })(icon);

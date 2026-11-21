@@ -1,7 +1,7 @@
 // ===== V9: arena result screen + trainer profiles =====
 const MOTTO_MAX=60;
 function myProfile(){ return {me:true, name:S.name, avatar:myAvatar(), rank:myRank(), motto:S.motto||'', team:(typeof teamMsg==='function'?teamMsg():teamMons().map(m=>({sp:m.sp,lvl:m.lvl}))),
-  stats:{wins:S.stats.wins|0, arenaWins:S.stats.arenaWins|0, pvpWins:S.stats.pvpWins|0, mons:S.mons.length, kinds:new Set(S.mons.map(m=>m.sp)).size, quests:Object.keys(S.quests||{}).length}}; }
+  stats:{wins:S.stats.wins|0, arenaWins:S.stats.arenaWins|0, pvpWins:S.stats.pvpWins|0, mons:S.mons.length, kinds:new Set(S.mons.filter(m=>SPI[m.sp]&&!SPI[m.sp].legacy).map(m=>m.sp)).size, quests:Object.keys(S.quests||{}).length}}; }
 function cleanProfile(p){
   p=p||{}; const st=p.stats||{}; const n=v=>Math.max(0,Math.min(99999,v|0));
   return {name:String(p.name||'Trainer').slice(0,16), avatar:sanitizeAv(p.avatar)||{t:'trainer',i:0}, rank:Math.max(0,Math.min(9999,p.rank|0))||1000,
@@ -77,7 +77,7 @@ function openProfile(p){
       if(k==='stats') sheet(`<h2 class="game-h">${esc(P.name)}'s Stats</h2><div class="list">
         <div class="row"><div><b>Battles won</b></div><b>${st.wins|0}</b></div><div class="row"><div><b>Arena wins</b></div><b>${st.arenaWins|0}</b></div>
         <div class="row"><div><b>Live wins</b></div><b>${st.pvpWins|0}</b></div><div class="row"><div><b>Monsters owned</b></div><b>${st.mons|0}</b></div>
-        <div class="row"><div><b>Kinds discovered</b></div><b>${st.kinds|0} / ${SP.length}</b></div><div class="row"><div><b>Rank</b></div><b>${P.rank} · ${rankOf(P.rank)[1]}</b></div></div>`);
+        <div class="row"><div><b>Monsters discovered</b></div><b>${st.kinds|0} / ${SP.filter(s=>!s.legacy&&!s.boss&&s.fam!=='dummy'&&!s.npc).length}</b></div><div class="row"><div><b>Rank</b></div><b>${P.rank} · ${rankOf(P.rank)[1]}</b></div></div>`);
       else if(k==='awards'){ const done=me?QUESTS.filter(q=>S.quests[q.id]):null; const n=me?done.length:(st.quests|0);
         sheet(`<h2 class="game-h">Awards</h2><p class="muted">${n} of ${QUESTS.length} earned</p>${me?`<div class="list">${QUESTS.map(q=>`<div class="row ${S.quests[q.id]?'':'done'}"><div><b>${q.n}</b></div>${S.quests[q.id]?'<span class="ok">🏆</span>':'<span class="muted small">Locked</span>'}</div>`).join('')}</div>`:''}`); }
       else if(k==='spar'){ sh.close(); NET.challenge(P.cid, true); }
