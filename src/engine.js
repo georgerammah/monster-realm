@@ -287,6 +287,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   if(el==='neutral' && d.pas.hard) dmg*=1-d.pas.hard;
   dmg = Math.max(1, Math.round(dmg));
   let blocked=0;
+  if(d.pas.hardF>0){ const x=Math.min(dmg,Math.round(d.pas.hardF)); dmg-=x; blocked+=x; } // Hardened: flat cut to every incoming hit
   { const f=d.fx||{}; const bl=(!el||el==='neutral')?(f.bphys|0):(f.belem|0); if(bl>0){ const x=Math.min(dmg,bl); dmg-=x; blocked+=x; } }
   for(const sh of (pierce?[]:['bubble','fsh','lsh','nsh','ash'])){
     if(dmg<=0) break;
