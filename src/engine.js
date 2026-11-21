@@ -317,7 +317,7 @@ function act(b, action){
   const hot0={s:a.m.st.soulh|0,r:a.m.st.roots|0};
   if(b.single && action && action.swap!=null){
     const i=action.swap; const sd=b.sides[a.s];
-    if(!sd.mons[i] || sd.mons[i].hp<=0 || i===sd.active || b.swapped) return false; // one swap per turn
+    if(!sd.mons[i] || sd.mons[i].hp<=0 || i===sd.active) return false;
     sd.active=i; b.swapped=true; b.order[b.turnIdx]=[a.s,i]; b.ev=[{k:'enter',s:a.s,i}]; log(b,`${sd.name} swapped in ${sd.mons[i].n}!`); b.seq++; return true;
   }
   let skId = action && action.skill;
