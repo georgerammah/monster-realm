@@ -974,7 +974,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v235 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v236 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -2093,3 +2093,14 @@ function mkAbilCard(p){ if(p._mk) return; const b=p.querySelector('.pab-t > b');
   if(!locked) b.insertAdjacentHTML('afterend',`<i class="pab-mc">${pas?'passive':mana?`mana cost: ${mana}`:'free'}</i>`); }
 function mkAbilScan(root){ (root||document).querySelectorAll('.pabil .pab, .mi2-r .pab').forEach(mkAbilCard); }
 new MutationObserver(ms=>{ for(const m of ms) for(const n of m.addedNodes){ if(n.nodeType===1&&(n.matches&&n.matches('.pab, .pabil, .sheet-wrap, .sheet, .prof, .mi2-r')||n.querySelector&&n.querySelector('.pab'))){ mkAbilScan(n.nodeType===1?n:document); } } }).observe(document.body,{childList:true,subtree:true});
+// ---------- MK zone order (from George): Training Camp, then Mochi Beach ... Paleozoic Park ----------
+var ZONE_ORDER=['meadow','beach','desert','hollow','grasslands','mintwood','valley','jungle','cliffs','enchanted','terajima','peaks','volcano','swamp','manor','lostcity','vale','skylands','kor','lab','cosmos','paleo'];
+var ZONE_LV={beach:4,desert:8,hollow:12,grasslands:15,mintwood:18,valley:20,jungle:22,cliffs:24,enchanted:25,terajima:26,peaks:27,volcano:28,swamp:28,manor:29,lostcity:29,vale:29,skylands:30,kor:30,lab:30,cosmos:30,paleo:30};
+function applyZoneOrder(){ const byId={}; ZONES.forEach(z=>byId[z.id]=z);
+  ZONES.forEach(z=>{ const lv=ZONE_LV[z.id]; if(!lv||z.lv===lv||!ZTASKS[z.id]) return; const old=z.lv, r=lv/old;
+    ZTASKS[z.id]=ZTASKS[z.id].map(t=>{ const u=t.slice(); u[2]=Math.max(1,Math.min(30,lv+(t[2]-old))); u[4]=Math.round(t[4]*r); u[5]=Math.round(t[5]*r);
+      if(u[3]&&typeof u[3]==='object'){ u[3]=Object.assign({},u[3]); ['mp','hp','atk'].forEach(k=>{ if(u[3][k]) u[3][k]=Math.round(u[3][k]*r); }); } return u; }); z.lv=lv; });
+  const next=ZONE_ORDER.map(id=>byId[id]).filter(Boolean).concat(ZONES.filter(z=>!ZONE_ORDER.includes(z.id)));
+  ZONES.length=0; next.forEach(z=>ZONES.push(z));
+  try{ if(S&&S.lastZone!=null&&!ZONES[S.lastZone]) S.lastZone=null; }catch(_){} }
+applyZoneOrder();
