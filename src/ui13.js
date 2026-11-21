@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v210 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v211 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1838,3 +1838,9 @@ drawMon=(function(prev){ return function(){ prev(); if(!MONSH||!ADMIN) return; c
   let n=0; const iv=setInterval(()=>{ if(fix()||++n>40) clearInterval(iv); },1500); })();
 // stat points can always be taken back with minus (not just the ones added since opening the profile)
 openMon=(function(prev){ return function(uid){ const r=prev(uid); if(MONSH){ MONSH.base={atk:0,hp:0,mp:0}; drawMon(); } return r; }; })(openMon);
+// admin menu is just Players now; Ability Studio and the eye style switch are gone
+(function(){ const strip=()=>{ SUBMENUS.menu=SUBMENUS.menu.filter(x=>x[0]!=='Ability Studio'&&!/^Eye style/.test(x[0])); };
+  setAdmin=(function(prev){ return function(v){ const r=prev(v); strip(); return r; }; })(setAdmin); strip(); })();
+// Brian (br6pack) gets the Max Lv button without any server change
+function canMaxLv(){ return ADMIN || ['george','br6pack'].includes(String((typeof S!=='undefined'&&S&&S.name)||'').toLowerCase()); }
+drawMon=(function(prev){ return function(){ const a=ADMIN; if(!a&&canMaxLv()) ADMIN=true; try{ prev(); } finally{ ADMIN=a; } }; })(drawMon);
