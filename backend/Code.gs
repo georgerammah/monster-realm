@@ -15,14 +15,16 @@ function handle(p){
       case 'set':
         if (/^(name|uname)\//.test(String(p.k||''))) return out({ok:0, err:'forbidden'});
         if (String(p.k||'').indexOf('config/') === 0 && !isAdminUid(p.uid)) return out({ok:0, err:'admin'});
-        { const m = /^data\/users\/([A-Za-z0-9_-]+)\/save$/.exec(String(p.k||'')); if (m && p.uid && p.uid !== m[1]) return out({ok:0, err:'forbidden'}); }
+        { const m = /^data\/users\/([A-Za-z0-9_-]+)\/save$/.exec(String(p.k||''));
+          if (m) { if (p.uid !== m[1] || !authed(p)) return out({ok:0, err:'forbidden'});
+            const r = checkSave(m[1], p.v); setSave(p.k, r.v); return out(r.fix ? {ok:1, fix:r.fix} : {ok:1}); } }
         setSave(p.k, p.v); return out({ok:1});
       case 'emit': return out(emit(p));
       case 'poll': return out(poll(p));
       case 'presence': return out(presence(p));
-      case 'claim': return out(claim(p));
+      case 'claim': if (!authed(p)) return out({ok:0, err:'forbidden'}); return out(claim(p));
       case 'whoami': return out(whoami(p));
-      case 'adm': return out(adm(p));
+      case 'adm': if (!authed(p)) return out({ok:0, err:'forbidden'}); return out(adm(p));
     }
     return out({ok:0, err:'unknown action'});
   } catch (err) { return out({ok:0, err:String(err)}); }
@@ -50,13 +52,15 @@ function setSave(k, v){
   return rawSet(k, v);
 }
 function rawSet(k, v){
+  const lock = LockService.getScriptLock(); lock.waitLock(10000);
+  try { rawSetNL(k, v); } finally { lock.releaseLock(); }
+}
+// same, for callers that already hold the lock
+function rawSetNL(k, v){
   if (typeof v !== 'string' || v.length > 45000) throw 'bad save';
-  const lock = LockService.getScriptLock(); lock.waitLock(8000);
-  try {
-    const sh = sheet(); const f = sh.getRange('A:A').createTextFinder(k).matchEntireCell(true).findNext();
-    if (f) sh.getRange(f.getRow(), 2, 1, 2).setValues([[new Date(), v]]);
-    else sh.appendRow([k, new Date(), v]);
-  } finally { lock.releaseLock(); }
+  const sh = sheet(); const f = sh.getRange('A:A').createTextFinder(k).matchEntireCell(true).findNext();
+  if (f) sh.getRange(f.getRow(), 2, 1, 2).setValues([[new Date(), v]]);
+  else sh.appendRow([k, new Date(), v]);
 }
 
 // ---- live rooms (short-lived, in cache) ----
@@ -137,6 +141,13 @@ function logAdmin(by, op, t, extra){ try { sheet().appendRow(['log/'+Date.now(),
 function adm(p){
   if (!isAdminUid(p.uid)) return {ok:0, err:'admin'};
   const t = p.t;
+  if (p.op === 'gift') {
+    if (!okUid(t)) return {ok:0, err:'bad target'};
+    const n = Math.floor(+p.n || 0); if (n < 1 || n > 100000) return {ok:0, err:'bad amount'};
+    const lock = LockService.getScriptLock(); lock.waitLock(8000);
+    try { rawSetNL('credit/'+t, String((+rawGet('credit/'+t) || 0) + n)); } finally { lock.releaseLock(); }
+    logAdmin(p.uid, 'gift', t, n); return {ok:1};
+  }
   if (p.op === 'list') {
     const rows = sheet().getDataRange().getValues(), P = {};
     const get = u => P[u] = P[u] || {uid:u, name:null, lv:0, mons:0, seen:0, banned:false};
@@ -165,12 +176,63 @@ function adm(p){
     let n;
     try {
       const sh = sheet(); n = rawGet('uname/'+t);
-      const keys = ['uname/'+t, 'data/users/'+t+'/save', 'ban/'+t, 'flag/'+t]; if (n) keys.push('name/'+n);
+      const keys = ['uname/'+t, 'data/users/'+t+'/save', 'ban/'+t, 'flag/'+t, 'key/'+t, 'eco/'+t, 'credit/'+t]; if (n) keys.push('name/'+n);
       const vals = sh.getRange('A:A').getValues(), del = [];
       vals.forEach((r,i) => { if (keys.indexOf(String(r[0])) >= 0) del.push(i+1); });
       del.reverse().forEach(row => sh.deleteRow(row));
     } finally { lock.releaseLock(); }
-    CACHE.remove('ban:'+t); logAdmin(p.uid, 'delete', t, n||''); return {ok:1};
+    CACHE.remove('ban:'+t); CACHE.remove('key:'+t); logAdmin(p.uid, 'delete', t, n||''); return {ok:1};
   }
   return {ok:0, err:'unknown op'};
+}
+
+
+// ---- account keys: every account has a secret only its own devices know ----
+// The first device to show up with a key after this update claims the account; after that, writes need the same key.
+function authed(p){
+  if (!okUid(p.uid)) return false;
+  const key = typeof p.key === 'string' && /^k[A-Za-z0-9]{16,64}$/.test(p.key) ? p.key : null;
+  let stored = CACHE.get('key:'+p.uid);
+  if (stored === null) { stored = rawGet('key/'+p.uid) || ''; CACHE.put('key:'+p.uid, stored, 21600); }
+  if (!stored) { if (!key) return false; rawSet('key/'+p.uid, key); CACHE.put('key:'+p.uid, key, 21600); return true; }
+  return key === stored;
+}
+
+// ---- save checks: no impossible monsters, and mushrooms/cash can only grow at a believable pace ----
+const MAX_LV = 30, PTS_PER_LV = 5;
+function checkSave(uid, v){
+  let s; try { s = JSON.parse(v); } catch (_) { throw 'bad save'; }
+  const save = s && s.save ? JSON.parse(s.save) : null; if (!save) return {v:v};
+  const fix = {}; const now = Date.now();
+  // monsters
+  if (Array.isArray(save.mons)) {
+    if (save.mons.length > 300) { save.mons = save.mons.slice(0, 300); fix.mons = 1; }
+    save.mons.forEach(m => {
+      const lv = Math.max(1, Math.min(MAX_LV, Math.floor(+m.lvl || 1))); if (lv !== m.lvl) { m.lvl = lv; fix.mons = 1; }
+      const cap = (lv - 1) * PTS_PER_LV, p = m.pts || {}; const spent = (+p.atk||0) + (+p.hp||0) + (+p.mp||0);
+      if (spent < 0 || spent > cap || [p.atk,p.hp,p.mp].some(x => x != null && (+x < 0 || +x !== Math.floor(+x)))) { m.pts = {atk:0,hp:0,mp:0}; m.free = cap; fix.mons = 1; }
+      else if ((+m.free||0) + spent > cap || (+m.free||0) < 0) { m.free = cap - spent; fix.mons = 1; }
+    });
+  }
+  // mushrooms and cash
+  const lock = LockService.getScriptLock(); lock.waitLock(10000);
+  try {
+    let rec = null; try { rec = JSON.parse(rawGet('eco/'+uid) || 'null'); } catch (_) {}
+    const credit = +rawGet('credit/'+uid) || 0;
+    let mush = Math.max(0, Math.floor(+save.mush || 0)), cash = Math.max(0, Math.floor(+save.cash || 0));
+    if (rec) {
+      const hrs = Math.max(0, (now - (+rec.at || now)) / 3600000);
+      const mOk = (+rec.mush || 0) + Math.min(150, 15 + Math.ceil(40 * hrs));
+      const cOk = (+rec.cash || 0) + Math.min(60000, 3000 + Math.ceil(8000 * hrs));
+      if (mush > mOk) mush = mOk;
+      if (cash > cOk) cash = cOk;
+    }
+    if (credit) { mush += credit; rawSetNL('credit/'+uid, ''); }
+    if (mush !== save.mush) { save.mush = mush; fix.mush = mush; }
+    if (cash !== (save.cash|0)) { save.cash = cash; fix.cash = cash; }
+    rawSetNL('eco/'+uid, JSON.stringify({mush:mush, cash:cash, at:now}));
+  } finally { lock.releaseLock(); }
+  if (fix.mons) fix.mons = save.mons;
+  s.save = JSON.stringify(save);
+  return {v: JSON.stringify(s), fix: Object.keys(fix).length ? fix : null};
 }

@@ -965,17 +965,17 @@ kbOpen=(function(prev){ return function(el){ const r=prev(el); setTimeout(()=>{ 
 Element.prototype._siv=Element.prototype.scrollIntoView; Element.prototype.scrollIntoView=function(o){ if(useKbd()&&this.closest&&this.closest('input,textarea,.sheet')) return; return this._siv(o); };
 
 // ---------- move your game between Safari and the home-screen app: a transfer code ----------
-function myCode(){ return window.MR_UID||localStorage.getItem('mr-uid')||''; }
+function myCode(){ const u=window.MR_UID||localStorage.getItem('mr-uid')||'', k=window.MR_KEY||localStorage.getItem('mr-key')||''; return k?u+'.'+k:u; }
 function openRestore(){
   const sh=sheet(`<div class="rst"><h2>Restore your game</h2><p>Enter the transfer code from Menu on your other device or browser.</p><div class="xrow"><input id="rcode" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Transfer code"><button class="btn sm" id="rpaste">Paste</button></div><p class="nm-err" id="rerr"></p><button class="btn" id="rgo">Restore</button></div>`);
   sh.body.querySelector('#rpaste').onclick=async()=>{ try{ const t=await navigator.clipboard.readText(); sh.body.querySelector('#rcode').value=(t||'').trim(); }catch(_){ err('Allow paste, or type the code.'); } };
   const err=t=>{ sh.body.querySelector('#rerr').textContent=t; };
-  sh.body.querySelector('#rgo').onclick=async()=>{ const code=sh.body.querySelector('#rcode').value.trim().replace(/\s+/g,''); if(!/^u[a-z0-9]{8,}$/i.test(code)) return err("That doesn't look like a transfer code.");
+  sh.body.querySelector('#rgo').onclick=async()=>{ const raw=sh.body.querySelector('#rcode').value.trim().replace(/\s+/g,''); if(!/^u[a-z0-9]{8,}(\.k[a-z0-9]{16,64})?$/i.test(raw)) return err("That doesn't look like a transfer code."); const [code,ckey]=raw.split('.');
     err('Checking…'); try{ const db=window.claude&&await window.claude.use('db'); const v=db&&await withTimeout(db.collection('data/users/'+code).doc('save').get(),10000); const save=parseDoc(v);
       if(!save||!save.name) return err('No game found for that code.');
-      localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
+      localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v220 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v221 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1016,8 +1016,13 @@ function openPlayers(){
     const rows=all.slice(pg*PER,pg*PER+PER);
     $a('#al').innerHTML=rows.length?rows.map(p=>`<div class="adm-row${p.banned?' ban':''}" data-u="${esc(p.uid)}">
       <div class="adm-who"><b>${esc(p.name||'(no name)')}${p.uid===me?' · you':''}${p.banned?' <i>Banned</i>':''}</b><span>Lv ${p.lv} · ${p.mons} monster${p.mons===1?'':'s'} · ${agoTxt(p.seen)}</span><code data-copy="${esc(p.uid)}">${esc(p.uid)}</code></div>
-      ${p.uid===me?'':`<div class="adm-act"><button class="btn sm ghost" data-op="${p.banned?'unban':'ban'}">${p.banned?'Unban':'Ban'}</button><button class="btn sm ghost" data-op="rename">Rename</button><button class="btn sm red" data-op="delete">Delete</button></div>`}</div>`).join(''):'<p class="adm-msg">No players found.</p>';
+      ${p.uid===me?`<div class="adm-act"><button class="btn sm ghost" data-gift>Gift 🍄</button></div>`:`<div class="adm-act"><button class="btn sm ghost" data-gift>Gift 🍄</button><button class="btn sm ghost" data-op="${p.banned?'unban':'ban'}">${p.banned?'Unban':'Ban'}</button><button class="btn sm ghost" data-op="rename">Rename</button><button class="btn sm red" data-op="delete">Delete</button></div>`}</div>`).join(''):'<p class="adm-msg">No players found.</p>';
     sh.body.querySelectorAll('[data-copy]').forEach(c=>c.onclick=()=>{ (navigator.clipboard?navigator.clipboard.writeText(c.dataset.copy):Promise.reject()).then(()=>toast('Code copied'),()=>{}); });
+    sh.body.querySelectorAll('[data-gift]').forEach(b=>b.onclick=()=>{ const t=b.closest('.adm-row').dataset.u, p=all.find(x=>x.uid===t);
+      const g=sheet(`<div class="gift"><h2>Gift mushrooms</h2><p>To <b>${esc(p.name||t)}</b>. They get them the next time their game saves.</p><div class="gift-row">${[50,100,500,1000,5000].map(n=>`<button class="btn sm" data-n="${n}">${n} 🍄</button>`).join('')}</div></div>`);
+      g.body.querySelectorAll('[data-n]').forEach(x=>x.onclick=async()=>{ x.disabled=true; let r; try{ r=await withTimeout(MR_ACCT.adm('gift',{t,n:+x.dataset.n}),15000); }catch(_){ r=null; }
+        if(!r||!r.ok){ x.disabled=false; return toast(r&&r.err==='unknown op'?'Update the server first':"Couldn't reach the server"); }
+        g.close(); toast(`Sent ${x.dataset.n} 🍄 to ${p.name||'player'}`); if(t===me) setTimeout(()=>persist(),300); }); });
     sh.body.querySelectorAll('[data-op]').forEach(b=>b.onclick=()=>{ const row=b.closest('.adm-row'), t=row.dataset.u, p=all.find(x=>x.uid===t), nm=esc(p.name||t), op=b.dataset.op;
       const go=async()=>{ b.disabled=true; let r; try{ r=await withTimeout(MR_ACCT.adm(op,{t}),15000); }catch(_){ r=null; }
         if(!r||!r.ok){ b.disabled=false; return toast(r&&r.err==='self'?"You can't do that to yourself":"Couldn't reach the server"); }
@@ -1872,3 +1877,13 @@ animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(r
   return r; }; })(animateBattle);
 // everything above (every monster, incl. rares) is defined once this runs; only then may saves be cleaned up
 setTimeout(()=>{ window.__defsReady=true; try{ const n=purgeRetired(); fixTeam(); if(n){ persist(); render(); } }catch(_){} },0);
+
+// the server corrects impossible numbers (and adds gifted mushrooms); take its values
+addEventListener('mr-fix',e=>{ const f=e.detail||{}; if(typeof S==='undefined'||!S) return; let gift=0;
+  if(f.mush!=null){ gift=f.mush-(S.mush|0); S.mush=f.mush; } if(f.cash!=null) S.cash=f.cash;
+  if(Array.isArray(f.mons)){ const byU={}; f.mons.forEach(m=>byU[m.uid]=m); S.mons.forEach(m=>{ const n=byU[m.uid]; if(n){ m.lvl=n.lvl; m.pts=n.pts; m.free=n.free; } }); }
+  try{ localStorage.setItem(LS_KEY,JSON.stringify(S)); }catch(_){} try{ renderHUD(); }catch(_){} try{ if(!B) render(); }catch(_){}
+  if(gift>0) toast(`+${gift} 🍄`); });
+// this device's key doesn't match the account (e.g. a second phone set up before account keys existed)
+addEventListener('mr-forbidden',()=>{ if(window.__forbidShown) return; window.__forbidShown=1;
+  confirmBox("This device can't save to your account. Open Menu on the phone you play on, copy its transfer code, and restore it here.","Restore",()=>openRestore()); });

@@ -6,8 +6,11 @@
   const put = (k,v)=>{ try{ localStorage.setItem(k,v); }catch(e){} };
   let uid = get('mr-uid'); if(!uid){ uid='u'+Math.random().toString(36).slice(2,12)+Date.now().toString(36); put('mr-uid',uid); }
   window.MR_UID = uid;
+  // secret account key: proves to the server that saves come from this player's own devices
+  let key = get('mr-key'); if(!key){ const a=new Uint8Array(18); (crypto.getRandomValues?crypto.getRandomValues(a):a.forEach((_,i)=>a[i]=Math.random()*256)); key='k'+Array.from(a,b=>(b%36).toString(36)).join(''); put('mr-key',key); }
+  window.MR_KEY = key;
   const cid = 'c'+Math.random().toString(36).slice(2,12);
-  const call = o => fetch(URL,{method:'POST', body:JSON.stringify(o)}).then(r=>r.json()).then(r=>{ if(r&&r.err==='banned') window.dispatchEvent(new Event('mr-banned')); return r; });
+  const call = o => fetch(URL,{method:'POST', body:JSON.stringify(Object.assign({key}, o))}).then(r=>r.json()).then(r=>{ if(r&&r.err==='banned') window.dispatchEvent(new Event('mr-banned')); return r; });
   function mkRoom(name){
     const hs={}; let since=-1, peersFn=null, pres=null, stopped=false, hb=null, timer=null; const lobby=name==='lobby';
     async function loop(){
@@ -29,7 +32,7 @@
   let lobbyRoom=null;
   const db={ collection:path=>({ doc:k=>({
     get:()=>call({a:'get', k:path+'/'+k}).then(r=>r.ok&&r.v?JSON.parse(r.v):null),
-    set:v=>call({a:'set', k:path+'/'+k, v:JSON.stringify(v), uid})
+    set:v=>call({a:'set', k:path+'/'+k, v:JSON.stringify(v), uid}).then(r=>{ if(r&&r.fix) window.dispatchEvent(new CustomEvent('mr-fix',{detail:r.fix})); if(r&&r.err==='forbidden') window.dispatchEvent(new Event('mr-forbidden')); return r; })
   }) }) };
   const user={ id:async()=>uid, me:async()=>({id:uid}), isOwner:()=>true, canEdit:()=>true, can:()=>true };
   window.MR_ACCT={ claim:name=>call({a:'claim', name, uid}), whoami:()=>call({a:'whoami', uid}), adm:(op,o)=>call(Object.assign({a:'adm', op, uid}, o||{})) };
