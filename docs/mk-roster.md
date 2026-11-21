@@ -1,6 +1,6 @@
 # Monster Kingdom roster
 
-Zone order (confirmed by George): Training Camp (start), Mochi Beach, Felis Desert, Luna Woods, Sora Grasslands, Peppermint Forest, Valley of the Wind, Creepvine Jungle, Earthshaker Cliffs, Enchanted Forest, Terajima Shrine, Vernon Village, Bolera Volcano, Bushwhacker Swamp, Belmont Manor, Lost City, Watcher's Vale, Ayram Skylands, Ruins of Kor, Dante's Lab, Crystal Cosmos, Paleozoic Park. Code ids in ui13 ZONE_ORDER.
+Zone order (confirmed by George): Training Camp (start — no monsters: starter vs Straw Dummy, Jay, Bob), Mochi Beach, Felis Desert, Luna Woods, Sora Grasslands, Peppermint Forest, Valley of the Wind, Creepvine Jungle, Earthshaker Cliffs, Enchanted Forest, Terajima Shrine, Vernon Village, Bolera Volcano, Bushwhacker Swamp, Belmont Manor, Lost City, Watcher's Vale, Ayram Skylands, Ruins of Kor, Dante's Lab, Crystal Cosmos, Paleozoic Park. Code ids in ui13 ZONE_ORDER.
  (from the fandom List of Monsters screenshots)
 Name: Skill 1 / 2 / 3 / 4 — Family — Location. Look notes describe our own redraw targets.
 

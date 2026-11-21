@@ -3482,6 +3482,9 @@ function doTask(zi,k){
   persist();
   const z=ZONES[zi]; let foe;
   if(t.special==='dummy') foe={name:'Straw Dummy', mons:[{sp:'strawdum',lvl:1,hpMul:.8}]};
+  else if(t.special==='jay') foe={name:'Jay', mons:[{sp:'rival_jay',lvl:t.lv,hpMul:.75}]};
+  else if(t.special==='bob') foe={name:'Bob', mons:[{sp:'rival_bob',lvl:t.lv,hpMul:.75}]};
+  else if(t.special==='grad') foe={name:'Jay & Bob', mons:[{sp:'rival_jay',lvl:t.lv,hpMul:.7},{sp:'rival_bob',lvl:t.lv,hpMul:.7}]};
   else { const fam=SP.filter(s=>s.fam===z.fam); const pick=fam[Math.floor(Math.random()*fam.length)];
     if(t.t==='boss'){ const bz=typeof ZBOSS!=='undefined'&&ZBOSS[z.id]; foe={name:zi===0?"Lila's Mossbug":bz?SPI[bz].n:`${z.n} Boss`, mons:[{sp: zi===0?'mossbug':bz||fam[3].id, lvl:t.lv+1, hpMul: zi===0?.85:1.35, skl: zi===0?{feedback:1,leech:1,feed:1,roots:1}:undefined}]}; }
     else foe={name:'Wild '+pick.n, mons:[{sp:pick.id, lvl:t.lv, hpMul: zi===0?.75:1}]}; }
@@ -4976,7 +4979,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (236).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (237).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6625,7 +6628,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v236 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v237 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -7755,6 +7758,18 @@ function applyZoneOrder(){ const byId={}; ZONES.forEach(z=>byId[z.id]=z);
   ZONES.length=0; next.forEach(z=>ZONES.push(z));
   try{ if(S&&S.lastZone!=null&&!ZONES[S.lastZone]) S.lastZone=null; }catch(_){} }
 applyZoneOrder();
+// Training Camp has no monsters: your starter trains against the straw dummy, then Jay and Bob
+ZTASKS.meadow=[['act','Play catch with your monster',1,0,10,15,2,2],['fight','Spar with the straw dummy',1,0,20,20,3,1,'dummy'],['act','Bring enough mana to class',1,{mp:50},20,20,2,3],
+  ['fight','Spar with Jay',2,0,25,25,3,1,'jay'],['act','Pass the camp fitness test',2,{hp:90},25,25,2,3],['fight','Spar with Bob',2,0,25,25,3,1,'bob'],['boss','Graduation match: Jay & Bob',3,0,60,60,5,1,'grad']];
+// Bushwhacker Swamp: the Insect family's real home (after Bolera Volcano)
+(function(){ if(ZONES.some(z=>z.id==='swamp')) return;
+  ZONES.push({id:'swamp', n:'Bushwhacker Swamp', fam:'bug', lv:28, sizes:[3,3,3,3], c:'#6a8a3a'});
+  ZTASKS.swamp=[['act','Wade through the bog',28,0,250,320,2,3],['fight','Battle a wild insect',28,0,280,350,3,1],['act','Swat the swamp flies',29,{mp:320},280,350,2,3],['fight','Face the hive guard',29,0,320,400,3,1],['boss','Bushwhacker Swamp Boss',29,0,600,760,5,1]];
+  ZSCENE.swamp={sky:['#8aa86a','#dfe8c8'],orb:'#f4f0c8',ox:68,oy:22,hills:['#6a8a3a','#3f5a22'],x:'swamp'}; ZCOL.swamp=['#e4ecd4','#c4d4a8']; TRACKS.z_swamp=TRACKS.z_hollow;
+  zoneScene=(function(prev){ return function(id){ if(id!=='swamp') return prev(id); const z=ZSCENE.swamp, g='zgswamp';
+    return `<svg class="zscene" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${z.sky[0]}"/><stop offset="1" stop-color="${z.sky[1]}"/></linearGradient></defs><rect width="200" height="100" fill="url(#${g})"/><circle cx="${z.ox}" cy="${z.oy}" r="9" fill="${z.orb}" opacity=".8"/><path d="M0 70 Q50 58 100 66 T200 62 V100 H0Z" fill="${z.hills[0]}"/><ellipse cx="100" cy="88" rx="70" ry="7" fill="#4a6a5a" opacity=".7"/><path d="M0 86 Q60 78 120 86 T200 84 V100 H0Z" fill="${z.hills[1]}"/><g fill="#3f5a22">${[14,28,172,188].map(x=>`<path d="M${x} 90 q-2 -16 1 -24 q2 10 1 24z"/><ellipse cx="${x+1}" cy="${66}" rx="1.6" ry="4" fill="#6b4a2b"/>`).join('')}</g></svg>`; }; })(zoneScene);
+  applyZoneOrder();
+})();
 
 </script>
 
