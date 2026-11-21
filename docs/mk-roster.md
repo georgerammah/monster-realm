@@ -9,15 +9,15 @@ Marlboro — Valley of the Wind (v233): Marly Poison/Fire Wall/Nature Shield/Roo
 Gorilla — Creepvine Jungle (v233): Gorzanga Regrowth/Burn/Nature Shield/Thick Skin; Gorgamel Feedback/Splash/Feed/Grounded; Gorbamba Nature's Will/Cripple/Invulnerability/Sweaty; Gorgie Feed/Invulnerability/Nature's Will/Double Attack
 
 ## Still to add (see zone order above; Bushwhacker Swamp = Insect family, currently also used by Training Camp)
-Equine — Enchanted Forest: Cora Feedback/Blizzard/Perseverance/Roots (white+blue pegasus unicorn); Nightmare Leech/Thunder/Invulnerability/Pounce (black pegasus, flame mane); rainbow unicorn (row hidden — name/skills needed)
+Equine — Enchanted Forest: Cora Feedback/Blizzard/Perseverance/Roots (white+blue pegasus unicorn); Nightmare Leech/Thunder/Invulnerability/Pounce (black pegasus, flame mane); Sleipnir Nature Shield/Flame/Nature's Will/Thick Skin (tan pegasus unicorn, dark mane); Starlite Leech/Regrowth/Mana Shield/Roots (white unicorn, rainbow mane)
 Bear — Terajima Shrine: Po Invulnerability/Purge/Feed/Sweaty (panda, green robe); Grizz Feed/Fury Fist/Hardened/Double Attack (brown bear, red robe); Firefox Feedback/Blast/Charge/Double Attack (red panda bear, orange robe); Iorek Regrowth/Storm Cloud/Hardened/Thick Skin (polar bear, blue robe)
 Haunts — Belmont Manor: Vamp Mana Shards/Feed/Leech/Sweaty (bat vampire); Balth Flicker/Toxic Fumes/Feed/Roots (ghost reaper); Jackie Arc Lightning/Bolt/Berserk/Thick Skin (pumpkin); Zombear Berserk/Fury Fist/Fire Shield/Pounce (zombie bear)
 Varmint — Lost City: Garth Trample/Fire Focus/Fire Wall/Hardened (badger knight); Timmeh Bolt/Thunder/Grounded/Zap (raccoon); Vicks Cripple/Poison/Perseverance/Camel Back (skunk); Tanuchan Arc Lightning/Cripple/Fury Fist/Spark (tanuki)
 Fawna — Watcher's Vale: Ayla Ember Spit/Fire Wall/Grounded/Molten Core (pink blossom deer); Acteon Bolt/Arc Lightning/Grounded/Storm Cloud (red lightning deer); Nifleos Blizzard/Mana Shield/Roots/Wave (ice deer); Tatonka Nature Shield/Nature's Will/Thick Skin/Leech (green bison)
 Griffyn — Ayram Skylands: Goldenbeak Cripple/Arc Lightning/Hardened/Zap; Wildclaw Pestilence/Poison/Roots/Invulnerability; Feathercrown Taunt/Soul Eater/Thick Skin/Pestilence; Darkwing Soul Eater/Mana Shield/Sweaty/Blizzard
 Bunnirax — Ruins of Kor: Walarax Devour/Soul Eater/Thick Skin/Spiky; Necrorax Devour/Poison/Pounce/Pestilence; Tanirax Devour/Blizzard/Camel Back/Bubble Shield; Zayrax Devour/Soul Eater/Fury Fist/Haymaker
-Gremlin — Dante's Lab: Anung Fire Wall/Explosive Fist/Double Attack/Fire Focus; Grogg Acid Bite/Soul Eater/Thick Skin/Regrowth; Neriti Shell/Blizzard/Thick Skin/Wave; 4th row hidden (robot in yellow — name/skills needed)
+Gremlin — Dante's Lab: Anung Fire Wall/Explosive Fist/Double Attack/Fire Focus; Grogg Acid Bite/Soul Eater/Thick Skin/Regrowth; Neriti Shell/Blizzard/Thick Skin/Wave; Rom Flash/Zap/Thick Skin/Thunder (TV-head robot, yellow)
 Crystalloid — Crystal Cosmos: Crystalwulf Ruby Shift/Haymaker/Fury Fist/Explosive Fist; Sphyro Sapphire Shift/Wave/Grounded/Hydrate; Necrodile Emerald Shift/Feedback/Roots/Pestilence; Electyra Topaz Shift/Thunder/Grounded/Arc Lightning
 Paleozar — Paleozoic Park: Leviatho Static Discharge/Spark/Pounce/Bolt; Salissor Death Roll/Trample/Fury Fist/Soul Eater; Sturgiok Steam Blast/Splash/Thick Skin/Hydrate; Florathor Pollen Bloom/Nature's Will/Pounce/Toxic Fumes
 
-New abilities needing MK descriptions: Pestilence, Spiky, Explosive Fist, Shell, Ruby Shift, Sapphire Shift, Topaz Shift, Death Roll, Steam Blast, Pollen Bloom
+New abilities needing MK descriptions: Flash, Pestilence, Spiky, Explosive Fist, Shell, Ruby Shift, Sapphire Shift, Topaz Shift, Death Roll, Steam Blast, Pollen Bloom
