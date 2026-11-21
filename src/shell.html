@@ -1688,6 +1688,9 @@ body{overscroll-behavior:none}
 .pk-row .pk-m{min-width:0}.pk-row .pk-m svg{max-width:100%!important;height:auto!important;max-height:calc(30*var(--vh))}
 .pk-m span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pk-row.n5 .pk-m span,.pk-row.n6 .pk-m span{font-size:min(calc(3.6*var(--vh)),15px)}
+.pbtns .pbtn{width:min(calc(11*var(--vh)),46px)!important;height:min(calc(9*var(--vh)),38px)!important;font-size:min(calc(7*var(--vh)),28px)!important;touch-action:none}
+.pbtns .pbtn.minus:disabled{opacity:.3}.pbtns .pbtn.minus:not(:disabled){opacity:1}
+.pbtns .pbtn:active:not(:disabled){filter:brightness(.85)}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
