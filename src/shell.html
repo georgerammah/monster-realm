@@ -1645,6 +1645,11 @@ body{overscroll-behavior:none}
 .rkl-v .rkl-c .rbadge{width:calc(6*var(--vh))!important;height:calc(6*var(--vh))!important}
 .rkl-v .rkl-c b{flex:1;font-size:min(calc(4.6*var(--vh)),20px)!important}
 .rkl-v .rkl-c span{font-size:min(calc(5*var(--vh)),22px)!important}
+.s2cards:has(.s2card.rare){align-items:stretch;padding-top:calc(3*var(--vh));padding-bottom:calc(4*var(--vh));gap:min(calc(1.4*var(--vw)),14px)}
+.s2cards:has(.s2card.rare) .s2card{flex:1 1 0;min-width:0;max-width:210px;width:auto;justify-content:flex-start}
+.s2card.rare .s2mon{width:100%;height:calc(17*var(--vh));aspect-ratio:auto;margin:0}
+.s2card.rare em{margin-top:auto}.s2cards:has(.s2card.rare) .s2card em{margin-top:auto}
+.s2cards:has(.s2card.rare) .s2card b{text-align:center;line-height:1.05}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
