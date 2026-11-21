@@ -368,7 +368,7 @@ function act(b, action){
     if(sk.hotFlat && me.hp>0){ me.st.roots=sk.turns||2; me.st.rootsV=lv(sk.hotFlat,L)/me.maxhp; b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
     if(sk.leech && tot>0 && me.hp>0){ const hv=Math.round(tot*(sk.leechL?lv(sk.leechL,L):sk.leech)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.mpgain && tot>0){ me.mp=Math.min(me.maxmp, me.mp+Math.round(tot*sk.mpgain)); }
-    if(sk.mpLeech && tot>0 && me.hp>0){ const d1=b.sides[foe].mons[tgt]; const x=Math.min(d1.mp, Math.round(tot*sk.mpLeech)); d1.mp-=x; const g=Math.min(me.maxmp-me.mp,x); me.mp+=g; if(x>0){ b.ev.push({k:'mana',s:foe,i:tgt,v:-x,rv:-x}); b.ev.push({k:'mana',s:a.s,i:a.i,v:x,rv:g,ph:2}); } }
+    if(sk.mpLeech && tot>0 && me.hp>0){ const d1=b.sides[foe].mons[tgt]; const x=Math.min(d1.mp, Math.round(sk.mpSteal?lv(sk.mpSteal,L):tot*sk.mpLeech)); d1.mp-=x; const g=Math.min(me.maxmp-me.mp,x); me.mp+=g; if(x>0){ b.ev.push({k:'mana',s:foe,i:tgt,v:-x,rv:-x}); b.ev.push({k:'mana',s:a.s,i:a.i,v:x,rv:g,ph:2}); } }
     if(sk.recoil && tot>0 && me.hp>0){ const r=Math.min(me.hp,Math.max(1,Math.round(tot*sk.recoil))); me.hp=Math.max(0,me.hp-r); b.ev.push({k:'hit',s:a.s,i:a.i,v:r,el:'fire',recoil:1}); log(b,`${me.n} is hurt by the recoil!`); if(me.hp<=0) log(b,`${me.n} fainted.`); }
     if(sk.selfCleanse){ me.st.burn=0; me.st.poison=0; }
     if(sk.selfStun && me.hp>0){ me.st.stun=1; log(b,`${me.n} is stunned by the effort!`); b.ev.push({k:'buff',s:a.s,i:a.i,b:'stun'}); }
