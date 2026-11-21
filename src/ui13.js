@@ -974,7 +974,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v239 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v240 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -2182,5 +2182,219 @@ function bearNew(c1,c2,c3,st,id){ const G=id+'a', R=id+'r', F=id+'f'; const pand
       terajima:()=>`<g><rect x="80" y="48" width="40" height="4" fill="#c84a3a"/><path d="M74 44 Q100 38 126 44 L124 48 Q100 43 76 48Z" fill="#a83a2a"/><rect x="86" y="52" width="4" height="40" fill="#c84a3a"/><rect x="110" y="52" width="4" height="40" fill="#c84a3a"/></g><g fill="#ffb8c8">${[[30,40],[40,46],[160,36],[172,44]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5"/>`).join('')}</g>`};
     return function(id){ const z=ZSCENE[id]; if(!z||!X[id]) return prev(id); const g='zg'+id;
       return `<svg class="zscene" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${z.sky[0]}"/><stop offset="1" stop-color="${z.sky[1]}"/></linearGradient></defs><rect width="200" height="100" fill="url(#${g})"/><circle cx="${z.ox}" cy="${z.oy}" r="9" fill="${z.orb}"/><path d="M0 70 Q50 56 100 66 T200 62 V100 H0Z" fill="${z.hills[0]}"/><path d="M0 84 Q60 72 120 82 T200 80 V100 H0Z" fill="${z.hills[1]}"/>${X[id]()}</svg>`; }; })(zoneScene);
+  applyZoneOrder();
+})();
+// ---------- remaining MK zones: placeholder versions of not-yet-seen abilities (fix numbers later from screenshots) ----------
+(function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
+  const A={
+    pestilence:{n:'Pestilence',el:'nature',t:'enemy',k:'dot',mp:P(18,90),dot:'poison',tick:P(10,70),turns:4,desc:'Spreads a plague on the enemy, dealing {tick} nature damage each turn for {turns} turns.'},
+    spiky:{n:'Spiky',el:'neutral',t:'passive',k:'passive',p:'hard',v:P(.08,.25),desc:'Always on: spikes reduce physical damage taken by {v}.'},
+    explosivefist:{n:'Explosive Fist',el:'fire',t:'enemy',k:'hit',mp:P(14,80),m:P(1.1,1.6),desc:'An explosive punch that deals your regular attack plus extra fire damage.'},
+    shell:{n:'Shell',el:'water',t:'self',k:'shield',mp:P(16,96),sh:'bubble',amt:P(45,260),turns:3,desc:'Hides in a hard shell that absorbs {amt} damage for {turns} turns.'},
+    rubyshift:Object.assign({},SK.emeraldshift,{n:'Ruby Shift',el:'fire'}),
+    sapphireshift:Object.assign({},SK.emeraldshift,{n:'Sapphire Shift',el:'water'}),
+    topazshift:Object.assign({},SK.emeraldshift,{n:'Topaz Shift',el:'bolt'}),
+    deathroll:{n:'Death Roll',el:'neutral',t:'enemy',k:'hit',mp:P(16,90),m:P(1.2,1.7),stun:P(.1,.3),desc:'Grabs the enemy and rolls, dealing heavy physical damage with a {stun} chance to stun.'},
+    steamblast:{n:'Steam Blast',el:'water',t:'enemy',k:'hit',mp:P(20,120),dmg:P(26,200),desc:'Blasts scalding steam that deals {dmg} water damage.'},
+    pollenbloom:Object.assign({},SK.regrowth,{n:'Pollen Bloom'}),
+    flash:{n:'Flash',el:'bolt',t:'enemy',k:'hit',mp:P(12,70),dmg:P(12,90),stun:P(.15,.35),desc:'A blinding flash that deals {dmg} lightning damage with a {stun} chance to stun.'}};
+  Object.keys(A).forEach(k=>{ if(!SK[k]){ SK[k]=A[k]; DEFAULT_SK[k]=JSON.parse(JSON.stringify(A[k])); } });
+})();
+// ---------- remaining MK families: original art from shared parts ----------
+const ART2={};
+function outl(d,w,c){ return `<path d="${d}" fill="none" stroke="${OL3}" stroke-width="${w+3.4}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`; }
+function eyesPair(x1,x2,y,r,iris,st,big){ return big? [x1,x2].map(x=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" ${s3}/><circle cx="${x+r*.3}" cy="${y+r*.1}" r="${r*.55}" fill="${OL3}"/><circle cx="${x}" cy="${y-r*.3}" r="${r*.2}" fill="#fff"/>`).join('') : eye3(x1,y,r,iris,st,-3)+eye3(x2,y,r,iris,st,4); }
+// four-legged creature facing right
+function quad(o,c1,c2,c3,st,id){ const G=id+'a', B=id+'b', C=id+'c'; const dk=shade(c1,-26); let d=`<defs>${grad(G,c1)}${grad(B,c2)}${grad(C,c3)}</defs>`, g='';
+  const bw=[14,19,22][st], bh=[10,12,14][st], bx=46, by=[70,66,64][st], hx=bx+bw+4, hy=by-[8,12,14][st], hr=[11,9.5,10][st];
+  // wings behind
+  if(o.wings&&st>=1){ const w=st===2?1.2:.8; g+=`<path d="M${bx} ${by-6} Q${bx-20*w} ${by-34*w} ${bx-34*w} ${by-30*w} Q${bx-26*w} ${by-24*w} ${bx-30*w} ${by-16*w} Q${bx-20*w} ${by-14*w} ${bx-6} ${by-2}Z" fill="url(#${B})" ${s3}/>`; }
+  // tail
+  const tx=bx-bw+2, ty=by-2;
+  if(o.tail==='bushy') g+=`<path d="M${tx} ${ty} Q${tx-16} ${ty-6} ${tx-14} ${ty-22} Q${tx-4} ${ty-14} ${tx+4} ${ty-4}Z" fill="url(#${B})" ${s3}/>`;
+  else if(o.tail==='thin') g+=outl(`M${tx} ${ty} Q${tx-12} ${ty+2} ${tx-14} ${ty-10}`,3,c1);
+  else if(o.tail==='long') g+=outl(`M${tx} ${ty+2} Q${tx-18} ${ty+6} ${tx-26} ${ty-2}`,6,c1);
+  else if(o.tail==='tuft') g+=outl(`M${tx} ${ty} Q${tx-10} ${ty+4} ${tx-12} ${ty+12}`,2.4,dk)+`<ellipse cx="${tx-12}" cy="${ty+14}" rx="3" ry="4" fill="${c2}" ${s3} stroke-width="1.2"/>`;
+  // legs
+  const legs=[[bx-bw+6,1],[bx-bw+12,0],[bx+bw-10,1],[bx+bw-4,0]];
+  legs.forEach(([x,back])=>{ g+=leg3(x,by+bh-4,x+(back?-1:1),by+bh+6,x,91,o.thin?4:6,back?dk:shade(c1,-10)); if(o.hooves) g+=`<rect x="${x-3.4}" y="88.5" width="7" height="3.4" rx="1.2" fill="${OL3}"/>`; });
+  // body
+  g+=`<ellipse cx="${bx}" cy="${by}" rx="${bw}" ry="${bh}" fill="url(#${G})" ${s3}/>`;
+  if(o.belly) g+=`<ellipse cx="${bx+2}" cy="${by+bh*.45}" rx="${bw*.65}" ry="${bh*.4}" fill="${c3}" opacity=".8"/>`;
+  if(o.stripes) for(let k=0;k<3+st;k++){ const x=bx-bw*.5+k*(bw/(2+st)); g+=`<path d="M${x} ${by-bh+2} q3 ${bh*.6} 0 ${bh}" fill="none" stroke="${c2}" stroke-width="2.6" stroke-linecap="round" opacity=".85"/>`; }
+  if(o.spikes) for(let k=0;k<3+st*2;k++){ const x=bx-bw*.7+k*(bw*1.4/(2+st*2)); g+=`<path d="M${x-3} ${by-bh+2} L${x} ${by-bh-4-st*2} L${x+3} ${by-bh+2}Z" fill="${c2}" ${s3} stroke-width="1.4"/>`; }
+  if(o.crystals&&st>=1) for(let k=0;k<2+st*2;k++){ const x=bx-bw*.6+k*(bw*1.2/(1+st*2)), h=6+st*4+(k%2)*4; g+=`<path d="M${x-3.4} ${by-bh+3} L${x-1} ${by-bh-h} L${x+3.4} ${by-bh+3}Z" fill="url(#${B})" ${s3} stroke-width="1.4"/><path d="M${x-1} ${by-bh-h+2} L${x} ${by-bh+2}" stroke="#fff" stroke-width="1" opacity=".7"/>`; }
+  if(o.mane) g+=`<path d="M${hx-10} ${hy-6} Q${hx-20} ${hy+4} ${hx-14} ${hy+16} Q${hx-6} ${hy+12} ${hx-2} ${hy+14}Z" fill="url(#${B})" ${s3}/>`;
+  if(o.leaves&&st>=1) for(let k=0;k<2+st*2;k++){ const x=bx-bw*.6+k*(bw*1.2/(1+st*2)); g+=`<path d="M${x} ${by-bh+2} q-4 -8 0 -12 q4 4 0 12z" fill="${c2}" ${s3} stroke-width="1.2"/>`; }
+  if(o.flower&&st>=1) g+=`<g transform="translate(${bx-2} ${by-bh-4}) scale(${st===2?1.3:.9})">${[0,72,144,216,288].map(a=>`<ellipse cx="0" cy="-5" rx="3.4" ry="5" transform="rotate(${a})" fill="${c3}" ${s3} stroke-width="1.1"/>`).join('')}<circle r="3" fill="#f2c83a" ${s3} stroke-width="1"/></g>`;
+  // neck + head
+  if(o.neck) g+=`<path d="M${hx-10} ${by-4} Q${hx-6} ${hy+6} ${hx-2} ${hy+2} L${hx+6} ${hy+6} Q${hx} ${by-2} ${hx-2} ${by+2}Z" fill="url(#${G})" ${s3}/>`;
+  const sn=o.snout||'short';
+  if(o.beak){ g+=`<circle cx="${hx}" cy="${hy}" r="${hr}" fill="url(#${B})" ${s3}/><path d="M${hx+hr-3} ${hy-3} Q${hx+hr+9} ${hy} ${hx+hr+2} ${hy+6} Q${hx+hr-2} ${hy+4} ${hx+hr-3} ${hy+2}Z" fill="#f2b83a" ${s3} stroke-width="1.4"/>`;
+    if(st>=1) g+=`<path d="M${hx-6} ${hy-hr+1} Q${hx-12} ${hy-hr-8} ${hx-2} ${hy-hr-4} Q${hx} ${hy-hr-10} ${hx+4} ${hy-hr}Z" fill="url(#${B})" ${s3} stroke-width="1.4"/>`; }
+  else { g+=`<ellipse cx="${hx}" cy="${hy}" rx="${hr}" ry="${hr*.92}" fill="url(#${G})" ${s3}/>`;
+    if(sn==='long') g+=`<path d="M${hx+hr-4} ${hy-2} L${hx+hr+14} ${hy} Q${hx+hr+16} ${hy+5} ${hx+hr+12} ${hy+6} L${hx+hr-4} ${hy+5}Z" fill="url(#${G})" ${s3}/>`+(o.teeth?`<path d="M${hx+hr} ${hy+5} l2 2 l2 -2 l2 2 l2 -2 l2 2" fill="#fff" stroke="${OL3}" stroke-width=".8"/>`:'');
+    else g+=`<ellipse cx="${hx+hr*.7}" cy="${hy+hr*.3}" rx="${hr*.5}" ry="${hr*.38}" fill="${c3}" ${s3} stroke-width="1.3"/><ellipse cx="${hx+hr*1.05}" cy="${hy+hr*.2}" rx="1.6" ry="1.2" fill="${OL3}"/>`; }
+  if(o.mask) g+=`<path d="M${hx-hr*.8} ${hy-hr*.35} Q${hx} ${hy-hr*.1} ${hx+hr*.9} ${hy-hr*.45} L${hx+hr*.8} ${hy+hr*.15} Q${hx} ${hy+hr*.3} ${hx-hr*.7} ${hy+hr*.1}Z" fill="${OL3}" opacity=".8"/>`;
+  // ears
+  const ex=hx-hr*.35, ey=hy-hr*.75;
+  if(o.ears==='long') [[0,0],[5,8]].forEach(([dx,a])=>{ g+=`<ellipse cx="${ex+dx}" cy="${ey-9-st*2}" rx="3.4" ry="${9+st*2}" transform="rotate(${-10+a} ${ex+dx} ${ey})" fill="url(#${G})" ${s3}/>`; });
+  else if(o.ears==='round') [[-3],[6]].forEach(([dx])=>{ g+=`<circle cx="${ex+dx}" cy="${ey}" r="3.6" fill="url(#${G})" ${s3}/>`; });
+  else if(o.ears==='point') [[-2],[6]].forEach(([dx])=>{ g+=`<path d="M${ex+dx-3.4} ${ey+3} L${ex+dx} ${ey-7} L${ex+dx+3.4} ${ey+3}Z" fill="url(#${G})" ${s3} stroke-width="1.5"/>`; });
+  if(o.antlers&&st>=1){ const s=st===2?1.4:1; [[-2],[5]].forEach(([dx])=>{ g+=outl(`M${ex+dx} ${ey} L${ex+dx-2*s} ${ey-12*s} M${ex+dx-1*s} ${ey-6*s} L${ex+dx-7*s} ${ey-10*s} M${ex+dx-2*s} ${ey-10*s} L${ex+dx+3*s} ${ey-16*s}`,1.8,o.antlers); }); }
+  if(o.horns){ const s=[.6,.9,1.2][st]; g+=`<path d="M${ex} ${ey+2} Q${ex-8*s} ${ey-2} ${ex-6*s} ${ey-10*s} Q${ex-2} ${ey-4} ${ex+3} ${ey+2}Z" fill="#f0e6c8" ${s3} stroke-width="1.4"/>`; }
+  if(o.horn&&st>=1) g+=`<path d="M${hx+2} ${hy-hr} L${hx+6} ${hy-hr-10-st*3} L${hx+7} ${hy-hr+1}Z" fill="#f0e6c8" ${s3} stroke-width="1.4"/>`;
+  g+=eyesPair(hx-1,hx+5,hy-2,st===0?3.6:3,o.iris||'#2a1d16',st,o.bigEyes);
+  if(o.spark&&st>=1) g+=`<path d="M${hx-14} ${hy-6} l6 -4 l-2 5 l7 -3" fill="none" stroke="#f2d24a" stroke-width="2.4" stroke-linejoin="round"/>`;
+  return d+g; }
+// two-legged creature
+function biped(o,c1,c2,c3,st,id){ const G=id+'a', B=id+'b', C=id+'c'; const dk=shade(c1,-24); let d=`<defs>${grad(G,c1)}${grad(B,c2)}${grad(C,c3)}</defs>`, g='';
+  const bw=[11,14,17][st], bh=[11,15,18][st], by=[78,72,68][st], hy=by-bh-[8,8,9][st], hr=[11,10,11][st];
+  if(o.wings&&st>=1){ const w=st===2?1.25:.85; [[-1],[1]].forEach(([s])=>{ g+=`<path d="M${50+s*6} ${by-bh+4} Q${50+s*30*w} ${by-bh-16*w} ${50+s*34*w} ${by-bh+6} Q${50+s*24*w} ${by-bh+2} ${50+s*22*w} ${by-bh+12} Q${50+s*16} ${by-bh+8} ${50+s*8} ${by-bh+12}Z" fill="url(#${B})" ${s3}/>`; }); }
+  if(o.tail==='ring') { g+=`<path d="M${50-bw} ${by+4} Q${50-bw-16} ${by} ${50-bw-12} ${by-20} Q${50-bw-2} ${by-12} ${50-bw+4} ${by-2}Z" fill="url(#${G})" ${s3}/>`; [0,1,2].forEach(k=>{ g+=`<path d="M${50-bw-13+k*2} ${by-6-k*5} q4 -1 8 2" fill="none" stroke="${OL3}" stroke-width="2.4" opacity=".75"/>`; }); }
+  if(o.tail==='skunk') g+=`<path d="M${50-bw} ${by+4} Q${50-bw-20} ${by-4} ${50-bw-8} ${by-30} Q${50-bw+2} ${by-20} ${50-bw+6} ${by-4}Z" fill="${OL3}" ${s3}/><path d="M${50-bw-10} ${by-4} Q${50-bw-14} ${by-14} ${50-bw-8} ${by-26}" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/>`;
+  if(o.tail==='lizard') g+=outl(`M${50-bw+2} ${by+6} Q${50-bw-14} ${by+12} ${50-bw-22} ${by+4}`,6,c1);
+  if(o.tail==='fin') g+=`<path d="M${50-bw+2} ${by+4} Q${50-bw-14} ${by+6} ${50-bw-20} ${by-6} L${50-bw-16} ${by+12} Q${50-bw-6} ${by+10} ${50-bw+2} ${by+10}Z" fill="url(#${G})" ${s3}/>`;
+  g+=leg3(50-bw*.45,by+bh-6,50-bw*.5,by+bh,48-bw*.5,91,o.chunky?8:6,dk)+leg3(50+bw*.45,by+bh-6,50+bw*.5,by+bh,52+bw*.5,91,o.chunky?8:6,shade(c1,-12));
+  g+=`<ellipse cx="50" cy="${by}" rx="${bw}" ry="${bh}" fill="url(#${G})" ${s3}/>`;
+  if(o.belly) g+=`<ellipse cx="51" cy="${by+bh*.2}" rx="${bw*.6}" ry="${bh*.6}" fill="${c3}" opacity=".85"/>`;
+  if(o.armor&&st>=1) g+=`<path d="M${50-bw+2} ${by-bh*.4} Q50 ${by-bh*.1} ${50+bw-2} ${by-bh*.4} L${50+bw-3} ${by+bh*.4} Q50 ${by+bh*.7} ${50-bw+3} ${by+bh*.4}Z" fill="url(#${B})" ${s3}/>`;
+  if(o.robe&&st>=1) g+=`<path d="M${50-bw+1} ${by-bh*.5} L${50+bw-1} ${by-bh*.5} L${50+bw} ${by+bh*.8} L${50-bw} ${by+bh*.8}Z" fill="url(#${B})" ${s3}/>`;
+  if(o.ribs&&st>=1) for(let k=0;k<3;k++) g+=`<path d="M${44} ${by-bh*.3+k*4} q6 2 12 0" fill="none" stroke="#f0ece0" stroke-width="2" stroke-linecap="round"/>`;
+  if(o.spikes) for(let k=0;k<2+st;k++){ const y=by-bh*.6+k*6; g+=`<path d="M${50-bw+1} ${y} l-6 -2 l5 5Z" fill="${c2}" ${s3} stroke-width="1.2"/>`; }
+  if(o.crystals&&st>=1) for(let k=0;k<2+st*2;k++){ const x=50-bw*.8+k*(bw*1.6/(1+st*2)), h=6+st*5+(k%2)*5; g+=`<path d="M${x-3.4} ${by-bh+4} L${x} ${by-bh-h} L${x+3.4} ${by-bh+4}Z" fill="url(#${B})" ${s3} stroke-width="1.4"/>`; }
+  // arms
+  const ay=by-bh*.45; g+=outl(`M${50-bw+2} ${ay} Q${50-bw-8} ${ay+6} ${50-bw-6} ${ay+14}`,o.chunky?6:4.4,c1)+outl(`M${50+bw-2} ${ay} Q${50+bw+8} ${ay+6} ${50+bw+6} ${ay+14}`,o.chunky?6:4.4,c1);
+  if(o.claws) g+=`<path d="M${50-bw-9} ${ay+15} l-2 3 M${50-bw-6} ${ay+16} l0 3 M${50+bw+9} ${ay+15} l2 3 M${50+bw+6} ${ay+16} l0 3" stroke="${OL3}" stroke-width="1.4"/>`;
+  if(o.sword&&st>=1){ g+=outl(`M${50+bw+6} ${ay+14} L${50+bw+16} ${ay-10}`,2.6,'#d8dce4')+`<path d="M${50+bw+3} ${ay+12} l8 -1" stroke="#c99a3a" stroke-width="3" stroke-linecap="round"/>`; }
+  if(o.shield&&st>=1) g+=`<path d="M${50-bw-14} ${ay+2} L${50-bw-2} ${ay+2} L${50-bw-3} ${ay+16} Q${50-bw-8} ${ay+22} ${50-bw-13} ${ay+16}Z" fill="url(#${B})" ${s3}/>`;
+  if(o.knife&&st>=1) g+=outl(`M${50+bw+6} ${ay+14} L${50+bw+10} ${ay+2}`,2.4,'#dfe4ea');
+  if(o.scythe&&st===2) g+=outl(`M${50+bw+6} ${ay+18} L${50+bw+12} ${ay-22}`,2.4,'#8a6a4a')+`<path d="M${50+bw+12} ${ay-22} Q${50+bw-6} ${ay-28} ${50+bw-10} ${ay-14} Q${50+bw-2} ${ay-20} ${50+bw+11} ${ay-18}Z" fill="#dfe4ea" ${s3} stroke-width="1.4"/>`;
+  // head
+  const hx=50+(o.lean||0);
+  if(o.tv){ g+=`<rect x="${hx-hr}" y="${hy-hr}" width="${hr*2}" height="${hr*1.9}" rx="4" fill="#4a4e58" ${s3}/><rect x="${hx-hr+3}" y="${hy-hr+3}" width="${hr*2-6}" height="${hr*1.9-6}" rx="2.4" fill="#1a1c22"/>`;
+    g+=st===0?`<path d="M${hx-4} ${hy-3} v3 M${hx+4} ${hy-3} v3 M${hx-5} ${hy+4} q5 4 10 0" stroke="#f2d24a" stroke-width="2" fill="none" stroke-linecap="round"/>`:`<ellipse cx="${hx-4}" cy="${hy-1}" rx="2" ry="3" fill="none" stroke="#f2d24a" stroke-width="1.8"/><ellipse cx="${hx+4}" cy="${hy-1}" rx="2" ry="3" fill="none" stroke="#f2d24a" stroke-width="1.8"/>`;
+    if(st===2) g+=outl(`M${hx+4} ${hy-hr} l2 -8`,1.6,'#c84a3a');
+    return d+g; }
+  if(o.horns) [[-1],[1]].forEach(([s])=>{ g+=`<path d="M${hx+s*hr*.5} ${hy-hr*.6} Q${hx+s*hr*1.1} ${hy-hr*1.6} ${hx+s*hr*.7} ${hy-hr*2} Q${hx+s*hr*.6} ${hy-hr*1.3} ${hx+s*hr*.15} ${hy-hr*.8}Z" fill="${o.horns}" ${s3} stroke-width="1.4"/>`; });
+  if(o.ears==='round') [[-1],[1]].forEach(([s])=>{ g+=`<circle cx="${hx+s*hr*.7}" cy="${hy-hr*.75}" r="${hr*.36}" fill="url(#${G})" ${s3}/>`; });
+  if(o.ears==='point') [[-1],[1]].forEach(([s])=>{ g+=`<path d="M${hx+s*hr*.3} ${hy-hr*.7} L${hx+s*hr*.9} ${hy-hr*1.5} L${hx+s*hr*.95} ${hy-hr*.4}Z" fill="url(#${G})" ${s3} stroke-width="1.5"/>`; });
+  if(o.antenna) [[-1],[1]].forEach(([s])=>{ g+=outl(`M${hx+s*3} ${hy-hr+1} Q${hx+s*6} ${hy-hr-6} ${hx+s*5} ${hy-hr-10}`,1.6,c1)+`<circle cx="${hx+s*5}" cy="${hy-hr-11}" r="2.2" fill="${c2}" ${s3} stroke-width="1"/>`; });
+  if(o.fin) g+=`<path d="M${hx-4} ${hy-hr+1} Q${hx+2} ${hy-hr-12} ${hx+8} ${hy-hr-6} L${hx+6} ${hy-hr+3}Z" fill="url(#${G})" ${s3}/>`;
+  if(o.crest) g+=`<path d="M${hx-6} ${hy-hr+2} Q${hx-4} ${hy-hr-10} ${hx+2} ${hy-hr-4} Q${hx+6} ${hy-hr-12} ${hx+8} ${hy-hr+2}Z" fill="url(#${B})" ${s3}/>`;
+  g+=`<ellipse cx="${hx}" cy="${hy}" rx="${hr}" ry="${hr*.95}" fill="url(#${G})" ${s3}/>`;
+  if(o.mask) g+=`<path d="M${hx-hr*.9} ${hy-hr*.25} Q${hx} ${hy} ${hx+hr*.9} ${hy-hr*.25} L${hx+hr*.8} ${hy+hr*.25} Q${hx} ${hy+hr*.35} ${hx-hr*.8} ${hy+hr*.25}Z" fill="${OL3}" opacity=".8"/>`;
+  if(o.stripe) g+=`<path d="M${hx} ${hy-hr} L${hx} ${hy+hr*.2}" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/>`;
+  if(o.snout) g+=`<ellipse cx="${hx}" cy="${hy+hr*.38}" rx="${hr*.42}" ry="${hr*.3}" fill="${c3}" ${s3} stroke-width="1.2"/><ellipse cx="${hx}" cy="${hy+hr*.28}" rx="1.6" ry="1.2" fill="${OL3}"/>`;
+  if(o.cyclops){ const r=st===0?5.4:4.6; g+=`<circle cx="${hx}" cy="${hy-2}" r="${r}" fill="#fff" ${s3}/><circle cx="${hx+1}" cy="${hy-1.6}" r="${r*.55}" fill="${o.iris||'#e0a020'}"/><circle cx="${hx+1.4}" cy="${hy-1.6}" r="${r*.25}" fill="${OL3}"/>`; }
+  else g+=eyesPair(hx-hr*.4,hx+hr*.4,hy-hr*.12,st===0?3.8:3.2,o.iris||'#2a1d16',st,o.bigEyes);
+  if(o.goggles&&st>=1) g+=`<path d="M${hx-hr} ${hy-hr*.15} H${hx+hr}" stroke="${OL3}" stroke-width="3"/><circle cx="${hx-hr*.4}" cy="${hy-hr*.12}" r="4" fill="none" stroke="${OL3}" stroke-width="2"/><circle cx="${hx+hr*.4}" cy="${hy-hr*.12}" r="4" fill="none" stroke="${OL3}" stroke-width="2"/>`;
+  if(o.fangs) g+=`<path d="M${hx-hr*.4} ${hy+hr*.45} q${hr*.4} ${hr*.25} ${hr*.8} 0" fill="none" stroke="${OL3}" stroke-width="1.4"/><path d="M${hx-hr*.25} ${hy+hr*.5} l1 3 l1 -3 M${hx+hr*.15} ${hy+hr*.5} l1 3 l1 -3" fill="#fff" stroke="${OL3}" stroke-width=".8"/>`;
+  else if(!o.snout) g+=`<path d="M${hx-hr*.35} ${hy+hr*.45} q${hr*.35} ${hr*.25} ${hr*.7} 0" fill="none" stroke="${OL3}" stroke-width="1.4" stroke-linecap="round"/>`;
+  if(o.hat&&st>=1) g+=`<path d="M${hx-hr-4} ${hy-hr*.55} Q${hx} ${hy-hr*1.9} ${hx+hr+4} ${hy-hr*.55}Z" fill="url(#${B})" ${s3}/>`;
+  return d+g; }
+// one-offs
+ART2.bat=(c1,c2,c3,st,id)=>{ const G=id+'a',B=id+'b'; let d=`<defs>${grad(G,c1)}${grad(B,c2)}</defs>`,g=''; const w=[.7,1,1.2][st], y=[66,58,54][st];
+  [[-1],[1]].forEach(([s])=>{ g+=`<path d="M50 ${y} Q${50+s*16*w} ${y-18*w} ${50+s*34*w} ${y-10*w} Q${50+s*28*w} ${y} ${50+s*30*w} ${y+8*w} Q${50+s*22*w} ${y+2} ${50+s*18*w} ${y+10*w} Q${50+s*12} ${y+4} ${50+s*6} ${y+8}Z" fill="url(#${G})" ${s3}/>`; });
+  if(st===2){ g+=`<path d="M38 ${y+6} Q50 ${y+40} 62 ${y+6} L58 ${y+30} L42 ${y+30}Z" fill="#c8302a" ${s3}/>`; g+=leg3(46,y+26,45,y+30,44,91,4,shade(c1,-20))+leg3(54,y+26,55,y+30,56,91,4,shade(c1,-20)); g+=`<rect x="42" y="${y+8}" width="16" height="20" rx="5" fill="#5a5a66" ${s3}/>`; }
+  g+=`<ellipse cx="50" cy="${y+2}" rx="${10+st}" ry="${10+st}" fill="url(#${G})" ${s3}/>`+[[-1],[1]].map(([s])=>`<path d="M${50+s*4} ${y-6} L${50+s*9} ${y-16-st*2} L${50+s*10} ${y-4}Z" fill="url(#${G})" ${s3} stroke-width="1.4"/>`).join('');
+  g+=eyesPair(46,54,y,3.4,'#f2c83a',st,st===0)+`<path d="M46 ${y+6} q4 3 8 0" fill="none" stroke="${OL3}" stroke-width="1.3"/><path d="M47 ${y+6.4} l1 2.4 l1 -2.4 M51 ${y+6.4} l1 2.4 l1 -2.4" fill="#fff" stroke="${OL3}" stroke-width=".7"/>`;
+  if(st<2) g+=`<ellipse cx="50" cy="90" rx="10" ry="2" fill="rgba(0,0,0,.12)"/>`; return d+g; };
+ART2.ghost=(c1,c2,c3,st,id)=>{ const G=id+'a',B=id+'b'; let d=`<defs>${grad(G,c1)}${grad(B,c2)}</defs>`,g=''; const s=[.8,1,1.15][st];
+  if(st===2) g+=outl('M70 86 L76 30',2.4,'#8a6a4a')+`<path d="M76 30 Q56 22 50 36 Q60 30 75 34Z" fill="#dfe4ea" ${s3} stroke-width="1.4"/>`;
+  g+=`<path d="M${50-16*s} 84 Q${50-18*s} ${56-14*s} 50 ${44-12*s} Q${50+18*s} ${56-14*s} ${50+16*s} 84 L${50+10*s} 80 L${50+4*s} 86 L${50-3*s} 80 L${50-9*s} 86Z" fill="url(#${st>=1?B:G})" ${s3}/>`;
+  const fy=60-6*s; if(st>=1) g+=`<ellipse cx="50" cy="${fy}" rx="${10*s}" ry="${9*s}" fill="${st===2?'#1a1c22':'#f6f6fa'}" ${s3} stroke-width="1.3"/>`;
+  g+=st===2?`<circle cx="46" cy="${fy-2}" r="2.2" fill="#7ae04a"/><circle cx="54" cy="${fy-2}" r="2.2" fill="#7ae04a"/><path d="M44 ${fy+4} l2 2 l2 -2 l2 2 l2 -2 l2 2" fill="none" stroke="#7ae04a" stroke-width="1.4"/>`:`<ellipse cx="45.5" cy="${fy-1}" rx="2.6" ry="3.4" fill="${OL3}"/><ellipse cx="54.5" cy="${fy-1}" rx="2.6" ry="3.4" fill="${OL3}"/><path d="M44 ${fy+5} q6 5 12 0Z" fill="${OL3}"/>`;
+  g+=`<ellipse cx="50" cy="91" rx="12" ry="2" fill="rgba(0,0,0,.12)"/>`; return d+g; };
+ART2.pumpkin=(c1,c2,c3,st,id)=>{ const G=id+'a',B=id+'b'; let d=`<defs>${grad(G,c1)}${grad(B,c2)}</defs>`,g=''; const py=[76,48,42][st], r=[14,12,13][st];
+  if(st>=1){ g+=leg3(45,py+30,44,py+36,43,91,5,'#6b4a2b')+leg3(55,py+30,56,py+36,57,91,5,'#6b4a2b'); g+=`<path d="M40 ${py+12} Q50 ${py+8} 60 ${py+12} L58 ${py+32} L42 ${py+32}Z" fill="${st===2?'url(#'+B+')':'#c8a86a'}" ${s3}/>`; g+=outl(`M41 ${py+16} Q32 ${py+22} 34 ${py+30}`,4,'#c8a86a')+outl(`M59 ${py+16} Q68 ${py+22} 66 ${py+30}`,4,'#c8a86a'); if(st===2) g+=outl(`M66 ${py+30} L72 ${py+16}`,2.4,'#dfe4ea'); }
+  g+=`<ellipse cx="50" cy="${py}" rx="${r+3}" ry="${r}" fill="url(#${G})" ${s3}/><path d="M50 ${py-r} Q44 ${py} 50 ${py+r} M50 ${py-r} Q56 ${py} 50 ${py+r} M${50-r*.7} ${py-r*.7} Q${50-r*1.1} ${py} ${50-r*.7} ${py+r*.7} M${50+r*.7} ${py-r*.7} Q${50+r*1.1} ${py} ${50+r*.7} ${py+r*.7}" fill="none" stroke="${shade(c1,-25)}" stroke-width="1.4"/>`;
+  g+=`<path d="M49 ${py-r} q1 -6 5 -7" fill="none" stroke="#5a7a2a" stroke-width="3" stroke-linecap="round"/>`;
+  g+=`<path d="M42 ${py-4} l4 -4 l3 4Z M52 ${py-4} l3 -4 l4 4Z" fill="#ffe27a" ${s3} stroke-width="1.1"/><path d="M41 ${py+4} l3 3 l3 -2 l3 3 l3 -3 l3 2 l3 -3 Q50 ${py+12} 41 ${py+4}Z" fill="#ffe27a" ${s3} stroke-width="1.1"/>`;
+  if(st===0) g+=`<ellipse cx="50" cy="91" rx="14" ry="2" fill="rgba(0,0,0,.12)"/>`; return d+g; };
+ART2.nautilus=(c1,c2,c3,st,id)=>{ const G=id+'a',B=id+'b',C=id+'c'; let d=`<defs>${grad(G,c1)}${grad(B,c2)}${grad(C,c3)}</defs>`,g=''; const s=[.75,.95,1.15][st];
+  for(let k=0;k<4+st;k++){ const x=52+k*3; g+=outl(`M${x} ${84} q${2+k} 6 ${-2+k*2} 7`,2.2,c3); }
+  g+=`<circle cx="${42}" cy="${74-8*s}" r="${18*s}" fill="url(#${G})" ${s3}/>`; for(let k=0;k<4;k++) g+=`<path d="M42 ${74-8*s} L${42+Math.cos(k*1.4)*18*s} ${74-8*s+Math.sin(k*1.4)*18*s}" stroke="${c2}" stroke-width="2.6" opacity=".85"/>`;
+  g+=`<path d="M${42} ${74-8*s} m-6 0 a6 6 0 1 1 6 6" fill="none" stroke="${OL3}" stroke-width="1.6"/>`;
+  if(st===2) for(let k=0;k<6;k++){ const a=-2.6+k*0.5; g+=`<path d="M${42+Math.cos(a)*18*s} ${74-8*s+Math.sin(a)*18*s} l${Math.cos(a)*6} ${Math.sin(a)*6} l3 2Z" fill="#f0e6c8" ${s3} stroke-width="1.1"/>`; }
+  g+=`<ellipse cx="62" cy="78" rx="${11*s}" ry="${9*s}" fill="url(#${C})" ${s3}/>`+eyesPair(60,67,75,3,'#2a3a5a',st,st===0);
+  return d+g; };
+ART2.fishy=(o)=>(c1,c2,c3,st,id)=>{ const G=id+'a',B=id+'b'; let d=`<defs>${grad(G,c1)}${grad(B,c2)}</defs>`,g=''; const s=[.75,1,1.15][st], y=[74,64,58][st];
+  g+=`<path d="M${50-20*s} ${y} L${50-34*s} ${y-12*s} Q${50-30*s} ${y} ${50-34*s} ${y+12*s}Z" fill="url(#${B})" ${s3}/>`;
+  g+=`<path d="M${50-22*s} ${y} Q${50-14*s} ${y-16*s} ${50+8*s} ${y-14*s} Q${50+24*s} ${y-10*s} ${50+24*s} ${y} Q${50+22*s} ${y+12*s} ${50+4*s} ${y+13*s} Q${50-14*s} ${y+12*s} ${50-22*s} ${y}Z" fill="url(#${G})" ${s3}/>`;
+  if(o.armor) for(let k=0;k<3+st;k++) g+=`<path d="M${50-12*s+k*7*s} ${y-12*s} q3 6 0 12" fill="none" stroke="${c2}" stroke-width="3" opacity=".8"/>`;
+  if(o.spikes&&st>=1) for(let k=0;k<3+st;k++){ const x=50-10*s+k*7*s; g+=`<path d="M${x-3} ${y-13*s} L${x} ${y-20*s-st*2} L${x+3} ${y-13*s}Z" fill="url(#${B})" ${s3} stroke-width="1.2"/>`; }
+  if(o.arms&&st>=1) g+=outl(`M${50+6*s} ${y+8*s} Q${50+12*s} ${y+18*s} ${50+20*s} ${y+16*s}`,4,c2)+`<circle cx="${50+21*s}" cy="${y+16*s}" r="${3+st}" fill="url(#${B})" ${s3}/>`;
+  g+=eyesPair(50+12*s,50+18*s,y-4*s,st===0?3.4:2.8,'#2a3a5a',st,st===0)+`<path d="M${50+16*s} ${y+4*s} l${4*s} 1" stroke="${OL3}" stroke-width="1.4"/>`+(st===2?`<path d="M${50+14*s} ${y+5*s} l1.4 2 l1.4 -2 l1.4 2 l1.4 -2" fill="none" stroke="#fff" stroke-width="1"/>`:'');
+  if(st===2) g+=`<path d="M${50+4*s} ${y+13*s} L${48} 91 M${50-6*s} ${y+12*s} L${42} 91" stroke="${OL3}" stroke-width="5" stroke-linecap="round"/><path d="M${50+4*s} ${y+13*s} L${48} 91 M${50-6*s} ${y+12*s} L${42} 91" stroke="${shade(c1,-15)}" stroke-width="2.6" stroke-linecap="round"/>`;
+  else g+=`<ellipse cx="50" cy="91" rx="16" ry="2" fill="rgba(0,0,0,.1)"/>`;
+  return d+g; };
+const Q=o=>(c1,c2,c3,st,id)=>quad(o,c1,c2,c3,st,id), Bp=o=>(c1,c2,c3,st,id)=>biped(o,c1,c2,c3,st,id);
+(function(){
+  const FAMS={ haunts:['Haunts','neutral',{hp:76,atk:16,mp:50}], varmint:['Varmint','neutral',{hp:78,atk:17,mp:44}], fawna:['Fawna','nature',{hp:78,atk:15,mp:50}],
+    griffyn:['Griffyn','neutral',{hp:80,atk:17,mp:46}], bunnirax:['Bunnirax','neutral',{hp:82,atk:18,mp:42}], gremlin:['Gremlin','fire',{hp:78,atk:17,mp:46}],
+    crystalloid:['Crystalloid','neutral',{hp:80,atk:18,mp:46}], paleozar:['Paleozar','water',{hp:84,atk:17,mp:44}] };
+  Object.keys(FAMS).forEach(k=>{ const [n,el,b]=FAMS[k]; FAM[k]={n,el,shape:'art2_'+k,base:Object.assign({spd:11},b)}; });
+  const R=[
+   ['vamp','Vamp','haunts',['#8a5ab8','#c8302a','#f0e6ff'],['manashards','feed','leech','sweaty'],ART2.bat],
+   ['balth','Balth','haunts',['#f6f6fa','#4a4a8a','#ffffff'],['flicker','toxicfumes','feed','roots'],ART2.ghost],
+   ['jackie','Jackie','haunts',['#f08a2a','#2a7a3a','#ffe27a'],['arclightning','bolt','berserk','thickskin'],ART2.pumpkin],
+   ['zombear','Zombear','haunts',['#6aa84a','#7a5a9a','#d8f0c0'],['berserk','furyfist','fshield','pounce'],Bp({ears:'round',snout:1,chunky:1,ribs:1,claws:1,iris:'#7ae04a'})],
+   ['garth','Garth','varmint',['#5a6a8a','#c8302a','#f0f0f4'],['trample','firefocus','firewall','hardened'],Bp({ears:'round',stripe:1,snout:1,armor:1,sword:1,shield:1})],
+   ['timmeh','Timmeh','varmint',['#a8a8b0','#c89a5a','#f0f0f0'],['bolt','thunder','grounded','zap'],Bp({ears:'point',mask:1,snout:1,tail:'ring',claws:1})],
+   ['vicks','Vicks','varmint',['#3a3a44','#5ae04a','#f0f0f0'],['cripple','poison','perseverance','camelback'],Bp({ears:'round',stripe:1,snout:1,tail:'skunk',goggles:1})],
+   ['tanuchan','Tanuchan','varmint',['#b8682a','#c8a86a','#f0dcc0'],['arclightning','cripple','furyfist','spark'],Bp({ears:'round',mask:1,snout:1,tail:'ring',hat:1})],
+   ['ayla','Ayla','fawna',['#d8a878','#f08ab8','#fff0e8'],['emberspit','firewall','grounded','moltencore'],Q({ears:'point',neck:1,thin:1,hooves:1,antlers:'#8a5a3a',flower:1,belly:1})],
+   ['acteon','Acteon','fawna',['#b8482a','#f2d24a','#f0d0b0'],['bolt','arclightning','grounded','stormcloud'],Q({ears:'point',neck:1,thin:1,hooves:1,antlers:'#f2d24a',stripes:1,spark:1})],
+   ['nifleos','Nifleos','fawna',['#e0c8a0','#7ad8e8','#ffffff'],['blizzard','mshield','roots','wave'],Q({ears:'point',neck:1,thin:1,hooves:1,antlers:'#a8f0ff',crystals:1,belly:1})],
+   ['tatonka','Tatonka','fawna',['#7a4a2a','#3a9a3a','#c89a6a'],['nshield','natureswill','thickskin','leech'],Q({ears:'none',hooves:1,horns:1,mane:1,leaves:1,tail:'tuft'})],
+   ['goldenbeak','Goldenbeak','griffyn',['#e8a83a','#f2d24a','#fff0c8'],['cripple','arclightning','hardened','zap'],Q({beak:1,wings:1,tail:'tuft',mane:1})],
+   ['wildclaw','Wildclaw','griffyn',['#f0e6c8','#f2d24a','#ffffff'],['pestilence','poison','roots','invuln'],Q({beak:1,wings:1,tail:'tuft',mane:1})],
+   ['feathercrown','Feathercrown','griffyn',['#f07ab0','#7ae04a','#ffe0f0'],['taunt','souleater','thickskin','pestilence'],Q({beak:1,wings:1,tail:'tuft',mane:1})],
+   ['darkwing','Darkwing','griffyn',['#3a3a44','#3ac8e8','#5a5a66'],['souleater','mshield','sweaty','blizzard'],Q({beak:1,wings:1,tail:'tuft',mane:1,iris:'#3ac8e8'})],
+   ['walarax','Walarax','bunnirax',['#a8c0d0','#f07a3a','#f0f4f8'],['devour','souleater','thickskin','spiky'],Q({ears:'long',tail:'bushy',spikes:1,mane:1,belly:1})],
+   ['necrorax','Necrorax','bunnirax',['#8a8a90','#a85ac8','#f0ece0'],['devour','poison','pounce','pestilence'],Q({ears:'long',tail:'bushy',spikes:1,belly:1,iris:'#a85ac8'})],
+   ['tanirax','Tanirax','bunnirax',['#3a6a9a','#5ad8f0','#c8e8f8'],['devour','blizzard','camelback','bubble'],Q({ears:'long',tail:'bushy',crystals:1,belly:1})],
+   ['zayrax','Zayrax','bunnirax',['#5ac87a','#2a8a4a','#d8f8e0'],['devour','souleater','furyfist','haymaker'],Q({ears:'long',tail:'bushy',mane:1,horn:1,belly:1})],
+   ['anung','Anung','gremlin',['#d8302a','#5a1a1a','#f0a08a'],['firewall','explosivefist','double','firefocus'],Bp({horns:'#3a1a1a',wings:1,goggles:1,chunky:1,fangs:1,tail:'lizard'})],
+   ['grogg','Grogg','gremlin',['#7ab83a','#4a7a2a','#d8f0a8'],['acidbite','souleater','thickskin','regrowth'],Bp({cyclops:1,ears:'point',spikes:1,claws:1,chunky:1,fangs:1})],
+   ['neriti','Neriti','gremlin',['#d8c0f0','#c83a8a','#f8f0ff'],['shell','blizzard','thickskin','wave'],Bp({antenna:1,bigEyes:1,armor:1,iris:'#3a7ae0'})],
+   ['rom','Rom','gremlin',['#f2c83a','#5a5a66','#ffe27a'],['flash','zap','thickskin','thunder'],Bp({tv:1,armor:1})],
+   ['crystalwulf','Crystalwulf','crystalloid',['#6a4a9a','#f2b83a','#e8d8f8'],['rubyshift','haymaker','furyfist','explosivefist'],Bp({ears:'point',snout:1,crystals:1,claws:1,chunky:1,tail:'lizard'})],
+   ['sphyro','Sphyro','crystalloid',['#3a8ab8','#f08a2a','#f0f8ff'],['sapphireshift','wave','grounded','hydrate'],Bp({fin:1,belly:1,fangs:1,tail:'fin',claws:1,iris:'#d8f04a'})],
+   ['necrodile','Necrodile','crystalloid',['#5a8a4a','#c8f05a','#d0e0c0'],['emeraldshift','feedback','roots','pestilence'],Q({snout:'long',teeth:1,tail:'long',spikes:1,crystals:1})],
+   ['electyra','Electyra','crystalloid',['#f2a82a','#3aa8f0','#fff0c8'],['topazshift','thunder','grounded','arclightning'],ART2.fishy({spikes:1,arms:1})],
+   ['leviatho','Leviatho','paleozar',['#e8c89a','#c87a3a','#d8b0e8'],['staticd','spark','pounce','bolt'],ART2.nautilus],
+   ['salissor','Salissor','paleozar',['#3a8ad8','#f2c83a','#e8f0f8'],['deathroll','trample','furyfist','souleater'],Q({snout:'long',teeth:1,tail:'long',crystals:1,belly:1})],
+   ['sturgiok','Sturgiok','paleozar',['#8a8a90','#b8823a','#e8e0d0'],['steamblast','splash','thickskin','hydrate'],ART2.fishy({armor:1,spikes:1})],
+   ['florathor','Florathor','paleozar',['#a8c84a','#5a8a2a','#f05a4a'],['pollenbloom','natureswill','pounce','toxicfumes'],Q({snout:'short',tail:'long',spikes:1,flower:1,belly:1,iris:'#e0302a'})]];
+  const DRAW={};
+  R.forEach(([id,n,fam,col,sk,fn])=>{ DRAW[id]=fn; if(SPI[id]) return; const sp={id,n,fam,col,tw:{},sk:sk.filter(k=>SK[k])}; SP.push(sp); SPI[id]=sp; });
+  Object.keys(FAMS).forEach(k=>ATK_MOUTH['art2_'+k]=[1.6,1.4,1.0]);
+  monSVG=(function(prev){ return function(spId,lvl,cls){ const f=DRAW[spId]; if(!f) return prev(spId,lvl,cls); const sp=SPI[spId];
+    const st=stageOf(lvl); const c1=mute(sp.col[0],16), c2=mute(sp.col[1],8), c3=mute(sp.col[2],6); const id='m'+(GID++); const sc=[0.8,0.92,1][st];
+    return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${sc}) translate(-50 -92)">${f(c1,c2,c3,st,id)}</g></svg>`; }; })(monSVG);
+  // zones
+  const Z=[['manor','Belmont Manor','haunts','#5a4a7a',['#5a4a7a','#c8b8e0'],['#4a5a3a','#2a3a22'],['Light the manor candles','Battle a wild haunt','Escape the hall of mirrors','Face the midnight ghouls']],
+    ['lostcity','Lost City','varmint','#b89a5a',['#e8c88a','#fff4dc'],['#c8a86a','#8a6a3a'],['Dig up old relics','Battle a wild varmint','Disarm the temple traps','Face the ruin raiders']],
+    ['vale','Watcher\'s Vale','fawna','#6ab88a',['#a8d8f0','#f0faff'],['#7ac86a','#4a8a3a'],['Follow the deer trail','Battle a wild fawna','Gather vale blossoms','Face the antlered herd']],
+    ['skylands','Ayram Skylands','griffyn','#7ab8f0',['#7ab8f0','#eaf6ff'],['#e8f0f8','#b8c8d8'],['Ride the high winds','Battle a wild griffyn','Climb the floating isles','Face the sky lords']],
+    ['kor','Ruins of Kor','bunnirax','#8a7a6a',['#c8a88a','#f4e8dc'],['#a8988a','#6a5a4a'],['Search the broken halls','Battle a wild bunnirax','Solve the rune doors','Face the ruin beasts']],
+    ['lab','Dante\'s Lab','gremlin','#5a7a8a',['#3a4a5a','#a8c0d0'],['#5a6a7a','#2a3a4a'],['Sneak past the lasers','Battle a wild gremlin','Fix the power core','Face the lab experiments']],
+    ['cosmos','Crystal Cosmos','crystalloid','#7a4ab8',['#2a1a5a','#7a5ac8'],['#5a3a9a','#3a1a6a'],['Mine star crystals','Battle a wild crystalloid','Cross the gem bridge','Face the crystal titans']],
+    ['paleo','Paleozoic Park','paleozar','#8a9a4a',['#f0c88a','#fff4e0'],['#9ab84a','#5a7a2a'],['Track the giant footprints','Battle a wild paleozar','Hatch the ancient eggs','Face the ancient pack']]];
+  Z.forEach(([id,n,fam,c,sky,hills,t])=>{ if(ZONES.some(z=>z.id===id)) return; ZONES.push({id,n,fam,lv:29,sizes:[3,3,3,3],c});
+    ZTASKS[id]=[['act',t[0],29,0,280,350,2,3],['fight',t[1],29,0,310,390,3,1],['act',t[2],30,{mp:360},310,390,2,3],['fight',t[3],30,0,350,430,3,1],['boss',n+' Boss',30,0,680,840,5,1]];
+    ZSCENE[id]={sky,orb:id==='cosmos'||id==='manor'?'#f4f0ff':'#fffbe0',ox:72,oy:20,hills,x:'z2'}; ZCOL[id]=[shade(hills[0],55),shade(hills[0],30)]; TRACKS['z_'+id]=TRACKS.z_hollow; });
+  zoneScene=(function(prev){ return function(id){ const z=ZSCENE[id]; if(!z||z.x!=='z2') return prev(id); const g='zg'+id;
+    const extra={manor:`<rect x="80" y="30" width="40" height="40" fill="#3a2a4a"/><path d="M76 32 L100 14 L124 32Z" fill="#2a1a3a"/><rect x="96" y="50" width="8" height="20" fill="#f2c83a" opacity=".7"/>`,
+      lostcity:`<g fill="#b89a6a"><rect x="20" y="50" width="10" height="34"/><rect x="170" y="44" width="12" height="40"/><path d="M80 84 L100 40 L120 84Z"/></g>`,
+      skylands:`<g fill="#b8a88a"><ellipse cx="40" cy="52" rx="20" ry="5"/><ellipse cx="160" cy="40" rx="16" ry="4"/></g><g fill="#fff" opacity=".9"><ellipse cx="90" cy="30" rx="20" ry="6"/></g>`,
+      kor:`<g fill="#8a7a6a"><rect x="30" y="54" width="8" height="30"/><rect x="44" y="60" width="8" height="24"/><rect x="160" y="50" width="10" height="34"/></g>`,
+      lab:`<g fill="#7a8a9a"><rect x="20" y="40" width="30" height="44"/><rect x="150" y="34" width="34" height="50"/></g><circle cx="35" cy="56" r="4" fill="#5af07a"/><circle cx="167" cy="50" r="4" fill="#f05a5a"/>`,
+      cosmos:`<g fill="#fff">${[[20,20],[50,10],[130,16],[170,28],[100,8],[150,6]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.2"/>`).join('')}</g><g fill="#c8a8ff">${[[30,84],[170,84]].map(([x,y])=>`<path d="M${x-6} ${y} L${x} ${y-20} L${x+6} ${y}Z"/>`).join('')}</g>`,
+      paleo:`<g fill="#5a7a2a">${[20,40,170].map(x=>`<path d="M${x} 90 q-6 -24 4 -34 q-2 16 2 34z"/>`).join('')}</g>`,
+      vale:`<g fill="#ffd0e0">${[[30,44],[44,40],[160,46]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="4"/>`).join('')}</g>`}[id]||'';
+    return `<svg class="zscene" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${z.sky[0]}"/><stop offset="1" stop-color="${z.sky[1]}"/></linearGradient></defs><rect width="200" height="100" fill="url(#${g})"/><circle cx="${z.ox}" cy="${z.oy}" r="9" fill="${z.orb}"/><path d="M0 70 Q50 56 100 66 T200 62 V100 H0Z" fill="${z.hills[0]}"/><path d="M0 84 Q60 72 120 82 T200 80 V100 H0Z" fill="${z.hills[1]}"/>${extra}</svg>`; }; })(zoneScene);
   applyZoneOrder();
 })();

@@ -8,7 +8,7 @@ Name: Skill 1 / 2 / 3 / 4 — Family — Location. Look notes describe our own r
 Marlboro — Valley of the Wind (v233): Marly Poison/Fire Wall/Nature Shield/Roots; Marlow Poison/Absorb/Regrowth/Thick Skin; Marina Poison/Invulnerability/Hardened/Sweaty; Marvuu Perseverance/Bolt/Feedback/Pounce
 Gorilla — Creepvine Jungle (v233): Gorzanga Regrowth/Burn/Nature Shield/Thick Skin; Gorgamel Feedback/Splash/Feed/Grounded; Gorbamba Nature's Will/Cripple/Invulnerability/Sweaty; Gorgie Feed/Invulnerability/Nature's Will/Double Attack
 
-## Still to add (see zone order above; Bushwhacker Swamp = Insect family, currently also used by Training Camp)
+## Added v239–v240 (all zones built; abilities marked placeholder need MK numbers)
 Equine — Enchanted Forest: Cora Feedback/Blizzard/Perseverance/Roots (white+blue pegasus unicorn); Nightmare Leech/Thunder/Invulnerability/Pounce (black pegasus, flame mane); Sleipnir Nature Shield/Flame/Nature's Will/Thick Skin (tan pegasus unicorn, dark mane); Starlite Leech/Regrowth/Mana Shield/Roots (white unicorn, rainbow mane)
 Bear — Terajima Shrine: Po Invulnerability/Purge/Feed/Sweaty (panda, green robe); Grizz Feed/Fury Fist/Hardened/Double Attack (brown bear, red robe); Firefox Feedback/Blast/Charge/Double Attack (red panda bear, orange robe); Iorek Regrowth/Storm Cloud/Hardened/Thick Skin (polar bear, blue robe)
 Haunts — Belmont Manor: Vamp Mana Shards/Feed/Leech/Sweaty (bat vampire); Balth Flicker/Toxic Fumes/Feed/Roots (ghost reaper); Jackie Arc Lightning/Bolt/Berserk/Thick Skin (pumpkin); Zombear Berserk/Fury Fist/Fire Shield/Pounce (zombie bear)
@@ -20,4 +20,4 @@ Gremlin — Dante's Lab: Anung Fire Wall/Explosive Fist/Double Attack/Fire Focus
 Crystalloid — Crystal Cosmos: Crystalwulf Ruby Shift/Haymaker/Fury Fist/Explosive Fist; Sphyro Sapphire Shift/Wave/Grounded/Hydrate; Necrodile Emerald Shift/Feedback/Roots/Pestilence; Electyra Topaz Shift/Thunder/Grounded/Arc Lightning
 Paleozar — Paleozoic Park: Leviatho Static Discharge/Spark/Pounce/Bolt; Salissor Death Roll/Trample/Fury Fist/Soul Eater; Sturgiok Steam Blast/Splash/Thick Skin/Hydrate; Florathor Pollen Bloom/Nature's Will/Pounce/Toxic Fumes
 
-New abilities needing MK descriptions: Flash, Pestilence, Spiky, Explosive Fist, Shell, Ruby Shift, Sapphire Shift, Topaz Shift, Death Roll, Steam Blast, Pollen Bloom
+Placeholder abilities (fix from level-10 screenshots): Flash, Pestilence, Spiky, Explosive Fist, Shell, Ruby Shift, Sapphire Shift, Topaz Shift, Death Roll, Steam Blast, Pollen Bloom
