@@ -394,7 +394,7 @@ function act(b, action){
     if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:foe,i:tgt}); log(b,`${a.n} missed!`); }
     else { const x=Math.min(d.hp, Math.max(1,Math.round(lv(sk.stealHp,L)))); d.hp-=x; b.ev.push({k:'hit',s:foe,i:tgt,v:x,el:'nature'}); const hv=Math.min(me.maxhp-me.hp,x); me.hp+=hv; b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); log(b,`${me.n} fed on ${d.n}!`); if(d.hp<=0) log(b,`${d.n} fainted.`); }
   } else if(sk.k==='drain'){
-    const d=b.sides[foe].mons[tgt]; const x=Math.min(d.mp, Math.round(lv(sk.steal,L))); d.mp-=x; me.mp=Math.min(me.maxmp,me.mp+x); log(b,`${me.n} stole ${x} mana!`);
+    const d=b.sides[foe].mons[tgt]; const x=Math.min(d.mp, Math.round(lv(sk.steal,L))); d.mp-=x; const g=Math.min(me.maxmp-me.mp,x); me.mp+=g; if(x>0){ b.ev.push({k:'mana',s:foe,i:tgt,v:-x,rv:-x}); b.ev.push({k:'mana',s:a.s,i:a.i,v:x,rv:g,ph:2,pre:1000,hyd:1}); } log(b,`${me.n} stole ${x} mana!`);
   }
   if(me.hp>0 && !b.over){
     if(me.pas.roots!=null){ const h=Math.min(me.maxhp-me.hp, Math.round(me.maxhp*me.pas.roots)); me.hp+=h; b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }

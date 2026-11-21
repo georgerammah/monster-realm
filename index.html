@@ -2052,7 +2052,7 @@ function act(b, action){
     if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:foe,i:tgt}); log(b,`${a.n} missed!`); }
     else { const x=Math.min(d.hp, Math.max(1,Math.round(lv(sk.stealHp,L)))); d.hp-=x; b.ev.push({k:'hit',s:foe,i:tgt,v:x,el:'nature'}); const hv=Math.min(me.maxhp-me.hp,x); me.hp+=hv; b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); log(b,`${me.n} fed on ${d.n}!`); if(d.hp<=0) log(b,`${d.n} fainted.`); }
   } else if(sk.k==='drain'){
-    const d=b.sides[foe].mons[tgt]; const x=Math.min(d.mp, Math.round(lv(sk.steal,L))); d.mp-=x; me.mp=Math.min(me.maxmp,me.mp+x); log(b,`${me.n} stole ${x} mana!`);
+    const d=b.sides[foe].mons[tgt]; const x=Math.min(d.mp, Math.round(lv(sk.steal,L))); d.mp-=x; const g=Math.min(me.maxmp-me.mp,x); me.mp+=g; if(x>0){ b.ev.push({k:'mana',s:foe,i:tgt,v:-x,rv:-x}); b.ev.push({k:'mana',s:a.s,i:a.i,v:x,rv:g,ph:2,pre:1000,hyd:1}); } log(b,`${me.n} stole ${x} mana!`);
   }
   if(me.hp>0 && !b.over){
     if(me.pas.roots!=null){ const h=Math.min(me.maxhp-me.hp, Math.round(me.maxhp*me.pas.roots)); me.hp+=h; b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
@@ -4917,7 +4917,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (215).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (216).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6303,7 +6303,7 @@ function evSchedule(b){ const evs=b.ev||[]; const a=evs.find(e=>e.k==='act'), sk
     else if((e.k==='buff'||e.k==='miss')&&a&&e.s!==a.s&&!(e.k==='miss'||e.missed)){ e._d=hitEnd>=0?hitEnd+450:T+900; deb=Math.max(deb,e._d); }
     else e._d=T+80; });
   let cur=Math.max(hitEnd>=0?hitEnd+700:T+500, deb>=0?deb+500:0);
-  [1,2,3].forEach(ph=>evs.forEach(e=>{ if(e.ph!==ph) return; if(ph===1){ e._fx=cur; e._d=cur+(e.k==='dot'?380:0); cur+=850; } else { e._d=cur; cur+=650; } }));
+  [1,2,3].forEach(ph=>evs.forEach(e=>{ if(e.ph!==ph) return; if(ph===1){ e._fx=cur; e._d=cur+(e.k==='dot'?380:0); cur+=850; } else { e._d=cur+(e.pre||0); cur+=650+(e.pre||0); } }));
   const last=Math.max(0,...evs.map(e=>e._d||0)); b._animTotal=Math.max(cur, last+500); return b._animTotal; }
 syncHud=(function(prev){ return function(b){ prev(b); if(!B||!B.b) return;
   document.querySelectorAll('#battle .bhp').forEach(el=>{ const s=+el.dataset.hs, i=+el.dataset.hi; const m=b.sides[s]&&b.sides[s].mons[i]; if(!m) return;
@@ -6567,7 +6567,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v215 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v216 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -7453,13 +7453,14 @@ function fxShards(x,y,size){ const R=size*1.9, n=14; let p='';
     p+=`<line x1="${bx}" y1="${by}" x2="${tx*.92}" y2="${ty*.92}" stroke="#fff" stroke-width="1" opacity=".7"/>`; }
   const S2=R*2+20, d=fxAt(x,y,'shards',`<svg width="${S2}" height="${S2}" viewBox="${-S2/2} ${-S2/2} ${S2} ${S2}"><defs><linearGradient id="shg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c8f6ff" stop-opacity=".95"/><stop offset=".6" stop-color="#5ac8f0" stop-opacity=".8"/><stop offset="1" stop-color="#2a8ad8" stop-opacity=".55"/></linearGradient></defs>${p}</svg>`);
   d.style.cssText+=`;width:${S2}px;height:${S2}px;margin:${-S2/2}px 0 0 ${-S2/2}px;pointer-events:none;z-index:60`;
-  d.animate([{transform:'scale(.15) rotate(-8deg)',opacity:0},{transform:'scale(1) rotate(0deg)',opacity:1,offset:.35},{transform:'scale(1.06)',opacity:1,offset:.75},{transform:'scale(1.12)',opacity:0}],{duration:900,easing:'ease-out'}).onfinish=()=>d.remove();
+  d.animate([{transform:'scale(.15) rotate(0deg)',opacity:0},{transform:'scale(1) rotate(70deg)',opacity:1,offset:.25},{transform:'scale(1.04) rotate(230deg)',opacity:1,offset:.8},{transform:'scale(1.1) rotate(290deg)',opacity:0}],{duration:1150,easing:'linear'}).onfinish=()=>d.remove();
   fxFlash(x,y,'water',size*1.4); }
 animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(root,b,animating); if(!animating) return r;
   try{ const evs=b.ev||[]; const a=evs.find(e=>e.k==='act'); if(!a||a.sk!=='manashards') return r;
     const fs=1-a.s, side=b.sides[fs]; const hit=evs.find(e=>e.s===fs&&e.i!=null); const ti=hit?hit.i:(b.single?side.active:(a.t!=null?a.t:0));
     const t=fEl(fs,ti); const ac=fEl(a.s,a.i); if(!t) return r; const rr=localRect(t.querySelector('.fart')); const ar=ac?localRect(ac.querySelector('.fart')):rr;
-    setTimeout(()=>fxShards(rr.left+rr.width/2,rr.top+rr.height/2,Math.max(50,ar.width*.55)),120); }catch(_){}
+    setTimeout(()=>fxShards(rr.left+rr.width/2,rr.top+rr.height/2,Math.max(50,ar.width*.55)),120);
+    const g=evs.find(e=>e.hyd); if(g&&ac){ setTimeout(()=>fxAura(ar.left+ar.width/2,ar.top+ar.height/2,ar.height,'water',Math.max(50,ar.width*.55)),Math.max(0,(g._d||1400)-520)); } }catch(_){}
   return r; }; })(animateBattle);
 
 </script>
