@@ -19,7 +19,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (237).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (238).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -244,6 +244,18 @@ function openShop(ctx){
   if(S.tut===5) setTimeout(()=>pointAt('#buy'),400);
 }
 openPanel=(function(prev){ return function(name){ if(name==='shop') return openShop(); return prev(name); }; })(openPanel);
+var SHOPSEL2=null, SHOPACT=null;
+const MUSH=c=>`${c} <span class="s2mu">${mushroomSVG('#b04fd6')}</span>`;
+function shopList(tab){
+  if(tab==='eggs') return [
+    {k:'mystery', art:'<div class="egg"></div>', price:MUSH(10), name:'Mystery Egg', desc:'Hatches a random monster.', go:()=>hatch()},
+    {k:'monster', art:'<div class="egg plain"></div>', price:`<b class="g">$</b> ${eggCost()}`, name:'Monster Egg', desc:'Hatches a random monster, a few levels lower than your best.', go:()=>hatchCash()}]
+    .concat(SP.filter(s=>s.rare).map(s=>({k:s.id, art:monSVG(s.id,1), price:MUSH(typeof RARE_COST!=='undefined'?RARE_COST:50), name:s.n, right:`Owned: x${S.mons.filter(m=>m.sp===s.id).length}`,
+      mid:'Rare · shop only', desc:`Abilities: ${s.sk.map(id=>SK[id]&&SK[id].n).filter(Boolean).join(', ')}.`, go:()=>buyRare(s.id)})));
+  if(tab==='energy') return [{k:'refill', art:'<div class="egg bolt">⚡</div>', price:MUSH(10), name:'Energy Refill', right:`Energy: ${S.energy} / ${S.maxEnergy}`, desc:'Fills your energy to max.',
+    go:()=>{ tickEnergy(); if(S.energy>=S.maxEnergy) return toast('Energy is already full'); if(S.mush<10) return toast('You need 10 🍄'); S.mush-=10; S.energy=S.maxEnergy; S.energyAt=Date.now(); persist(); toast('Energy refilled!'); }}];
+  return [[60,'$0.99'],[330,'$4.99'],[700,'$9.99'],[1500,'$19.99']].map(([n,p])=>({k:'m'+n, art:`<div class="s2m">${mushroomSVG('#b04fd6')}</div>`, price:p, name:`${n} Mushrooms`, right:`You have: ${S.mush}`, desc:'Mushroom packs are coming soon.', soon:1}));
+}
 function drawShop(){
   if(!SHOPSH) return; const sh=SHOPSH; tickEnergy(); S.inv=S.inv||{};
   let body='';
@@ -255,14 +267,13 @@ function drawShop(){
         <div class="s2r"><span class="s2c"><b class="g">$</b> ${it.cost}</span><span class="s2lv">Requires Level: <b>${it.lv}</b></span>
           ${canEq?`<button class="s2btn eq" id="s2eq">EQUIP</button>`:''}<button class="s2btn" id="buy" data-buy="${sel}">BUY</button></div>
         <p>${itemDesc(sel)}</p></div>`;
-  } else if(SHOPTAB==='eggs'){
-    body=`<div class="s2cards"><button class="s2card" id="hatch"><div class="egg"></div><b>Mystery Egg</b><span>Hatches a random monster</span><em>10 🍄</em></button>
-      <button class="s2card" id="hatchc"><div class="egg plain"></div><b>Monster Egg</b><span>A random monster, a few levels lower</span><em class="g">$${eggCost()}</em></button>
-      ${SP.filter(s=>s.rare).map(s=>`<button class="s2card rare" data-rare="${s.id}"><div class="s2mon">${monSVG(s.id,1)}</div><b>${s.n}</b><em>${typeof RARE_COST!=='undefined'?RARE_COST:50} 🍄</em></button>`).join('')}</div>`;
-  } else if(SHOPTAB==='energy'){
-    body=`<div class="s2cards"><button class="s2card" id="refill"><div class="egg bolt">⚡</div><b>Energy Refill</b><span>Fill your energy to max</span><em>10 🍄</em></button></div>`;
-  } else {
-    body=`<div class="s2cards">${[[60,'$0.99'],[330,'$4.99'],[700,'$9.99'],[1500,'$19.99']].map(([n,p])=>`<div class="s2card soon"><div class="s2m">${mushroomSVG('#b04fd6')}</div><b>${n} Mushrooms</b><em>${p}</em><span class="s2soon">Coming soon</span></div>`).join('')}</div>`;
+  } else { // eggs, energy and mushrooms use the same tile row + detail panel as items
+    const L=shopList(SHOPTAB); SHOPSEL2=SHOPSEL2||{}; const sel=L.find(x=>x.k===SHOPSEL2[SHOPTAB])||L[0];
+    body=`<div class="s2row">${L.map(x=>`<button class="s2item ${x===sel?'sel':''}" data-sk="${x.k}"><div class="s2art">${x.art}</div><span>${x.price}</span></button>`).join('')}</div>
+      <div class="s2det"><div class="s2h"><b>${sel.name}</b><span>${sel.right||''}</span></div>
+        <div class="s2r"><span class="s2c">${sel.price}</span><span class="s2lv">${sel.mid||''}</span><button class="s2btn" id="s2go" ${sel.soon?'disabled':''}>${sel.soon?'SOON':sel.btn||'BUY'}</button></div>
+        <p>${sel.desc}</p></div>`;
+    SHOPACT=sel.go;
   }
   sh.body.querySelector('.shopscr').innerHTML=`<div class="thud"><button class="backb" id="s2b">Back</button>
       <div class="thcol"><div class="hbar energy"><span class="ico">⚡</span><div class="ebar"><i style="width:${S.energy/S.maxEnergy*100}%"></i><b>${S.energy<S.maxEnergy?`+1 in ${nextEnergyIn()} · `:''}${S.energy} / ${S.maxEnergy}</b></div></div>
@@ -277,10 +288,8 @@ function drawShop(){
   const eq=q('#s2eq'); if(eq) eq.onclick=()=>{ const {m,slot}=SHOPCTX, id=SHOPSEL||Object.keys(ITEMS)[0];
     if(ITEMS[id].lv>m.lvl) return alertBox(`${SPI[m.sp].n} needs to be level ${ITEMS[id].lv} to use this.`);
     const cur=m.eq[slot]; if(cur) S.inv[cur]=(S.inv[cur]|0)+1; S.inv[id]--; m.eq[slot]=id; persist(); sh.close(); openMon(m.uid); toast(`Equipped ${ITEMS[id].n}!`); };
-  const h=q('#hatch'); if(h) h.onclick=()=>{ hatch(); drawShop(); };
-  const hc=q('#hatchc'); if(hc) hc.onclick=()=>{ hatchCash(); drawShop(); };
-  document.querySelectorAll('[data-rare]').forEach(b=>b.onclick=()=>buyRare(b.dataset.rare));
-  const rf=q('#refill'); if(rf) rf.onclick=()=>{ tickEnergy(); if(S.energy>=S.maxEnergy) return toast('Energy is already full'); if(S.mush<10) return toast('You need 10 🍄'); S.mush-=10; S.energy=S.maxEnergy; S.energyAt=Date.now(); persist(); drawShop(); toast('Energy refilled!'); };
+  sh.body.querySelectorAll('[data-sk]').forEach(b=>b.onclick=()=>{ SHOPSEL2=SHOPSEL2||{}; SHOPSEL2[SHOPTAB]=b.dataset.sk; const r=q('.s2row'), x=r.scrollLeft; drawShop(); q('.s2row').scrollLeft=x; });
+  const go=q('#s2go'); if(go&&SHOPACT) go.onclick=()=>{ const r=q('.s2row'), x=r?r.scrollLeft:0; SHOPACT(); drawShop(); const r2=q('.s2row'); if(r2) r2.scrollLeft=x; };
   const cur=q('.s2item.sel'), row=q('.s2row'); if(cur&&row&&!row._init){ row._init=1; row.scrollLeft=cur.offsetLeft-(row.clientWidth-cur.offsetWidth)/2; }
 }
 
