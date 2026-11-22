@@ -346,6 +346,10 @@ function act(b, action){
       if(sk.dbl && rnd(b)<sk.dbl) tm*=2;
       b._sk=skId;
       b._noCrit=!!sk.noCrit;
+      if(sk.trueDmg){ // fixed damage: ignores shields, resistances, buffs, items and crits (a dodge still dodges)
+        if(d0.st.evade>0 && rnd(b)<d0.st.evadeV){ b.ev.push({k:'miss',s:foe,i:ti}); }
+        else { const v=Math.min(d0.hp,Math.round(skDmg(skId,L,me))); d0.hp-=v; tot+=v; b.ev.push({k:'hit',s:foe,i:ti,v,el:sk.el,crit:false,eff:'',blocked:0}); }
+      } else
       for(let h=0;h<(sk.hits||1);h++) tot+=dealHit(b,a,foe,ti,sk.pctCur?Math.max(1,Math.round(d0.hp*lv(sk.pctCur,L))):skDmg(skId,L,me),sk.el,tm,sk.pierce);
       b._noCrit=false;
       if(sk.stormTick && d0.hp>0){ d0.st.storm=sk.stormTurns; d0.st.stormD=lv(sk.stormTick,L); b.ev.push({k:'buff',s:foe,i:ti,b:'storm'}); }

@@ -2085,6 +2085,10 @@ function act(b, action){
       if(sk.dbl && rnd(b)<sk.dbl) tm*=2;
       b._sk=skId;
       b._noCrit=!!sk.noCrit;
+      if(sk.trueDmg){ // fixed damage: ignores shields, resistances, buffs, items and crits (a dodge still dodges)
+        if(d0.st.evade>0 && rnd(b)<d0.st.evadeV){ b.ev.push({k:'miss',s:foe,i:ti}); }
+        else { const v=Math.min(d0.hp,Math.round(skDmg(skId,L,me))); d0.hp-=v; tot+=v; b.ev.push({k:'hit',s:foe,i:ti,v,el:sk.el,crit:false,eff:'',blocked:0}); }
+      } else
       for(let h=0;h<(sk.hits||1);h++) tot+=dealHit(b,a,foe,ti,sk.pctCur?Math.max(1,Math.round(d0.hp*lv(sk.pctCur,L))):skDmg(skId,L,me),sk.el,tm,sk.pierce);
       b._noCrit=false;
       if(sk.stormTick && d0.hp>0){ d0.st.storm=sk.stormTurns; d0.st.stormD=lv(sk.stormTick,L); b.ev.push({k:'buff',s:foe,i:ti,b:'storm'}); }
@@ -5008,7 +5012,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (253).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (254).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6666,7 +6670,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v253 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v254 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -8154,6 +8158,9 @@ Object.assign(SK.souleater,{m:[.8,.02],mpAtk:[.4,.01],mp:[8,4]}); DEFAULT_SK.sou
   skillDesc=(function(prev){ return function(id,L){ if(id==='deathroll') return `Grab your prey and take a bite out of them causing physical damage and healing for ${Math.round(lv(SK.deathroll.hotFlat,L||1))} health for ${SK.deathroll.turns} turns.`; return prev(id,L); }; })(skillDesc);
   ICON.mkdeathroll='<path d="M5 13.5 C5 7.5 10 4.5 14.5 6 C19 7.5 20 13 16 15.5 C13 17.4 9.5 15.6 10 12.6 C10.4 10.4 13.2 10 14.2 11.6" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M14.5 6 L19.5 5 L17 8.6Z" fill="#fff"/><circle cx="16.6" cy="7.4" r=".9" fill="#f05a22"/>';
   MK_ICON.deathroll='mkdeathroll'; })();
+// Static Discharge: fixed damage that penetrates all shields and can't be raised or lowered
+SK.staticd.trueDmg=1; DEFAULT_SK.staticd=JSON.parse(JSON.stringify(SK.staticd));
+skillDesc=(function(prev){ return function(id,L){ const d=prev(id,L); return id==='staticd'&&!/Penetrates/.test(d)?d.replace(/\.$/,'')+'. Penetrates all shields.':d; }; })(skillDesc);
 
 </script>
 
