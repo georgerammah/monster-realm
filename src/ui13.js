@@ -350,6 +350,7 @@ function koCheck(){ if(!B||!B.b) return; B.koT=B.koT||{}; const now=Date.now();
   document.querySelectorAll('#battle .fighter').forEach(el=>{ const k=el.dataset.s+'-'+el.dataset.i, f=el.querySelector('.fart'); if(!f) return;
     const m=B.b.sides[+el.dataset.s]&&B.b.sides[+el.dataset.s].mons[+el.dataset.i]; const out=el.classList.contains('ko')||(m&&m.hp<=0);
     if(!out){ if(B.koT[k]&&m&&m.hp>0){ delete B.koT[k]; if(B.koShown) delete B.koShown[k]; } return; }
+    if(!B.koT[k]&&B.animEnd&&now<B.animEnd){ clearTimeout(B._koW); B._koW=setTimeout(koCheck,B.animEnd-now+30); return; } // wait for every hit/DoT of the turn to play
     if(!B.koT[k]){ B.koT[k]=now+KO_DELAY; setTimeout(koCheck,KO_DELAY+20); return; }
     if(now<B.koT[k]) return;
     if(!(B.koShown=B.koShown||{})[k]){ B.koShown[k]=1; const [x,y]=fCenter(el); const r=localRect(f);
@@ -974,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v254 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v255 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -2465,3 +2466,4 @@ Object.assign(SK.souleater,{m:[.8,.02],mpAtk:[.4,.01],mp:[8,4]}); DEFAULT_SK.sou
 // Static Discharge: fixed damage that penetrates all shields and can't be raised or lowered
 SK.staticd.trueDmg=1; DEFAULT_SK.staticd=JSON.parse(JSON.stringify(SK.staticd));
 skillDesc=(function(prev){ return function(id,L){ const d=prev(id,L); return id==='staticd'&&!/Penetrates/.test(d)?d.replace(/\.$/,'')+'. Penetrates all shields.':d; }; })(skillDesc);
+
