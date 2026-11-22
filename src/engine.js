@@ -337,7 +337,7 @@ function act(b, action){
   if(sk.k==='hit'){
     let mod=1; if(me.st.focus>0) mod*=1+me.st.focusV; if(me.st.charge>0){ mod*=1+me.st.chargeV; me.st.charge=0; }
     const targets = sk.t==='allE' ? (b.single?[b.sides[foe].active]:b.sides[foe].mons.map((m,i)=>i)).filter(i=>b.sides[foe].mons[i].hp>0) : [tgt];
-    let tot=0;
+    let tot=0; const ev0=b.ev.length;
     targets.forEach(ti=>{
       const d0=b.sides[foe].mons[ti]; let tm=mod;
       if(sk.fullBonus && d0.hp>=d0.maxhp) tm*=1+sk.fullBonus;
@@ -364,7 +364,8 @@ function act(b, action){
         // show the mana burn before the damage: slot it ahead of this target's hit
         if(x>0){ let hi=-1; for(let q=b.ev.length-1;q>=0;q--){ const e=b.ev[q]; if(e.k==='act') break; if(e.k==='hit'&&e.s===foe&&e.i===ti){ hi=q; break; } } const me2={k:'mana',s:foe,i:ti,v:-x,rv:-x,msh:1,burn:1}; if(hi>=0) b.ev.splice(hi,0,me2); else b.ev.push(me2); } }
     });
-    if(sk.mpAtk && tot>0 && me.hp>0){ const d1=b.sides[foe].mons[targets[0]]; const x=Math.min(d1?d1.mp:0, Math.round(me.atk*lv(sk.mpAtk,L))); if(x>0){ d1.mp-=x; const g=Math.min(me.maxmp-me.mp,x); me.mp+=g; if(x>0){ b.ev.push({k:'mana',s:foe,i:tgt,v:-x,rv:-x}); b.ev.push({k:'mana',s:a.s,i:a.i,v:x,rv:g,ph:2}); } } }
+    const landed=!b.ev.slice(ev0).some(e=>e.k==='miss'&&e.s===foe); // a hit for 0 still lands; a dodge doesn't
+    if(sk.mpAtk && landed && me.hp>0){ const d1=b.sides[foe].mons[targets[0]]; const x=Math.min(d1?d1.mp:0, Math.round(me.atk*lv(sk.mpAtk,L))); if(x>0){ d1.mp-=x; const g=Math.min(me.maxmp-me.mp,x); me.mp+=g; if(x>0){ b.ev.push({k:'mana',s:foe,i:tgt,v:-x,rv:-x}); b.ev.push({k:'mana',s:a.s,i:a.i,v:x,rv:g,ph:2}); } } }
     if(sk.hotFlat && me.hp>0){ me.st.roots=sk.turns||2; me.st.rootsV=lv(sk.hotFlat,L)/me.maxhp; b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
     if(sk.leech && tot>0 && me.hp>0){ const hv=Math.round(tot*(sk.leechL?lv(sk.leechL,L):sk.leech)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.mpgain && tot>0){ me.mp=Math.min(me.maxmp, me.mp+Math.round(tot*sk.mpgain)); }
