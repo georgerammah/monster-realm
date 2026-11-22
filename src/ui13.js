@@ -974,7 +974,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v252 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v253 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -2454,3 +2454,11 @@ animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(r
     setTimeout(()=>fxRegrowLeaves(rr.left+rr.width/2,rr.top+rr.height/2,Math.max(60,rr.width*.8)),100); }catch(_){} return r; }; })(animateBattle);
 // Regrowth effect text matches the ability: heals a flat amount each turn
 stDesc=(function(prev){ return function(m,k){ if(k==='roots'){ const v=Math.round((m.st.rootsV||0)*m.maxhp), t=m.st.roots|0; return `Heals ${v} life every turn (${t} turn${t>1?'s':''})`; } return prev(m,k); }; })(stDesc);
+// Soul Eater: level 3 = 84% damage, steals 42% of attack as mana, 16 mana (earlier I'd treated those as level-10 numbers)
+Object.assign(SK.souleater,{m:[.8,.02],mpAtk:[.4,.01],mp:[8,4]}); DEFAULT_SK.souleater=JSON.parse(JSON.stringify(SK.souleater));
+// Death Roll (MK): physical bite that heals 104 for 2 turns, 92 mana at level 10 (same effect as Devour)
+(function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
+  SK.deathroll={n:'Death Roll',el:'neutral',t:'enemy',k:'hit',m:[1,0],mp:P(10,92),hotFlat:P(14,104),turns:2}; DEFAULT_SK.deathroll=JSON.parse(JSON.stringify(SK.deathroll));
+  skillDesc=(function(prev){ return function(id,L){ if(id==='deathroll') return `Grab your prey and take a bite out of them causing physical damage and healing for ${Math.round(lv(SK.deathroll.hotFlat,L||1))} health for ${SK.deathroll.turns} turns.`; return prev(id,L); }; })(skillDesc);
+  ICON.mkdeathroll='<path d="M5 13.5 C5 7.5 10 4.5 14.5 6 C19 7.5 20 13 16 15.5 C13 17.4 9.5 15.6 10 12.6 C10.4 10.4 13.2 10 14.2 11.6" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M14.5 6 L19.5 5 L17 8.6Z" fill="#fff"/><circle cx="16.6" cy="7.4" r=".9" fill="#f05a22"/>';
+  MK_ICON.deathroll='mkdeathroll'; })();
