@@ -228,7 +228,7 @@ function beginTurn(b){
         if(st[k+'H']&&st[k+'By']){ const c=b.sides[st[k+'By'][0]]&&b.sides[st[k+'By'][0]].mons[st[k+'By'][1]]; if(c&&c.hp>0){ const h=Math.min(c.maxhp-c.hp,st[k+'H']); c.hp+=h; b.ev.push({k:'heal',s:st[k+'By'][0],i:st[k+'By'][1],v:st[k+'H'],rv:h,ph:1}); } } }
     }
     // Soul Drain's heal is the caster's own buff: it ticks on the caster's turns (frozen while benched) and Purge keeps it
-    if(st.nsh>0 && m.hp>0){ const h=Math.max(1,Math.round(m.maxhp*0.04)); m.hp=Math.min(m.maxhp,m.hp+h); b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
+    if(st.nsh>0 && m.hp>0){ const h=Math.min(m.maxhp-m.hp,Math.max(1,Math.round(m.maxhp*0.04))); m.hp+=h; b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
     if(m.hp<=0){ log(b,`${m.n} fainted.`); if(checkOver(b)) return; if(b.single){ needPicks(b); return; } b.turnIdx++; continue; }
     if(st.stun>0){ st.stun--; log(b,`${m.n} is stunned and can't move!`); b.ev.push({k:'stun',s:a.s,i:a.i,ph:1}); b.turnIdx++; continue; }
     b.swapped=false;
@@ -372,7 +372,7 @@ function act(b, action){
     const landed=!b.ev.slice(ev0).some(e=>e.k==='miss'&&e.s===foe); // a hit for 0 still lands; a dodge doesn't
     if(sk.mpAtk && landed && me.hp>0){ const d1=b.sides[foe].mons[targets[0]]; const x=Math.min(d1?d1.mp:0, Math.round(me.atk*lv(sk.mpAtk,L))); if(x>0){ d1.mp-=x; const g=Math.min(me.maxmp-me.mp,x); me.mp+=g; if(x>0){ b.ev.push({k:'mana',s:foe,i:tgt,v:-x,rv:-x}); b.ev.push({k:'mana',s:a.s,i:a.i,v:x,rv:g,ph:2}); } } }
     if(sk.hotFlat && me.hp>0){ me.st.roots=sk.turns||2; me.st.rootsV=lv(sk.hotFlat,L)/me.maxhp; b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
-    if(sk.leech && tot>0 && me.hp>0){ const hv=Math.round(tot*(sk.leechL?lv(sk.leechL,L):sk.leech)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
+    if(sk.leech && tot>0 && me.hp>0){ const hv=Math.min(me.maxhp-me.hp,Math.round(tot*(sk.leechL?lv(sk.leechL,L):sk.leech))); me.hp+=hv; b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.mpgain && tot>0){ me.mp=Math.min(me.maxmp, me.mp+Math.round(tot*sk.mpgain)); }
     if(sk.mpLeech && tot>0 && me.hp>0){ const d1=b.sides[foe].mons[tgt]; const x=Math.min(d1.mp, Math.round(sk.mpSteal?lv(sk.mpSteal,L):tot*sk.mpLeech)); d1.mp-=x; const g=Math.min(me.maxmp-me.mp,x); me.mp+=g; if(x>0){ b.ev.push({k:'mana',s:foe,i:tgt,v:-x,rv:-x}); b.ev.push({k:'mana',s:a.s,i:a.i,v:x,rv:g,ph:2}); } }
     if(sk.recoil && tot>0 && me.hp>0){ const r=Math.min(me.hp,Math.max(1,Math.round(tot*sk.recoil))); me.hp=Math.max(0,me.hp-r); b.ev.push({k:'hit',s:a.s,i:a.i,v:r,el:'fire',recoil:1}); log(b,`${me.n} is hurt by the recoil!`); if(me.hp<=0) log(b,`${me.n} fainted.`); }
@@ -394,9 +394,9 @@ function act(b, action){
     const d=b.sides[foe].mons[tgt]; d.st[sk.buff]=sk.turns; d.st[sk.buff+'F']=1; d.st[sk.buff+'V']=Math.min(.75,lv(sk.v,L)); if(sk.v2) d.st[sk.buff+'R']=lv(sk.v2,L); b.ev.push({k:'buff',s:foe,i:tgt,b:sk.buff}); log(b,sk.buff==='cripple'?`${d.n} is crippled!`:`${d.n} is weakened!`);
   } else if(sk.k==='heal'){
     if(sk.hot){ me.st.roots=sk.turns; me.st.rootsV=sk.hotIsFlat?lv(sk.hot,L)/me.maxhp:lv(sk.hot,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
-    if(sk.heal){ const hv=Math.round(me.maxhp*lv(sk.heal,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
+    if(sk.heal){ const hv=Math.min(me.maxhp-me.hp,Math.round(me.maxhp*lv(sk.heal,L))); me.hp+=hv; b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.mpHeal){ const v=Math.round(lv(sk.mpHeal,L)), g=Math.min(me.maxmp-me.mp,v); me.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v,rv:g}); }
-    if(sk.healFlat){ const hv=Math.round(lv(sk.healFlat,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
+    if(sk.healFlat){ const hv=Math.min(me.maxhp-me.hp,Math.round(lv(sk.healFlat,L))); me.hp+=hv; b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','scorch','zap','acid','eshift','crush','taunt','soul','wcry'].forEach(k=>me.st[k]=0); me.st.soakS=[]; me.st.scorchS=[]; }
   } else if(sk.k==='drain' && sk.stealHp){
     const d=b.sides[foe].mons[tgt];
@@ -410,7 +410,7 @@ function act(b, action){
     // heal-over-time (Soul Drain, Regrowth, Devour) lands at the end of the monster's own turn
     const newS=(me.st.soulh|0)>hot0.s, newR=(me.st.roots|0)>hot0.r;
     if(me.st.soulh>0 && !newS && me.hp>0){ const h=Math.min(me.maxhp-me.hp,me.st.soulhV|0); me.hp+=h; me.st.soulh--; b.ev.push({k:'heal',s:a.s,i:a.i,v:me.st.soulhV|0,rv:h,end:1,ph:2}); }
-    if(me.st.roots>0 && !newR && me.hp>0){ const h=Math.max(1,Math.round(me.maxhp*me.st.rootsV)); me.hp=Math.min(me.maxhp,me.hp+h); me.st.roots--; b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
+    if(me.st.roots>0 && !newR && me.hp>0){ const h=Math.min(me.maxhp-me.hp,Math.max(1,Math.round(me.maxhp*me.st.rootsV))); me.hp+=h; me.st.roots--; b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
     if(me.pas.camel){ const g=Math.min(me.maxmp-me.mp, Math.round(me.pas.camel)); if(g>0){ me.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,end:1,ph:2}); } }
     if(me.fx.rhp&&me.hp>0){ const h=Math.min(me.maxhp-me.hp, me.fx.rhp); me.hp+=h; b.ev.push({k:'heal',s:a.s,i:a.i,v:me.fx.rhp,rv:h,end:1,ph:3}); }
     if(me.fx.rmp&&me.hp>0){ const g=Math.min(me.maxmp-me.mp, me.fx.rmp); me.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:me.fx.rmp,rv:g,end:1,ph:3}); }
