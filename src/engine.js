@@ -411,7 +411,7 @@ function act(b, action){
     const newS=(me.st.soulh|0)>hot0.s, newR=(me.st.roots|0)>hot0.r;
     if(me.st.soulh>0 && !newS && me.hp>0){ const h=Math.min(me.maxhp-me.hp,me.st.soulhV|0); me.hp+=h; me.st.soulh--; b.ev.push({k:'heal',s:a.s,i:a.i,v:me.st.soulhV|0,rv:h,end:1,ph:2}); }
     if(me.st.roots>0 && !newR && me.hp>0){ const h=Math.min(me.maxhp-me.hp,Math.max(1,Math.round(me.maxhp*me.st.rootsV))); me.hp+=h; me.st.roots--; b.ev.push({k:'heal',s:a.s,i:a.i,v:h,rv:h,end:1,ph:2}); }
-    if(me.pas.camel){ const g=Math.min(me.maxmp-me.mp, Math.round(me.pas.camel)); if(g>0){ me.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,end:1,ph:2}); } }
+    if(me.pas.camel){ const g=Math.min(me.maxmp-me.mp, Math.round(me.pas.camel)); me.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:g,rv:g,end:1,ph:2}); }
     if(me.fx.rhp&&me.hp>0){ const h=Math.min(me.maxhp-me.hp, me.fx.rhp); me.hp+=h; b.ev.push({k:'heal',s:a.s,i:a.i,v:me.fx.rhp,rv:h,end:1,ph:3}); }
     if(me.fx.rmp&&me.hp>0){ const g=Math.min(me.maxmp-me.mp, me.fx.rmp); me.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v:me.fx.rmp,rv:g,end:1,ph:3}); }
   }
