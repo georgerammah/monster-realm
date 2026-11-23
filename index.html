@@ -1929,7 +1929,7 @@ function makeMon(spId, lvl, extra){
   return o;
 }
 function newBattle(teamA, teamB, opts){
-  const mk=m=>{ const x=makeMon(m.sp,m.lvl,{uid:m.uid,bonus:m.bonus,skl:m.skl,items:Array.isArray(m.items)?m.items.slice(0,4):undefined}); if(m.hpMul){ x.maxhp=x.hp=Math.round(x.hp*m.hpMul); x.atk=Math.max(1,Math.round(x.atk*m.hpMul)); } return x; };
+  const mk=m=>{ const x=makeMon(m.sp,m.lvl,{uid:m.uid,bonus:m.bonus,skl:m.skl,items:Array.isArray(m.items)?m.items.slice(0,5):undefined}); if(m.hpMul){ x.maxhp=x.hp=Math.round(x.hp*m.hpMul); x.atk=Math.max(1,Math.round(x.atk*m.hpMul)); } return x; };
   const b = {sides:[{name:teamA.name, mons:teamA.mons.map(mk)},{name:teamB.name, mons:teamB.mons.map(mk)}],
     order:[], turnIdx:0, round:0, rng:(opts&&opts.seed)|| (Math.random()*2**31|0), log:[], ev:[], over:false, winner:null, seq:0, mode:(opts&&opts.mode)||'campaign', single:!!(opts&&opts.single)};
   if(b.single){ b.sides.forEach(sd=>sd.active=null); const f=rnd(b)<.5?0:1; b.phase='pick'; b.pickQ=[f,1-f]; b.pickSide=f; b.first=f; return b; }
@@ -3919,7 +3919,7 @@ function mySnap(){ return teamMons().map(snapOf); }
 function teamPower(){ return teamMons().reduce((t,m)=>{ const s=monStats(m); return t+Math.round(s.hp*0.4+s.atk*3); },0); }
 function sanitizeTeam(t){ return (Array.isArray(t)?t:[]).slice(0,3).filter(m=>m&&SPI[m.sp]&&SPI[m.sp].fam!=='dummy').map(m=>{ const lvl=Math.max(1,Math.min(MAXLVL,m.lvl|0)); const b=m.bonus||{};
   const cl=(v,mx)=>Math.max(0,Math.min(mx,v|0)); const skl={}; Object.keys(m.skl||{}).forEach(k=>{ if(SK[k]) skl[k]=Math.max(1,Math.min(MAXSKL,m.skl[k]|0)); });
-  const sk2={}; SPI[m.sp].sk.forEach(id=>sk2[id]=skl[id]||1); return {sp:m.sp, lvl, bonus:{atk:cl(b.atk,lvl*10+40), hp:cl(b.hp,lvl*40+160), mp:cl(b.mp,lvl*40+160), spd:Math.max(0,Math.min(5,+b.spd||0)), rmp:cl(b.rmp,80), rhp:cl(b.rhp,70), dflat:cl(b.dflat,140), tflat:cl(b.tflat,70), belem:cl(b.belem,100), bphys:cl(b.bphys,100), dnat:cl(b.dnat,125), dwat:cl(b.dwat,125), dfir:cl(b.dfir,125)}, skl:sk2, items:(Array.isArray(m.items)?m.items:[]).filter(id=>ITEMS[id]).slice(0,4)}; }); }
+  const sk2={}; SPI[m.sp].sk.forEach(id=>sk2[id]=skl[id]||1); return {sp:m.sp, lvl, bonus:{atk:cl(b.atk,lvl*10+40), hp:cl(b.hp,lvl*40+160), mp:cl(b.mp,lvl*40+160), spd:Math.max(0,Math.min(5,+b.spd||0)), rmp:cl(b.rmp,80), rhp:cl(b.rhp,70), dflat:cl(b.dflat,140), tflat:cl(b.tflat,70), belem:cl(b.belem,100), bphys:cl(b.bphys,100), dnat:cl(b.dnat,125), dwat:cl(b.dwat,125), dfir:cl(b.dfir,125)}, skl:sk2, items:(Array.isArray(m.items)?m.items:[]).filter(id=>ITEMS[id]).slice(0,5)}; }); }
 NET.challenge = function(cid){
   if(!S.team.length) return toast('Add a monster to your team');
   const matchId=uidGen()+uidGen();
@@ -5012,7 +5012,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (255).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (256).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6671,7 +6671,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v255 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v256 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});

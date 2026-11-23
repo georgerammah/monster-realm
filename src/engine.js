@@ -190,7 +190,7 @@ function makeMon(spId, lvl, extra){
   return o;
 }
 function newBattle(teamA, teamB, opts){
-  const mk=m=>{ const x=makeMon(m.sp,m.lvl,{uid:m.uid,bonus:m.bonus,skl:m.skl,items:Array.isArray(m.items)?m.items.slice(0,4):undefined}); if(m.hpMul){ x.maxhp=x.hp=Math.round(x.hp*m.hpMul); x.atk=Math.max(1,Math.round(x.atk*m.hpMul)); } return x; };
+  const mk=m=>{ const x=makeMon(m.sp,m.lvl,{uid:m.uid,bonus:m.bonus,skl:m.skl,items:Array.isArray(m.items)?m.items.slice(0,5):undefined}); if(m.hpMul){ x.maxhp=x.hp=Math.round(x.hp*m.hpMul); x.atk=Math.max(1,Math.round(x.atk*m.hpMul)); } return x; };
   const b = {sides:[{name:teamA.name, mons:teamA.mons.map(mk)},{name:teamB.name, mons:teamB.mons.map(mk)}],
     order:[], turnIdx:0, round:0, rng:(opts&&opts.seed)|| (Math.random()*2**31|0), log:[], ev:[], over:false, winner:null, seq:0, mode:(opts&&opts.mode)||'campaign', single:!!(opts&&opts.single)};
   if(b.single){ b.sides.forEach(sd=>sd.active=null); const f=rnd(b)<.5?0:1; b.phase='pick'; b.pickQ=[f,1-f]; b.pickSide=f; b.first=f; return b; }

@@ -74,7 +74,7 @@ function mySnap(){ return teamMons().map(snapOf); }
 function teamPower(){ return teamMons().reduce((t,m)=>{ const s=monStats(m); return t+Math.round(s.hp*0.4+s.atk*3); },0); }
 function sanitizeTeam(t){ return (Array.isArray(t)?t:[]).slice(0,3).filter(m=>m&&SPI[m.sp]&&SPI[m.sp].fam!=='dummy').map(m=>{ const lvl=Math.max(1,Math.min(MAXLVL,m.lvl|0)); const b=m.bonus||{};
   const cl=(v,mx)=>Math.max(0,Math.min(mx,v|0)); const skl={}; Object.keys(m.skl||{}).forEach(k=>{ if(SK[k]) skl[k]=Math.max(1,Math.min(MAXSKL,m.skl[k]|0)); });
-  const sk2={}; SPI[m.sp].sk.forEach(id=>sk2[id]=skl[id]||1); return {sp:m.sp, lvl, bonus:{atk:cl(b.atk,lvl*10+40), hp:cl(b.hp,lvl*40+160), mp:cl(b.mp,lvl*40+160), spd:Math.max(0,Math.min(5,+b.spd||0)), rmp:cl(b.rmp,80), rhp:cl(b.rhp,70), dflat:cl(b.dflat,140), tflat:cl(b.tflat,70), belem:cl(b.belem,100), bphys:cl(b.bphys,100), dnat:cl(b.dnat,125), dwat:cl(b.dwat,125), dfir:cl(b.dfir,125)}, skl:sk2, items:(Array.isArray(m.items)?m.items:[]).filter(id=>ITEMS[id]).slice(0,4)}; }); }
+  const sk2={}; SPI[m.sp].sk.forEach(id=>sk2[id]=skl[id]||1); return {sp:m.sp, lvl, bonus:{atk:cl(b.atk,lvl*10+40), hp:cl(b.hp,lvl*40+160), mp:cl(b.mp,lvl*40+160), spd:Math.max(0,Math.min(5,+b.spd||0)), rmp:cl(b.rmp,80), rhp:cl(b.rhp,70), dflat:cl(b.dflat,140), tflat:cl(b.tflat,70), belem:cl(b.belem,100), bphys:cl(b.bphys,100), dnat:cl(b.dnat,125), dwat:cl(b.dwat,125), dfir:cl(b.dfir,125)}, skl:sk2, items:(Array.isArray(m.items)?m.items:[]).filter(id=>ITEMS[id]).slice(0,5)}; }); }
 NET.challenge = function(cid){
   if(!S.team.length) return toast('Add a monster to your team');
   const matchId=uidGen()+uidGen();
