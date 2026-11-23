@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v256 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v257 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -2467,3 +2467,37 @@ Object.assign(SK.souleater,{m:[.8,.02],mpAtk:[.4,.01],mp:[8,4]}); DEFAULT_SK.sou
 SK.staticd.trueDmg=1; DEFAULT_SK.staticd=JSON.parse(JSON.stringify(SK.staticd));
 skillDesc=(function(prev){ return function(id,L){ const d=prev(id,L); return id==='staticd'&&!/Penetrates/.test(d)?d.replace(/\.$/,'')+'. Penetrates all shields.':d; }; })(skillDesc);
 
+// ---------- Mana Heal (MK): restores 333 mana for 49 mana at level 10 ----------
+(function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
+  SK.manaheal={n:'Mana Heal',el:'water',t:'self',k:'heal',mp:P(10,49),mpHeal:P(40,333)}; DEFAULT_SK.manaheal=JSON.parse(JSON.stringify(SK.manaheal));
+  // Air Current is a shield: a column of wind that cuts every hit while it's up
+  SK.aircurrent={n:'Air Current',el:'bolt',t:'self',k:'shield',sh:'ash',mp:P(12,70),amt:P(8,60),turns:3}; DEFAULT_SK.aircurrent=JSON.parse(JSON.stringify(SK.aircurrent));
+  ST_ICON.ash=[skIconKey('aircurrent'),'#7ac8e8']; BUFF_N.ash='Air Current';
+  skillDesc=(function(prev){ return function(id,L){ L=L||1;
+    if(id==='manaheal') return `Restores ${Math.round(lv(SK.manaheal.mpHeal,L))} mana.`;
+    if(id==='aircurrent') return `Surrounds you in a column of wind that reduces each incoming hit by ${Math.round(lv(SK.aircurrent.amt,L))} for ${SK.aircurrent.turns} turns.`;
+    return prev(id,L); }; })(skillDesc);
+  stDesc=(function(prev){ return function(m,k){ if(k==='ash') return `Reduces each incoming hit by ${m.st.ashHp|0} (${m.st.ash} turn${m.st.ash>1?'s':''})`; return prev(m,k); }; })(stDesc);
+})();
+function fxColumn(x,y,w,h){ const d=fxAt(x,y,'aircol','<i></i>'); d.style.cssText+=`;width:${w}px;height:${h}px;margin:${-h*.62}px 0 0 ${-w/2}px;pointer-events:none;z-index:4`;
+  d.animate([{opacity:0,transform:'scaleY(.2)'},{opacity:.85,transform:'scaleY(1)',offset:.25},{opacity:.75,offset:.75},{opacity:0}],{duration:1300,easing:'ease-out',fill:'both'}).onfinish=()=>d.remove(); }
+animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(root,b,animating); if(!animating) return r;
+  try{ const a=(b.ev||[]).find(e=>e.k==='act'); if(!a||a.sk!=='aircurrent') return r; const ac=fEl(a.s,a.i); if(!ac) return r; const rr=localRect(ac.querySelector('.fart'));
+    fxColumn(rr.left+rr.width/2,rr.top+rr.height/2,rr.width*1.1,rr.height*1.7); }catch(_){} return r; }; })(animateBattle);
+// ---------- Sudden Death: 30 turns without a knockout -> red screen, then damage doubles every round ----------
+act=(function(prev){ return function(b,action){ if(!b||b.over) return prev(b,action); const a=actor(b); if(!a) return prev(b,action);
+  if(b.firstSide==null) b.firstSide=a.s;
+  if(b.sd&&a.s!==b.firstSide) b.sdK=(b.sdK||0)+1; // the player who moved second gets the first doubled hit
+  b.sdMul=b.sd?Math.pow(2,b.sdK||0):1;
+  const ko0=b.sides.reduce((t,sd)=>t+sd.mons.filter(m=>m.hp<=0).length,0);
+  const r=prev(b,action); if(!r) return r;
+  const ko1=b.sides.reduce((t,sd)=>t+sd.mons.filter(m=>m.hp<=0).length,0);
+  if(ko1>ko0){ if(b.sd) (b.ev=b.ev||[]).push({k:'sdoff'}); b.sdN=0; b.sd=false; b.sdK=0; b.sdMul=1; return r; }
+  b.sdN=(b.sdN||0)+1; if(!b.sd&&b.sdN>=30){ b.sd=true; b.sdK=0; (b.ev=b.ev||[]).push({k:'sudden'}); }
+  return r; }; })(act);
+function sdSync(){ const bt=document.getElementById('battle'); if(!bt) return; const on=!!(B&&B.b&&B.b.sd); if(on&&B._sdAt&&Date.now()<B._sdAt) return; if(!on&&B._sdOffAt&&Date.now()<B._sdOffAt) return; bt.classList.toggle('sdeath',on); }
+animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(root,b,animating);
+  try{ const evs=b.ev||[]; if(animating&&evs.some(e=>e.k==='sudden')){ const tot=(b._animTotal||evSchedule(b)||0); B._sdAt=Date.now()+tot; setTimeout(()=>{ B._sdAt=0; sdSync(); const t=fxAt(0,0,'sdtext','Sudden Death!');
+      t.animate([{opacity:0,transform:'scale(.6)'},{opacity:1,transform:'scale(1.06)',offset:.15},{opacity:1,transform:'scale(1)',offset:.7},{opacity:0,transform:'scale(1)'}],{duration:2200,fill:'both'}).onfinish=()=>t.remove(); },tot);
+    } else if(animating&&evs.some(e=>e.k==='sdoff')){ const tot=(b._animTotal||evSchedule(b)||0); B._sdOffAt=Date.now()+tot; setTimeout(()=>{ B._sdOffAt=0; sdSync(); },tot); } else sdSync(); }catch(_){} return r; }; })(animateBattle);
+renderBattle=(function(prev){ return function(){ prev(); sdSync(); }; })(renderBattle);

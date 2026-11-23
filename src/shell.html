@@ -1691,6 +1691,10 @@ body{overscroll-behavior:none}
 .pbtns .pbtn{width:min(calc(11*var(--vh)),46px)!important;height:min(calc(9*var(--vh)),38px)!important;font-size:min(calc(7*var(--vh)),28px)!important;touch-action:none}
 .pbtns .pbtn.minus:disabled{opacity:.3}.pbtns .pbtn.minus:not(:disabled){opacity:1}
 .pbtns .pbtn:active:not(:disabled){filter:brightness(.85)}
+#battle.sdeath::after{content:"";position:absolute;inset:0;background:rgba(220,20,10,.32);mix-blend-mode:multiply;pointer-events:none;z-index:60;animation:sdin .5s ease-out}
+@keyframes sdin{from{opacity:0}to{opacity:1}}
+.fx.sdtext,.sdtext{position:fixed;left:0!important;right:0;top:30%!important;width:100%;text-align:center;margin:0!important;font:min(calc(13*var(--vh)),64px) "Lilita One",system-ui;color:#fff;-webkit-text-stroke:2px rgba(150,20,10,.45);text-shadow:0 4px 18px rgba(0,0,0,.25);white-space:nowrap;pointer-events:none;z-index:70}
+.aircol{position:absolute;border-radius:40%/12%;background:linear-gradient(90deg,rgba(255,255,200,0),rgba(240,255,170,.75) 30%,rgba(255,255,220,.9) 50%,rgba(240,255,170,.75) 70%,rgba(255,255,200,0));filter:blur(3px);transform-origin:50% 100%}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>

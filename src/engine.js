@@ -222,9 +222,9 @@ function beginTurn(b){
     const a = actor(b); const m=a.m;
     if(m.hp<=0){ b.turnIdx++; continue; }
     const st=m.st;
-    ['bubble','lsh','fsh','fwall','nsh','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','zap','acid','eshift','crush','taunt','wcry','wdef'].forEach(k=>{ if(st[k]>0){ if(st[k+'F']){ st[k+'F']=0; return; } st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
+    ['bubble','lsh','fsh','fwall','nsh','ash','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','zap','acid','eshift','crush','taunt','wcry','wdef'].forEach(k=>{ if(st[k]>0){ if(st[k+'F']){ st[k+'F']=0; return; } st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
     for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm'],['frost','water','the blizzard'],['soul','nature','soul drain']]){
-      if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el,dk:k,ph:1}); log(b,`${m.n} is hurt by ${nm}.`);
+      if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']*(b.sdMul||1)))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el,dk:k,ph:1}); log(b,`${m.n} is hurt by ${nm}.`);
         if(st[k+'H']&&st[k+'By']){ const c=b.sides[st[k+'By'][0]]&&b.sides[st[k+'By'][0]].mons[st[k+'By'][1]]; if(c&&c.hp>0){ const h=Math.min(c.maxhp-c.hp,st[k+'H']); c.hp+=h; b.ev.push({k:'heal',s:st[k+'By'][0],i:st[k+'By'][1],v:st[k+'H'],rv:h,ph:1}); } } }
     }
     // Soul Drain's heal is the caster's own buff: it ticks on the caster's turns (frozen while benched) and Purge keeps it
@@ -285,6 +285,7 @@ function dealHit(b, as, ds, di, mult, el, dmgMods, pierce){
   dmg += (a.fx&&a.fx.dflat||0) + (d.fx&&d.fx.tflat||0);
   if(a.fx){ if(el==='nature') dmg+=a.fx.dnat|0; else if(el==='water') dmg+=a.fx.dwat|0; else if(el==='fire') dmg+=a.fx.dfir|0; }
   if(el==='neutral' && d.pas.hard) dmg*=1-d.pas.hard;
+  if(b.sdMul>1) dmg*=b.sdMul; // Sudden Death
   dmg = Math.max(1, Math.round(dmg));
   let blocked=0;
   if(d.pas.hardF>0){ const x=Math.min(dmg,Math.round(d.pas.hardF)); dmg-=x; blocked+=x; } // Hardened: flat cut to every incoming hit
@@ -348,7 +349,7 @@ function act(b, action){
       b._noCrit=!!sk.noCrit;
       if(sk.trueDmg){ // fixed damage: ignores shields, resistances, buffs, items and crits (a dodge still dodges)
         if(d0.st.evade>0 && rnd(b)<d0.st.evadeV){ b.ev.push({k:'miss',s:foe,i:ti}); }
-        else { const v=Math.min(d0.hp,Math.round(skDmg(skId,L,me))); d0.hp-=v; tot+=v; b.ev.push({k:'hit',s:foe,i:ti,v,el:sk.el,crit:false,eff:'',blocked:0}); }
+        else { const v=Math.min(d0.hp,Math.round(skDmg(skId,L,me)*(b.sdMul||1))); d0.hp-=v; tot+=v; b.ev.push({k:'hit',s:foe,i:ti,v,el:sk.el,crit:false,eff:'',blocked:0}); }
       } else
       for(let h=0;h<(sk.hits||1);h++) tot+=dealHit(b,a,foe,ti,sk.pctCur?Math.max(1,Math.round(d0.hp*lv(sk.pctCur,L))):skDmg(skId,L,me),sk.el,tm,sk.pierce);
       b._noCrit=false;
@@ -394,6 +395,7 @@ function act(b, action){
   } else if(sk.k==='heal'){
     if(sk.hot){ me.st.roots=sk.turns; me.st.rootsV=sk.hotIsFlat?lv(sk.hot,L)/me.maxhp:lv(sk.hot,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
     if(sk.heal){ const hv=Math.round(me.maxhp*lv(sk.heal,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
+    if(sk.mpHeal){ const v=Math.round(lv(sk.mpHeal,L)), g=Math.min(me.maxmp-me.mp,v); me.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v,rv:g}); }
     if(sk.healFlat){ const hv=Math.round(lv(sk.healFlat,L)); me.hp=Math.min(me.maxhp,me.hp+hv); b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','scorch','zap','acid','eshift','crush','taunt','soul','wcry'].forEach(k=>me.st[k]=0); me.st.soakS=[]; me.st.scorchS=[]; }
   } else if(sk.k==='drain' && sk.stealHp){
