@@ -975,7 +975,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v260 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v261 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1924,12 +1924,12 @@ openFriends=(function(prev){ return function(tab){ prev(tab); const sh=PANEL_LAS
   const FOE_BAD=['cripple','crush','taunt','acid'];
   function settle(c){ let g=0; while(!c.over&&c.phase==='pick'&&g++<4){ const s=c.pickSide; const i=aiPick(c,s); if(i==null||!pick(c,s,i)) break; } }
   function monVal(c,m,sd,k,s){ if(m.hp<=0) return 0; const st=m.st||{}; let x=70+110*m.hp/m.maxhp+14*m.mp/Math.max(1,m.maxmp)+0.08*m.atk;
-    DOTS.forEach(d=>{ if(st[d]>0) x-=Math.min(70,((st[d+'D']||0)*st[d])/m.maxhp*100*0.75); });
+    const benched=c.single&&sd.active!==sd.mons.indexOf(m); DOTS.forEach(d=>{ if(st[d]>0) x-=(benched?0.4:1)*Math.min(70,((st[d+'D']||0)*st[d])/m.maxhp*100*0.75); });
     MINE_GOOD.forEach(z=>{ if(st[z]>0) x+=5+Math.min(3,st[z]); });
     FOE_BAD.forEach(z=>{ if(st[z]>0) x-=7; });
     if(st.soakV>0) x-=st.soakV*30; if(st.scorchV>0) x-=st.scorchV*30; if(st.stun>0) x-=18;
     // the monster that is actually out matters more, and type matchup against the other side's active one
-    if(c.single){ const act=sd.active===sd.mons.indexOf(m); if(act){ x*=1.08; const o=c.sides[1-k], om=o.mons[o.active]; if(om&&om.hp>0) x+=12*(elemMult(m.el,om.el)-1); } }
+    if(c.single){ const act=sd.active===sd.mons.indexOf(m); if(act){ x*=1.08; const o=c.sides[1-k], om=o.mons[o.active]; if(om&&om.hp>0) x+=22*(elemMult(m.el,om.el)-1)-14*(elemMult(om.el,m.el)-1); } }
     return x; }
   function evalFor(c,s){ if(c.over) return c.winner===s?1e5:-1e5; let v=0;
     c.sides.forEach((sd,k)=>{ const sign=k===s?1:-1; sd.mons.forEach(m=>{ v+=sign*monVal(c,m,sd,k,s); }); }); return v; }
@@ -1948,15 +1948,15 @@ openFriends=(function(prev){ return function(tab){ prev(tab); const sh=PANEL_LAS
   function score(b,s,o){ let tot=0; const N=2;
     for(let k=0;k<N;k++){ const c=clone(b); c.rng=((b.rng|0)+7919*(k+1))|0; if(!sim(c,o)) return -1e9;
       tot+=0.35*evalFor(c,s)+0.65*bestReplyValue(c,s); }
-    let v=tot/N; if(o.swap!=null) v-=6; return v; }
+    let v=tot/N; if(o.swap!=null) v-=6; v-=aiDotPenalty(b,s,o); return v; }
   // a swap is only worth it if the monster coming in then does clearly better than staying (it still has to act this turn)
   function swapValue(b,s,o){ const c=clone(b); if(!sim(c,o)) return -1e9; let bv=-Infinity; for(const o2 of options(c)){ if(o2.swap!=null) continue; const v=score(c,s,o2); if(v>bv) bv=v; } return bv; }
   function smart2(b){ try{ const a=actor(b); if(!a) return base(b); const t0=Date.now(); let best=null,bs=-Infinity, bestSw=null, sw=-Infinity;
       for(const o of options(b)){ if(o.swap!=null) continue; const v=score(b,a.s,o); if(v>bs){ bs=v; best=o; } }
       if(b.single&&!b.swapped&&a.m.hp>0){ for(const o of options(b)){ if(o.swap==null) continue; if(Date.now()-t0>1200) break; const v=swapValue(b,a.s,o); if(v>sw){ sw=v; bestSw=o; } } }
       // needs a real reason: a clear gain, more so while the current monster is still healthy
-      const margin=25+40*(a.m.hp/a.m.maxhp);
-      if(bestSw&&sw>bs+margin) return bestSw;
+      const recent=b._aiSw&&b._aiSw[a.s]!=null&&(b.seq|0)-b._aiSw[a.s]<5; const margin=(recent?40:8)+(recent?40:18)*(a.m.hp/a.m.maxhp);
+      if(bestSw&&sw>bs+margin){ (b._aiSw=b._aiSw||{})[a.s]=b.seq|0; return bestSw; }
       return best||base(b); }catch(e){ console.warn('smart AI fell back',e); return base(b); } }
   window.__aiSmart1=window.__aiSmart; window.__aiSmart=smart2;
   // every computer opponent uses it: practice, rivals, challenges and zone fights
@@ -2505,3 +2505,32 @@ renderBattle=(function(prev){ return function(){ prev(); sdSync(); }; })(renderB
 act=(function(prev){ return function(b,action){ const n0=(b&&b.ev)?b.ev.length:0; const r=prev(b,action);
   if(r&&b&&b.ev){ b.ev=b.ev.filter(e=>{ if((e.k==='heal'||e.k==='mana')&&e.v>0){ if(e.rv!=null) e.v=e.rv; return e.v>0; } return true; }); }
   return r; }; })(act);
+// ---------- Practice foes pick their own items to fit each monster (same number of items as yours) ----------
+function aiLoadout(spId,lvl,count,vsEls){ const s=SPI[spId]; if(!s||count<=0) return [];
+  const sks=(s.sk||[]).filter(id=>SK[id]); const atkSk=sks.filter(id=>SK[id].t==='enemy'&&(SK[id].k==='hit'||SK[id].k==='drain'||SK[id].dmg));
+  const direct=(1+atkSk.length)/(1+sks.length); // basic attack counts too
+  const elFrac=el=>atkSk.filter(id=>SK[id].el===el).length/Math.max(1,atkSk.length+1);
+  const costly=sks.reduce((t,id)=>t+skCost(id,10),0)/Math.max(1,sks.length); const manaNeed=Math.min(1.4,.3+costly/90);
+  const phys=vsEls.length?vsEls.filter(e=>e==='neutral').length/vsEls.length:.5;
+  const val=(id,have)=>{ const it=ITEMS[id], b=it.b||{}, f=it.fx||{}; let v=0;
+    v+=(b.atk|0)*7*(0.5+0.5*direct)+(b.hp|0)*1+(b.mp|0)*.5*manaNeed;
+    if(f.rhp) v+=f.rhp*4.5*(have[id]?0.2:1); if(f.rmp) v+=f.rmp*4*manaNeed*(have[id]?0.2:1);
+    if(f.dwat) v+=f.dwat*8*elFrac('water'); if(f.dfir) v+=f.dfir*8*elFrac('fire'); if(f.dnat) v+=f.dnat*8*elFrac('nature');
+    if(f.dflat) v+=f.dflat*8*direct-(f.tflat|0)*8;
+    if(f.bphys||f.belem) v+=((f.bphys|0)*phys+(f.belem|0)*(1-phys))*5;
+    return v*Math.pow(0.7,have[id]|0); };
+  const pool=Object.keys(ITEMS).filter(id=>(ITEMS[id].lv|0)<=lvl); const out=[], have={};
+  for(let n=0;n<Math.min(5,count);n++){ let best=null,bv=0; pool.forEach(id=>{ const v=val(id,have)*(0.92+Math.random()*0.16); if(v>bv){ bv=v; best=id; } }); if(!best) break; out.push(best); have[best]=(have[best]|0)+1; }
+  return out; }
+practiceTeam=(function(prev){ return function(){ const t=prev(); try{ const mine=mySnap(); const n=Math.max(1,mine.length);
+    const itemStat=(m,k)=>(m.items||[]).reduce((s,id)=>s+((ITEMS[id]&&ITEMS[id].b&&ITEMS[id].b[k])|0),0);
+    const avg=k=>Math.round(mine.reduce((s,m)=>s+Math.max(0,((m.bonus&&m.bonus[k])|0)-itemStat(m,k)),0)/n);
+    const vsEls=[]; mine.forEach(m=>(SPI[m.sp].sk||[]).forEach(id=>{ const k=SK[id]; if(k&&k.t==='enemy') vsEls.push(k.el); })); 
+    t.mons.forEach((fm,k)=>{ const cnt=((mine[k]||{}).items||[]).length; const items=aiLoadout(fm.sp,fm.lvl,cnt,vsEls);
+      const b={atk:avg('atk'),hp:avg('hp'),mp:avg('mp'),spd:0}; items.forEach(id=>{ const it=ITEMS[id]; Object.entries(it.b||{}).forEach(([q,v])=>b[q]=(b[q]||0)+v); Object.entries(it.fx||{}).forEach(([q,v])=>b[q]=(b[q]||0)+v); });
+      fm.bonus=b; fm.items=items; }); }catch(e){ console.warn('loadout',e); } return t; }; })(practiceTeam);
+// ---------- AI judgment: don't throw DoTs into a Purge or onto a DoT that's already running ----------
+function aiDotPenalty(b,s,o){ if(!o||o.swap!=null||!o.skill) return 0; const sk=SK[o.skill]; if(!sk||sk.k!=='dot') return 0;
+  const foe=b.sides[1-s]; const tg=foe.mons[o.target!=null?o.target:foe.active]||foe.mons[foe.active]; if(!tg||tg.hp<=0) return 0;
+  const cl=m=>m&&m.hp>0&&(m.sk||[]).some(id=>SK[id]&&SK[id].cleanse&&m.mp>=skCost(id,(m.skl||{})[id]||1));
+  let p=0; if(tg.st&&tg.st[sk.dot]>1) p+=150; if(cl(tg)) p+=200; return p; }
