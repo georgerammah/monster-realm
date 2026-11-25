@@ -13,7 +13,7 @@ function a4hind(x,top,w,fill){ // rounded haunch + bent hind leg ending in a paw
 function a4shadow(cx,rx){ return `<ellipse cx="${cx}" cy="92.5" rx="${rx}" ry="3" fill="#000" opacity=".16"/>`; }
 const A4_SC=[0.74,0.88,1];
 monSVG=(function(prev){ return function(spId,lvl,cls){ const sp=SPI[spId]; const f=sp&&ART4[sp.fam]; if(!f) return prev(spId,lvl,cls);
-  const st=stageOf(lvl||1), id='a4'+(GID++); let body; try{ body=f(sp,st,id); }catch(e){ console.warn('art4',sp.id,e); return prev(spId,lvl,cls); }
+  const st=stageOf(lvl||1), id='a4'+(GID++); let body; try{ body=f(sp,st,id); }catch(e){ console.warn('art4',sp.id,e); return prev(spId,lvl,cls); } if(!body) return prev(spId,lvl,cls);
   return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${A4_SC[st]}) translate(-50 -92)">${body}</g></svg>`; }; })(monSVG);
 
 // ---------- Volt family: kitten -> sleek cat with a gem collar -> winged sphinx in a striped headdress ----------
@@ -412,3 +412,65 @@ ART4.shell=function(sp,st,id){ const P=A4_SH[sp.id]||{b:sp.col[1],sh:sp.col[0],p
   const er=baby?4.6:3.3; g+=a4eye(hx+hr*.1,hy-hr*.2,er,P.e,st,.5)+a4eye(hx+hr*.75,hy-hr*.25,er*.85,P.e,st,.5);
   if(st>=1) g+=`<path d="M${hx+hr*.1-er} ${hy-hr*.2-er*.85} L${hx+hr*.1+er} ${hy-hr*.2-er*.3}" stroke="${A4OL}" stroke-width="1.9" stroke-linecap="round"/>`;
   return d+g; };
+
+// ---------- Crystalloids: Sphyro (shark that stands up) and Crystalwulf (purple beast covered in gold crystals) ----------
+ART4.crystalloid=function(sp,st,id){ const baby=st===0, adult=st===2;
+  if(sp.id==='sphyro'){ const b='#3a8ab8', l='#f2f8ff', B=id+'b'; let d=`<defs>${a4g(B,b)}</defs>`, g=a4shadow(48,22);
+    if(baby){ g+=`<path d="M26 74 L16 66 L18 80Z" fill="${b}" ${a4s(1.5)}/><path d="M24 74 Q30 62 48 62 Q66 64 70 74 Q64 84 46 84 Q30 84 24 74Z" fill="url(#${B})" ${a4s()}/><path d="M44 62 L48 52 L54 63Z" fill="${b}" ${a4s(1.4)}/><path d="M40 78 Q54 84 68 76 Q56 80 40 78Z" fill="${l}" ${a4s(1.2)}/><path d="M42 80 l-4 8 l8 -6Z" fill="${b}" ${a4s(1.3)}/><path d="M58 78 L68 75" stroke="${A4OL}" stroke-width="1.4"/>`+a4eye(58,69,3.6,'#3a2a1a',0,.5); return d+g; }
+    const s=adult?1.12:1;
+    g+=`<g transform="translate(48 92) scale(${s}) translate(-48 -92)">`;
+    g+=`<path d="M40 76 Q28 80 22 90 Q32 88 38 84Z" fill="${b}" ${a4s(1.5)}/>`;
+    g+=a4leg(42,74,92,8,shade(b,-15))+a4leg(54,74,92,8,b);
+    g+=`<path d="M34 78 Q30 54 44 42 Q58 34 66 46 Q70 60 62 78 Q50 84 34 78Z" fill="url(#${B})" ${a4s()}/>`;
+    g+=`<path d="M46 76 Q46 56 58 48 Q64 58 60 76Z" fill="${l}"/>`;
+    g+=`<path d="M38 50 L30 34 L46 44Z" fill="${b}" ${a4s(1.5)}/>`;
+    // shark head: long snout with toothy grin
+    g+=`<path d="M46 46 Q44 28 58 26 Q72 26 80 36 Q78 44 66 46 Q56 48 46 46Z" fill="url(#${B})" ${a4s()}/><path d="M60 40 Q70 42 78 38 Q72 46 60 44Z" fill="${l}" ${a4s(1.2)}/>`;
+    for(let k=0;k<4;k++) g+=`<path d="M${62+k*4} ${40.6+k*-.3} l1.4 3 l1.4 -3Z" fill="#fff" ${a4s(.7)}/>`;
+    g+=`<path d="M50 38 l2 3 M53 37 l2 3 M56 36 l2 3" stroke="${shade(b,-30)}" stroke-width="1.2"/>`+a4eye(64,32,3,'#e8c43a',st,.4)+`<path d="M60 28.6 L67.6 30.6" stroke="${A4OL}" stroke-width="2" stroke-linecap="round"/>`;
+    // arms
+    g+=`<path d="M58 52 Q70 56 72 66" fill="none" stroke="${A4OL}" stroke-width="8.6" stroke-linecap="round"/><path d="M58 52 Q70 56 72 66" fill="none" stroke="${b}" stroke-width="5.6" stroke-linecap="round"/><circle cx="72" cy="67" r="4" fill="${b}" ${a4s(1.4)}/>`;
+    if(adult) g+=`<path d="M40 60 L56 56" stroke="${A4OL}" stroke-width="1.2" opacity=".5"/><rect x="36" y="64" width="26" height="4" rx="2" fill="#2a3a4a" ${a4s(1.2)}/>`;
+    return d+g+'</g>'; }
+  if(sp.id==='crystalwulf'){ const b='#6a4a9a', cr='#f2b83a', B=id+'b', C=id+'c'; let d=`<defs>${a4g(B,b)}${a4g(C,cr,30,-25)}</defs>`, g=a4shadow(48,28);
+    const big=baby?0:1; const hx=baby?62:70, hy=baby?56:46, hr=baby?12:11;
+    g+=`<path d="${baby?'M30 76 Q20 72 22 62':'M26 68 Q10 64 14 48'}" fill="none" stroke="${A4OL}" stroke-width="8" stroke-linecap="round"/><path d="${baby?'M30 76 Q20 72 22 62':'M26 68 Q10 64 14 48'}" fill="none" stroke="${b}" stroke-width="4.6" stroke-linecap="round"/>`;
+    if(!baby) g+=a4hind(36,60,8,shade(b,-15))+a4leg(64,64,91,8,shade(b,-15));
+    g+=`<path d="${baby?'M28 78 Q26 64 40 62 Q56 60 62 66 Q66 80 54 84 Q36 86 28 78Z':'M22 70 Q18 52 34 50 Q50 46 62 44 Q76 46 76 60 Q74 76 60 78 Q38 80 22 70Z'}" fill="url(#${B})" ${a4s()}/>`;
+    if(baby) g+=a4leg(36,78,92,7,b)+a4leg(54,78,92,7,b); else g+=a4hind(30,58,9,b)+a4leg(60,66,92,9,b);
+    // crystals along the back
+    const n=baby?3:6; for(let k=0;k<n;k++){ const x=(baby?36:28)+k*(baby?8:8.5), y=(baby?62:50)-Math.sin(k/(n-1)*3.1)*3, h=(baby?8:14)+(k%2)*4*big;
+      g+=`<path d="M${x-4} ${y+3} L${x-1} ${y-h} L${x+5} ${y+2}Z" fill="url(#${C})" ${a4s(1.4)}/><path d="M${x-1} ${y-h+3} L${x} ${y+1}" stroke="#fff3c0" stroke-width="1.2" opacity=".8"/>`; }
+    if(adult) g+=`<path d="M56 66 L64 76 L70 66Z M64 60 L74 68 L76 58Z" fill="url(#${C})" ${a4s(1.3)}/>`;
+    // head
+    g+=`<path d="M${hx-hr*.6} ${hy-hr*.6} L${hx-hr*.2} ${hy-hr*1.9} L${hx+hr*.3} ${hy-hr*.7}Z" fill="url(#${C})" ${a4s(1.4)}/>`;
+    g+=`<path d="M${hx-hr} ${hy} Q${hx-hr} ${hy-hr} ${hx} ${hy-hr} Q${hx+hr} ${hy-hr} ${hx+hr*1.1} ${hy-hr*.2} L${hx+hr*1.8} ${hy+hr*.2} Q${hx+hr*1.8} ${hy+hr*.7} ${hx+hr*1.2} ${hy+hr*.75} Q${hx} ${hy+hr*1.1} ${hx-hr} ${hy}Z" fill="url(#${B})" ${a4s()}/>`;
+    g+=`<path d="M${hx+hr*.6} ${hy+hr*.5} L${hx+hr*1.6} ${hy+hr*.42}" stroke="${A4OL}" stroke-width="1.3"/><ellipse cx="${hx+hr*1.75}" cy="${hy+hr*.18}" rx="1.8" ry="1.4" fill="#1e1612"/>`;
+    if(!baby) g+=`<path d="M${hx+hr*.8} ${hy+hr*.46} l1 3 l1.2 -3 M${hx+hr*1.2} ${hy+hr*.44} l1 3 l1.2 -3" fill="#fff" ${a4s(.6)}/>`;
+    g+=a4eye(hx+hr*.3,hy-hr*.2,baby?4.2:3.1,'#e8c43a',st,.5); if(st>=1) g+=`<path d="M${hx+hr*.3-3.4} ${hy-hr*.2-3} L${hx+hr*.3+3.6} ${hy-hr*.2-1}" stroke="${A4OL}" stroke-width="2" stroke-linecap="round"/>`;
+    return d+g; }
+  if(sp.id==='electyra'&&st>=1){ const b='#f2a02a', fin='#3aa8f0', B=id+'b'; let d=`<defs>${a4g(B,b,30,-20)}</defs>`, g=a4shadow(48,18); const adult=st===2;
+    // curled seahorse tail
+    g+=`<path d="M44 66 Q34 80 42 88 Q52 92 54 84 Q54 78 48 80" fill="none" stroke="${A4OL}" stroke-width="10" stroke-linecap="round"/><path d="M44 66 Q34 80 42 88 Q52 92 54 84 Q54 78 48 80" fill="none" stroke="${b}" stroke-width="6.6" stroke-linecap="round"/>`;
+    // back fins
+    g+=`<path d="M38 44 L22 36 L30 48 L20 52 L34 58 L26 66 L42 64Z" fill="${fin}" ${a4s(1.5)}/>`;
+    if(adult) g+=`<path d="M40 40 L30 18 L42 28 L44 12 L50 28 L58 16 L56 34Z" fill="#f25a2a" ${a4s(1.4)}/><path d="M42 34 L38 24 L46 30 L48 20 L52 32Z" fill="#f2d24a"/>`;
+    // body S
+    g+=`<path d="M40 70 Q30 56 38 44 Q46 32 56 34 Q66 38 62 50 Q58 60 52 66 Q48 72 40 70Z" fill="url(#${B})" ${a4s()}/>`;
+    for(let k=0;k<4;k++) g+=`<path d="M${52-k*2} ${46+k*5} q4 1 6 -1" fill="none" stroke="#f6e0a0" stroke-width="2" stroke-linecap="round"/>`;
+    // head with snout
+    g+=`<path d="M50 38 Q48 24 60 22 Q70 22 72 30 L82 34 Q82 39 76 39 L66 40 Q56 44 50 38Z" fill="url(#${B})" ${a4s()}/>`;
+    g+=`<path d="M56 24 L52 14 L60 20 L62 12 L64 22Z" fill="${fin}" ${a4s(1.3)}/>`;
+    g+=a4eye(63,29,3.2,'#3a2a1a',st,.5)+`<path d="M59.4 25.6 L66.6 27" stroke="${A4OL}" stroke-width="2" stroke-linecap="round"/>`;
+    g+=`<path d="M60 48 L70 50 L62 56Z" fill="${fin}" ${a4s(1.3)}/>`;
+    return d+g; }
+  return null; };
+
+// ---------- Elephants: a draped saddle cloth from teen, and a stone war tower on the adult's back ----------
+monSVG=(function(prev){ const CL={trunkle:['#3a7ad8','#e8c43a'],tuskmoor:['#8a3aa8','#e8c43a'],mammoss:['#4a8a3a','#d8482a'],quakeph:['#c8302a','#e8c43a']};
+  return function(spId,lvl,cls){ const out=prev(spId,lvl,cls); const sp=SPI[spId]; if(!sp||sp.fam!=='elephant') return out; const st=stageOf(lvl||1); if(st<1) return out;
+    const [c,t]=CL[spId]||[sp.col[1],'#e8c43a']; let o=`<path d="M34 52 Q48 44 64 50 L66 70 Q50 76 32 70Z" fill="${c}" ${a4s(1.6)}/><path d="M33 68 Q50 74 66 68" fill="none" stroke="${t}" stroke-width="2.6"/>`;
+    for(let k=0;k<4;k++) o+=`<circle cx="${37+k*8.6}" cy="${71.6-Math.abs(k-1.5)*.8}" r="1.6" fill="${t}"/>`;
+    if(st===2){ o+=`<rect x="38" y="28" width="22" height="22" rx="1.5" fill="#a8a8ae" ${a4s(1.6)}/><path d="M38 28 v-5 h4.4 v3 h4 v-3 h4.4 v3 h4 v-3 h4.4 v5" fill="#a8a8ae" ${a4s(1.4)}/>`;
+      o+=`<path d="M38 36 H60 M38 43 H60 M45 28 V36 M53 36 V43 M45 43 V50" stroke="#7a7a82" stroke-width="1.2"/><rect x="46" y="31" width="5" height="7" rx="2.4" fill="#2a2420"/>`; }
+    const i=out.lastIndexOf('</g></svg>'); return i>0? out.slice(0,i)+o+out.slice(i) : out; }; })(monSVG);
