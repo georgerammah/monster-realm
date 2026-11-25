@@ -2136,7 +2136,7 @@ function act(b, action){
   } else if(sk.k==='debuff'){
     const d=b.sides[foe].mons[tgt]; d.st[sk.buff]=sk.turns; d.st[sk.buff+'F']=1; d.st[sk.buff+'V']=Math.min(.75,lv(sk.v,L)); if(sk.v2) d.st[sk.buff+'R']=lv(sk.v2,L); b.ev.push({k:'buff',s:foe,i:tgt,b:sk.buff}); log(b,sk.buff==='cripple'?`${d.n} is crippled!`:`${d.n} is weakened!`);
   } else if(sk.k==='heal'){
-    if(sk.hot){ me.st.roots=sk.turns; me.st.rootsV=sk.hotIsFlat?lv(sk.hot,L)/me.maxhp:lv(sk.hot,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
+    if(sk.hot){ me.st.roots=sk.turns; me.st.rootsV=sk.hotIsFlat?lv(sk.hot,L)/me.maxhp:lv(sk.hot,L); b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); if(sk.hotNow) hot0.r=99; }
     if(sk.heal){ const hv=Math.min(me.maxhp-me.hp,Math.round(me.maxhp*lv(sk.heal,L))); me.hp+=hv; b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.mpHeal){ const v=Math.round(lv(sk.mpHeal,L)), g=Math.min(me.maxmp-me.mp,v); me.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v,rv:g}); }
     if(sk.healFlat){ const hv=Math.min(me.maxhp-me.hp,Math.round(lv(sk.healFlat,L))); me.hp+=hv; b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
@@ -5018,7 +5018,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (263).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (264).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6677,7 +6677,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v263 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v264 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -8142,7 +8142,7 @@ icon=(function(prev){ return function(key,bg,size){ return key==='mkroots'?prev(
   skillDesc=(function(prev){ return function(id,L){ if(id==='leech'){ L=L||1; return `A natural attack that deals ${Math.round(lv(SK.leech.dmg,L))} damage and steals ${Math.round(lv(SK.leech.mpSteal,L))} mana.`; } return prev(id,L); }; })(skillDesc); })();
 // Regrowth (MK): heals 123 life every turn for 4 turns, 82 mana at level 10; green plus icon; swirling leaves on the caster
 (function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
-  Object.assign(SK.regrowth,{hot:P(14,123),hotIsFlat:1,turns:4,mp:P(14,82)}); DEFAULT_SK.regrowth=JSON.parse(JSON.stringify(SK.regrowth));
+  Object.assign(SK.regrowth,{hot:P(14,123),hotIsFlat:1,hotNow:1,turns:4,mp:P(14,82)}); DEFAULT_SK.regrowth=JSON.parse(JSON.stringify(SK.regrowth));
   if(SK.pollenbloom) Object.assign(SK.pollenbloom,{hot:SK.regrowth.hot,hotIsFlat:1});
   skillDesc=(function(prev){ return function(id,L){ if(id==='regrowth') return `Heals your life by ${Math.round(lv(SK.regrowth.hot,L||1))} every turn for ${SK.regrowth.turns} turns.`; return prev(id,L); }; })(skillDesc);
   MK_ICON.regrowth='mkregrow';
