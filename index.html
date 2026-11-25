@@ -5018,7 +5018,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (270).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (271).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6677,7 +6677,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v270 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v271 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -8235,19 +8235,22 @@ function aiLoadout(spId,lvl,count,vsEls){ const s=SPI[spId]; if(!s||count<=0) re
   for(let n=0;n<Math.min(5,count);n++){ let best=null,bv=0; pool.forEach(id=>{ const v=val(id,have)*(0.94+Math.random()*0.12); if(v>bv){ bv=v; best=id; } }); if(!best) break; out.push(best); have[best]=(have[best]|0)+1; }
   return out; }
 // practice foes: always level 30 with level 10 abilities, stat points and items picked to fit how the monster fights
-practiceTeam=(function(prev){ return function(){ const t=prev(); try{ const mine=mySnap();
-    const vsEls=[]; mine.forEach(m=>(SPI[m.sp].sk||[]).forEach(id=>{ const k=SK[id]; if(k&&k.t==='enemy') vsEls.push(k.el); }));
-    t.mons.forEach((fm,k)=>{ const R=aiRole(fm.sp); fm.lvl=MAXLVL; const skl={}; (SPI[fm.sp].sk||[]).forEach(id=>skl[id]=MAXSKL); fm.skl=skl;
-      const cnt=Math.max(((mine[k]||{}).items||[]).length,3); const items=aiLoadout(fm.sp,MAXLVL,cnt,vsEls);
-      // stat points: physical hitters into attack, casters into mana, the rest into life
-      const pts=(MAXLVL-1)*5; let wa=0, wm=0;
-      if(R.role==='mana') wm=.45; else { const need=Math.max(0,R.physMana-statsOf(fm.sp,MAXLVL).mp); wm=Math.min(.35,Math.ceil(need/PT.mp)/pts); wa=Math.max(.35,.6-wm*.6); }
-      const wh=1-wa-wm;
-      const pa=Math.round(pts*wa), pm=Math.round(pts*wm), ph=pts-pa-pm;
-      const b={atk:pa*PT.atk,hp:ph*PT.hp,mp:pm*PT.mp,spd:0}; items.forEach(id=>{ const it=ITEMS[id]; Object.entries(it.b||{}).forEach(([q,v])=>b[q]=(b[q]||0)+v); Object.entries(it.fx||{}).forEach(([q,v])=>b[q]=(b[q]||0)+v); });
-      // keep Soul Eater at 16 mana when a Mana Bowl can pay for it every turn
-      if(skl.souleater&&items.includes('manabowl')) skl.souleater=3;
-      fm.bonus=b; fm.items=items; }); }catch(e){ console.warn('loadout',e); } return t; }; })(practiceTeam);
+// one build routine for every computer-controlled team: points and items fit the monster's role, never a glass cannon
+function aiBuild(fm,lvl,itemCount,vsEls){ const R=aiRole(fm.sp); fm.lvl=lvl; const skl={}; (SPI[fm.sp].sk||[]).forEach(id=>skl[id]=lvl>=MAXLVL?MAXSKL:Math.max(1,Math.min(MAXSKL,Math.ceil(lvl/3)))); fm.skl=skl;
+  const items=aiLoadout(fm.sp,lvl,itemCount,vsEls);
+  const pts=(lvl-1)*5; let wa=0, wm=0;
+  if(R.role==='mana') wm=.4; else { const need=Math.max(0,R.physMana-statsOf(fm.sp,lvl).mp); wm=Math.min(.25,Math.ceil(need/PT.mp)/Math.max(1,pts)); wa=.45; }
+  const wh=Math.max(.4,1-wa-wm); const tot=wa+wm+wh; wa/=tot; wm/=tot;
+  const pa=Math.round(pts*wa), pm=Math.round(pts*wm), ph=pts-pa-pm;
+  const b={atk:pa*PT.atk,hp:ph*PT.hp,mp:pm*PT.mp,spd:0}; items.forEach(id=>{ const it=ITEMS[id]; Object.entries(it.b||{}).forEach(([q,v])=>b[q]=(b[q]||0)+v); Object.entries(it.fx||{}).forEach(([q,v])=>b[q]=(b[q]||0)+v); });
+  if(skl.souleater&&items.includes('manabowl')) skl.souleater=3; // 16 mana: the bowl pays for it every turn
+  fm.bonus=b; fm.items=items; return fm; }
+function aiVsEls(){ const v=[]; mySnap().forEach(m=>(SPI[m.sp].sk||[]).forEach(id=>{ const k=SK[id]; if(k&&k.t==='enemy') v.push(k.el); })); return v; }
+// practice foes: always level 30 with level 10 abilities
+practiceTeam=(function(prev){ return function(){ const t=prev(); try{ const mine=mySnap(), vs=aiVsEls();
+    t.mons.forEach((fm,k)=>aiBuild(fm,MAXLVL,Math.max(((mine[k]||{}).items||[]).length,3),vs)); }catch(e){ console.warn('loadout',e); } return t; }; })(practiceTeam);
+// computer trainers in the arena build the same way at your team's level
+rivalTeam=(function(prev){ return function(){ const t=prev(); try{ const mine=mySnap(), vs=aiVsEls(); t.mons.forEach((fm,k)=>aiBuild(fm,fm.lvl,((mine[k]||{}).items||[]).length,vs)); }catch(e){ console.warn('rival',e); } return t; }; })(rivalTeam);
 // ---------- AI judgment: don't throw DoTs into a Purge or onto a DoT that's already running ----------
 function aiDotPenalty(b,s,o){ if(!o||o.swap!=null||!o.skill) return 0; const sk=SK[o.skill]; if(!sk||sk.k!=='dot') return 0;
   const foe=b.sides[1-s]; const tg=foe.mons[o.target!=null?o.target:foe.active]||foe.mons[foe.active]; if(!tg||tg.hp<=0) return 0;
