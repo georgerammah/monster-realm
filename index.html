@@ -5018,7 +5018,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (262).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (263).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -5990,7 +5990,7 @@ function fxTackle(ac,tgt,left){ const art=ac.querySelector('.fart'); if(!art) re
 renderBattle=(function(prev){ return function(){ prev(); if(!B||!B.b) return; B.enT=B.enT||{}; const now=Date.now();
   document.querySelectorAll('#battle .fighter').forEach(el=>{ const s=el.dataset.s, i=el.dataset.i, f=el.querySelector('.fart'); if(!f) return;
     if(!B.enT[s]||B.enT[s].i!==i) B.enT[s]={i,t:now};
-    const e=(now-B.enT[s].t)/1000; if(e<3&&!f._enA){ const L=el.classList.contains('l'), d=L?1:-1, W=document.body.clientWidth*1.2;
+    const e=(now-B.enT[s].t)/1000; if(false&&e<3&&!f._enA){ const L=el.classList.contains('l'), d=L?1:-1, W=document.body.clientWidth*1.2;
       const H=document.body.clientHeight*.45;
       f._enA=f.animate([{transform:`translate(${-d*W}px,0)`,easing:'cubic-bezier(.3,.7,.6,1)'},{transform:`translate(${-d*W*.45}px,${-H}px)`,offset:.36,easing:'cubic-bezier(.45,0,.8,.5)'},{transform:'translate(0,0) scale(1.14,.86)',offset:.68,easing:'ease-out'},
         {transform:'translate(0,-12%) scale(.95,1.06)',offset:.79,easing:'ease-in'},{transform:'translate(0,0) scale(1.06,.94)',offset:.9,easing:'ease-out'},{transform:'none'}],{duration:3000,easing:'linear'});
@@ -6677,7 +6677,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v262 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v263 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -8197,7 +8197,7 @@ act=(function(prev){ return function(b,action){ if(!b||b.over) return prev(b,act
   if(ko1>ko0){ if(b.sd) (b.ev=b.ev||[]).push({k:'sdoff'}); b.sdN=0; b.sd=false; b.sdK=0; b.sdMul=1; return r; }
   b.sdN=(b.sdN||0)+1; if(!b.sd&&b.sdN>=30){ b.sd=true; b.sdK=0; (b.ev=b.ev||[]).push({k:'sudden'}); }
   return r; }; })(act);
-function sdSync(){ const bt=document.getElementById('battle'); if(!bt) return; const on=!!(B&&B.b&&B.b.sd); if(on&&B._sdAt&&Date.now()<B._sdAt) return; if(!on&&B._sdOffAt&&Date.now()<B._sdOffAt) return; bt.classList.toggle('sdeath',on); }
+function sdSync(){ const bt=document.getElementById('battle'); if(!bt||!B) return; const on=!!(B&&B.b&&B.b.sd); if(on&&B._sdAt&&Date.now()<B._sdAt) return; if(!on&&B._sdOffAt&&Date.now()<B._sdOffAt) return; bt.classList.toggle('sdeath',on); }
 animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(root,b,animating);
   try{ const evs=b.ev||[]; if(animating&&evs.some(e=>e.k==='sudden')){ const tot=(b._animTotal||evSchedule(b)||0); B._sdAt=Date.now()+tot; setTimeout(()=>{ B._sdAt=0; sdSync(); const t=fxAt(0,0,'sdtext','Sudden Death!');
       t.animate([{opacity:0,transform:'scale(.6)'},{opacity:1,transform:'scale(1.06)',offset:.15},{opacity:1,transform:'scale(1)',offset:.7},{opacity:0,transform:'scale(1)'}],{duration:2200,fill:'both'}).onfinish=()=>t.remove(); },tot);
