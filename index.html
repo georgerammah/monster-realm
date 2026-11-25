@@ -1704,6 +1704,7 @@ body{overscroll-behavior:none}
 @keyframes sdin{from{opacity:0}to{opacity:1}}
 .fx.sdtext,.sdtext{position:fixed;left:0!important;right:0;top:30%!important;width:100%;text-align:center;margin:0!important;font:min(calc(13*var(--vh)),64px) "Lilita One",system-ui;color:#fff;-webkit-text-stroke:2px rgba(150,20,10,.45);text-shadow:0 4px 18px rgba(0,0,0,.25);white-space:nowrap;pointer-events:none;z-index:70}
 .aircol{position:absolute;border-radius:40%/12%;background:linear-gradient(90deg,rgba(255,255,200,0),rgba(240,255,170,.75) 30%,rgba(255,255,220,.9) 50%,rgba(240,255,170,.75) 70%,rgba(255,255,200,0));filter:blur(3px);transform-origin:50% 100%}
+.hi .ic{width:28px!important;height:28px!important}body.rot .hi .ic{width:28px!important;height:28px!important}.hi::after{inset:-10px -6px!important}.hicons{gap:3px}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
@@ -5018,7 +5019,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (271).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (272).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -5951,7 +5952,7 @@ taskProg=(function(prev){ return function(zi){ const p=prev(zi); const id=ZONES[
 
 // ---------- passive/item icons: tap to show what it does; it stays until you tap elsewhere ----------
 removeEventListener('pointerup',endTip,true); removeEventListener('touchend',endTip,true); removeEventListener('pointercancel',endTip,true); removeEventListener('touchcancel',endTip,true);
-const endTip2=()=>{ TIPDRAG=false; TIPH=null; hideTips(); };
+const endTip2=()=>{ TIPDRAG=false; }; // the tip stays up after you let go; tap anywhere else to close it
 addEventListener('pointerup',endTip2,true); addEventListener('touchend',endTip2,true); addEventListener('pointercancel',endTip2,true); addEventListener('touchcancel',endTip2,true);
 addEventListener('pointerdown',e=>{ if(!(e.target.closest&&e.target.closest('.hi'))){ TIPH=null; hideTips(); } },true);
 placeTip=(function(prev){ return function(h){ prev(h); const tip=document.querySelector('.tipb'); if(!tip||!h) return; const r=localRect(h);
@@ -6677,7 +6678,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v271 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v272 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -8188,18 +8189,21 @@ animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(r
     fxColumn(rr.left+rr.width/2,rr.top+rr.height/2,rr.width*1.1,rr.height*1.7); }catch(_){} return r; }; })(animateBattle);
 // ---------- Sudden Death: 30 turns without a knockout -> red screen, then damage doubles every round ----------
 act=(function(prev){ return function(b,action){ if(!b||b.over) return prev(b,action); const a=actor(b); if(!a) return prev(b,action);
-  if(b.firstSide==null) b.firstSide=a.s;
-  if(b.sd&&a.s!==b.firstSide) b.sdK=(b.sdK||0)+1; // the player who moved second gets the first doubled hit
-  b.sdMul=b.sd?1+(b.sdK||0):1;
+  const isTurn=!(action&&action.swap!=null); // swapping in doesn't use up a turn
+  let trig=false, c=b.sdC||0;
+  if(isTurn){ if(!b.sd&&(b.sdN||0)>=30) trig=true; else if(b.sd) c++; }
+  const on=b.sd||trig; b.sdMul=on&&c>0?1+Math.ceil(c/2):1; // trigger turn normal, then x2 x2 x3 x3 x4 ...
   const ko0=b.sides.reduce((t,sd)=>t+sd.mons.filter(m=>m.hp<=0).length,0);
   const r=prev(b,action); if(!r) return r;
+  if(trig){ b.sd=true; c=0; (b.ev=b.ev||[]).unshift({k:'sudden'}); }
+  b.sdC=c;
   const ko1=b.sides.reduce((t,sd)=>t+sd.mons.filter(m=>m.hp<=0).length,0);
-  if(ko1>ko0){ if(b.sd) (b.ev=b.ev||[]).push({k:'sdoff'}); b.sdN=0; b.sd=false; b.sdK=0; b.sdMul=1; return r; }
-  b.sdN=(b.sdN||0)+1; if(!b.sd&&b.sdN>=30){ b.sd=true; b.sdK=0; (b.ev=b.ev||[]).push({k:'sudden'}); }
+  if(ko1>ko0){ if(b.sd) (b.ev=b.ev||[]).push({k:'sdoff'}); b.sdN=0; b.sd=false; b.sdC=0; b.sdMul=1; return r; }
+  if(isTurn&&!b.sd) b.sdN=(b.sdN||0)+1;
   return r; }; })(act);
 function sdSync(){ const bt=document.getElementById('battle'); if(!bt||!B) return; const on=!!(B&&B.b&&B.b.sd); if(on&&B._sdAt&&Date.now()<B._sdAt) return; if(!on&&B._sdOffAt&&Date.now()<B._sdOffAt) return; bt.classList.toggle('sdeath',on); }
 animateBattle=(function(prev){ return function(root,b,animating){ const r=prev(root,b,animating);
-  try{ const evs=b.ev||[]; if(animating&&evs.some(e=>e.k==='sudden')){ const tot=(b._animTotal||evSchedule(b)||0); B._sdAt=Date.now()+tot; setTimeout(()=>{ B._sdAt=0; sdSync(); const t=fxAt(0,0,'sdtext','Sudden Death!');
+  try{ const evs=b.ev||[]; if(animating&&evs.some(e=>e.k==='sudden')){ const tot=0; B._sdAt=0; setTimeout(()=>{ B._sdAt=0; sdSync(); const t=fxAt(0,0,'sdtext','Sudden Death!');
       t.animate([{opacity:0,transform:'scale(.6)'},{opacity:1,transform:'scale(1.06)',offset:.15},{opacity:1,transform:'scale(1)',offset:.7},{opacity:0,transform:'scale(1)'}],{duration:2200,fill:'both'}).onfinish=()=>t.remove(); },tot);
     } else if(animating&&evs.some(e=>e.k==='sdoff')){ const tot=(b._animTotal||evSchedule(b)||0); B._sdOffAt=Date.now()+tot; setTimeout(()=>{ B._sdOffAt=0; sdSync(); },tot); } else sdSync(); }catch(_){} return r; }; })(animateBattle);
 renderBattle=(function(prev){ return function(){ prev(); sdSync(); }; })(renderBattle);
@@ -8256,6 +8260,11 @@ function aiDotPenalty(b,s,o){ if(!o||o.swap!=null||!o.skill) return 0; const sk=
   const foe=b.sides[1-s]; const tg=foe.mons[o.target!=null?o.target:foe.active]||foe.mons[foe.active]; if(!tg||tg.hp<=0) return 0;
   const cl=m=>m&&m.hp>0&&(m.sk||[]).some(id=>SK[id]&&SK[id].cleanse&&m.mp>=skCost(id,(m.skl||{})[id]||1));
   let p=0; if(tg.st&&tg.st[sk.dot]>1) p+=150; if(cl(tg)) p+=200; return p; }
+// ---------- status / item icons: one tap shows what it does and it stays up; tap anywhere else to close ----------
+removeEventListener('pointerup',hideTips,true); removeEventListener('touchend',hideTips,true);
+addEventListener('pointerdown',e=>{ const h=e.target.closest&&e.target.closest('.hi[data-tip]'); if(!h) return;
+  e.preventDefault(); e.stopPropagation(); if(TIPH===h&&document.querySelector('.tipb')){ TIPH=null; hideTips(); return; } TIPH=null; placeTip(h); TIPDRAG=true; },true);
+addEventListener('click',e=>{ if(e.target.closest&&e.target.closest('#battle .hi[data-tip]')){ e.preventDefault(); e.stopPropagation(); } },true);
 
 // ===== ART4: redraws modeled on the Monster Kingdom look (original drawings, same creatures/colors/features) =====
 const ART4={};
