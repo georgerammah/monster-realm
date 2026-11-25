@@ -5018,7 +5018,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (266).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (267).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6677,7 +6677,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v266 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v267 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -8584,6 +8584,79 @@ ART4.squirrel=function(sp,st,id){ const P=A4_SQ[sp.id]||{b:sp.col[0],l:sp.col[2]
   if(st>=1) g+=`<path d="M${hx-hr*.2-er} ${hy-hr*.12-er*.85} L${hx-hr*.2+er} ${hy-hr*.12-er*.35}" stroke="${A4OL}" stroke-width="1.8" stroke-linecap="round"/>`;
   // front arm
   const fx=cx+12, fy=cy-2; g+=`<path d="M${cx+2} ${cy-8} Q${cx+8} ${cy+2} ${fx} ${fy}" fill="none" stroke="${A4OL}" stroke-width="8" stroke-linecap="round"/><path d="M${cx+2} ${cy-8} Q${cx+8} ${cy+2} ${fx} ${fy}" fill="none" stroke="${P.b}" stroke-width="5" stroke-linecap="round"/><circle cx="${fx+1}" cy="${fy-1}" r="${baby?3.4:4}" fill="${P.b}" ${a4s(1.4)}/>`;
+  return d+g; };
+
+// ---------- Wing family: round chick -> strutting bird -> eagle with wings raised ----------
+const A4_WG={
+  zephyra:  {b:'#f4e04a',w:'#5ab83a',w2:'#f4e04a',bk:'#f29a2a',l:'#fff6c0',e:'#3a2a1a'},
+  gustling: {b:'#5c5c66',w:'#d8a83a',w2:'#3a3a44',bk:'#f2c43a',l:'#8a8a94',e:'#e8a030'},
+  featherby:{b:'#3ae0b0',w:'#d84ad8',w2:'#4ab8f0',bk:'#f2c43a',l:'#b8f8e4',e:'#3a2a1a'},
+  squallix: {b:'#f6f6fa',w:'#2a6ad8',w2:'#f6f6fa',bk:'#f29a2a',l:'#e85a3a',e:'#3a2a1a'}};
+ART4.wing=function(sp,st,id){ const P=A4_WG[sp.id]||{b:sp.col[0],w:sp.col[1],w2:sp.col[0],bk:'#f29a2a',l:sp.col[2],e:'#3a2a1a'};
+  const B=id+'b'; let d=`<defs>${a4g(B,P.b)}</defs>`, g=''; const baby=st===0, adult=st===2;
+  g+=a4shadow(48,22);
+  const legs=(x,top)=>`<path d="M${x} ${top} L${x} 89 M${x} 89 l-4 2 M${x} 89 l4 2 M${x} 89 l1 3" fill="none" stroke="${A4OL}" stroke-width="4" stroke-linecap="round"/><path d="M${x} ${top} L${x} 89 M${x} 89 l-4 2 M${x} 89 l4 2" fill="none" stroke="${P.bk}" stroke-width="2" stroke-linecap="round"/>`;
+  if(baby){ g+=legs(44,82)+legs(52,82);
+    g+=`<ellipse cx="48" cy="72" rx="15" ry="14" fill="url(#${B})" ${a4s()}/><path d="M36 70 Q30 76 38 80 Q42 76 40 70Z" fill="${shade(P.b,-12)}" ${a4s(1.4)}/>`;
+    g+=`<path d="M58 68 L67 70 L58 74Z" fill="${P.bk}" ${a4s(1.4)}/><path d="M46 58 q2 -5 5 -1" fill="none" stroke="${A4OL}" stroke-width="1.6"/>`;
+    g+=a4eye(50,66,4.4,P.e,0,.5)+a4eye(57,65.6,3.6,P.e,0,.5); return d+g; }
+  if(!adult){ // teen: strutting bird
+    g+=`<path d="M30 66 Q14 56 12 42 Q22 50 30 52 Q22 44 22 34 Q32 48 38 58Z" fill="${P.w}" ${a4s(1.6)}/>`;
+    g+=legs(44,76)+legs(52,76);
+    g+=`<path d="M28 66 Q30 52 46 52 Q62 54 62 66 Q60 80 46 80 Q32 80 28 66Z" fill="url(#${B})" ${a4s()}/>`;
+    g+=`<path d="M34 62 Q46 58 52 66 Q44 74 34 70Z" fill="${P.w}" ${a4s(1.5)}/>`;
+    g+=`<path d="M52 56 Q54 44 58 38 L66 40 Q66 50 60 60Z" fill="url(#${B})" ${a4s()}/>`;
+    g+=`<circle cx="62" cy="36" r="8" fill="url(#${B})" ${a4s()}/><path d="M57 29 q-2 -7 3 -8 q0 5 3 7 q2 -6 6 -5 q-3 4 -3 7" fill="${P.w}" ${a4s(1.3)}/>`;
+    g+=`<path d="M69 34 L77 37 L69 40Z" fill="${P.bk}" ${a4s(1.3)}/>`+a4eye(64,34,3,P.e,1,.5);
+    return d+g; }
+  // adult eagle: wings raised in a V
+  const wing=(dx,flip,c1,c2)=>`<g transform="translate(${dx} 0)"><path d="M48 56 Q${flip?62:34} 40 ${flip?74:22} 14 Q${flip?72:24} 22 ${flip?80:16} 22 Q${flip?74:22} 28 ${flip?82:14} 32 Q${flip?72:24} 36 ${flip?78:18} 42 Q${flip?66:30} 46 ${flip?70:26} 52 Q${flip?58:38} 54 48 62Z" fill="${c1}" ${a4s(1.6)}/><path d="M48 58 Q${flip?60:36} 48 ${flip?70:26} 40 M48 60 Q${flip?60:36} 54 ${flip?68:28} 50" fill="none" stroke="${c2}" stroke-width="2.6" stroke-linecap="round"/></g>`;
+  g+=wing(-6,false,P.w,P.w2)+wing(6,true,shade(P.w,-12),P.w2);
+  g+=`<path d="M40 80 L32 90 L40 88 L44 92 L48 84Z" fill="${P.w2===P.b?shade(P.w,-15):P.w2}" ${a4s(1.5)}/>`;
+  g+=legs(44,80)+legs(54,80);
+  g+=`<path d="M38 76 Q34 58 46 52 Q58 50 60 64 Q60 82 48 84 Q40 84 38 76Z" fill="url(#${B})" ${a4s()}/>`;
+  g+=`<path d="M44 62 Q52 60 56 68 Q52 80 46 80 Q42 72 44 62Z" fill="${P.l}" opacity=".9"/>`;
+  // head with crest
+  g+=`<path d="M46 40 q-8 -6 -6 -14 q4 6 8 6 q-2 -8 4 -12 q1 8 5 10 q2 -6 8 -6 q-3 5 -2 10Z" fill="${P.w}" ${a4s(1.4)}/>`;
+  g+=`<path d="M44 48 Q42 34 54 33 Q64 34 64 44 Q62 52 52 54 Q46 54 44 48Z" fill="url(#${B})" ${a4s()}/>`;
+  g+=`<path d="M62 39 Q72 38 72 46 Q70 49 66 46 L62 47Z" fill="${P.bk}" ${a4s(1.4)}/>`;
+  g+=a4eye(57,41.6,3.1,P.e,2,.5)+`<path d="M53 37.6 L60.4 39.6" stroke="${A4OL}" stroke-width="2.2" stroke-linecap="round"/>`;
+  return d+g; };
+
+// ---------- Shell family: big-eyed hatchling -> armored turtle -> stego-turtle with back plates and a spiked tail ----------
+const A4_SH={
+  shellby: {b:'#5ad04a',sh:'#3fbf4a',pl:'#c8f0a8',e:'#3a2a1a'},
+  tidepip: {b:'#8ac83a',sh:'#e8b52a',pl:'#f6e6a0',e:'#3a2a1a'},
+  coraldon:{b:'#5aa84a',sh:'#d83a2a',pl:'#e8e0c0',e:'#3a2a1a'},
+  brinemaw:{b:'#b8a8dc',sh:'#2a6ab8',pl:'#e8e4f4',e:'#3a2a1a'}};
+ART4.shell=function(sp,st,id){ const P=A4_SH[sp.id]||{b:sp.col[1],sh:sp.col[0],pl:sp.col[2],e:'#3a2a1a'};
+  const B=id+'b', S=id+'s'; let d=`<defs>${a4g(B,P.b)}${a4g(S,P.sh,30,-30)}</defs>`, g=''; const baby=st===0, adult=st===2;
+  g+=a4shadow(48,30);
+  const cx=baby?44:42, cy=baby?74:68, rx=baby?18:24, ry=baby?13:17;
+  // tail
+  if(adult){ g+=`<path d="M${cx-rx+4} ${cy+6} Q${cx-rx-12} ${cy+8} ${cx-rx-16} ${cy-2} Q${cx-rx-6} ${cy+2} ${cx-rx+4} ${cy-2}Z" fill="url(#${B})" ${a4s()}/>`;
+    [[cx-rx-14,cy-1],[cx-rx-8,cy+1]].forEach(([x,y])=>g+=`<path d="M${x} ${y} l-3 -7 l5 4Z" fill="${P.pl}" ${a4s(1.2)}/>`); }
+  else g+=`<path d="M${cx-rx+3} ${cy+6} L${cx-rx-6} ${cy+9} L${cx-rx+4} ${cy+10}Z" fill="url(#${B})" ${a4s(1.4)}/>`;
+  // legs
+  const leg=(x,c)=>`<path d="M${x-4.6} ${cy+4} L${x-5} 90 L${x+5.4} 90 L${x+5} ${cy+4}Z" fill="${c}" ${a4s(1.6)}/><ellipse cx="${x}" cy="90" rx="6.6" ry="2.8" fill="${c}" ${a4s(1.4)}/>`;
+  g+=leg(cx-rx*.5+3,shade(P.b,-18))+leg(cx+rx*.55+2,shade(P.b,-18));
+  // adult back plates
+  if(adult){ const n=5; for(let k=0;k<n;k++){ const x=cx-rx+10+k*((rx*2-16)/(n-1)), h=10+(k===1||k===2||k===3?6:0); g+=`<path d="M${x-5} ${cy-ry+5} L${x} ${cy-ry-h} L${x+5} ${cy-ry+5}Z" fill="${P.pl}" ${a4s(1.4)}/>`; } }
+  // shell dome
+  g+=`<path d="M${cx-rx} ${cy+6} Q${cx-rx} ${cy-ry} ${cx} ${cy-ry} Q${cx+rx} ${cy-ry} ${cx+rx} ${cy+6}Z" fill="url(#${S})" ${a4s()}/>`;
+  g+=`<path d="M${cx-rx-1} ${cy+6} L${cx+rx+1} ${cy+6}" stroke="${A4OL}" stroke-width="5" stroke-linecap="round"/><path d="M${cx-rx-1} ${cy+6} L${cx+rx+1} ${cy+6}" stroke="${P.pl}" stroke-width="2.8" stroke-linecap="round"/>`;
+  if(!baby){ g+=`<path d="M${cx-rx*.5} ${cy+5} L${cx-rx*.3} ${cy-ry*.55} L${cx+rx*.3} ${cy-ry*.55} L${cx+rx*.5} ${cy+5} M${cx-rx*.3} ${cy-ry*.55} L${cx-rx*.6} ${cy-ry*.75} M${cx+rx*.3} ${cy-ry*.55} L${cx+rx*.6} ${cy-ry*.75}" fill="none" stroke="${shade(P.sh,-30)}" stroke-width="1.6"/>`;
+    if(!adult) for(let k=0;k<3;k++){ const x=cx-rx*.45+k*rx*.45; g+=`<path d="M${x-3} ${cy-ry+2+Math.abs(k-1)*3} L${x} ${cy-ry-5+Math.abs(k-1)*3} L${x+3} ${cy-ry+2+Math.abs(k-1)*3}Z" fill="${P.pl}" ${a4s(1.2)}/>`; } }
+  g+=`<path d="M${cx-rx*.6} ${cy-ry*.6} Q${cx-rx*.2} ${cy-ry*.95} ${cx+rx*.2} ${cy-ry*.85}" fill="none" stroke="#fff" stroke-width="2.4" opacity=".45" stroke-linecap="round"/>`;
+  g+=leg(cx-rx*.62,P.b)+leg(cx+rx*.42,P.b);
+  // neck + head
+  const hx=cx+rx+(baby?6:8), hy=cy-(baby?8:12), hr=baby?11:9;
+  g+=`<path d="M${cx+rx-6} ${cy+4} Q${hx-8} ${hy+10} ${hx-6} ${hy+2} L${hx+4} ${hy+6} Q${hx-2} ${cy+4} ${cx+rx+2} ${cy+6}Z" fill="url(#${B})" ${a4s()}/>`;
+  g+=`<path d="M${hx-hr} ${hy} Q${hx-hr} ${hy-hr} ${hx} ${hy-hr} Q${hx+hr*1.2} ${hy-hr} ${hx+hr*1.3} ${hy} Q${hx+hr*1.2} ${hy+hr*.8} ${hx} ${hy+hr*.8} Q${hx-hr} ${hy+hr*.8} ${hx-hr} ${hy}Z" fill="url(#${B})" ${a4s()}/>`;
+  if(adult) g+=`<path d="M${hx-4} ${hy-hr+1} l-4 -6 l7 3Z M${hx+2} ${hy-hr} l0 -7 l4 6Z" fill="${P.pl}" ${a4s(1.1)}/>`;
+  g+=`<path d="M${hx+hr*.4} ${hy+hr*.4} Q${hx+hr} ${hy+hr*.5} ${hx+hr*1.2} ${hy+hr*.2}" fill="none" stroke="${A4OL}" stroke-width="1.4" stroke-linecap="round"/>`;
+  const er=baby?4.6:3.3; g+=a4eye(hx+hr*.1,hy-hr*.2,er,P.e,st,.5)+a4eye(hx+hr*.75,hy-hr*.25,er*.85,P.e,st,.5);
+  if(st>=1) g+=`<path d="M${hx+hr*.1-er} ${hy-hr*.2-er*.85} L${hx+hr*.1+er} ${hy-hr*.2-er*.3}" stroke="${A4OL}" stroke-width="1.9" stroke-linecap="round"/>`;
   return d+g; };
 
 </script>
