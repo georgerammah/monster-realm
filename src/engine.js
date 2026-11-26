@@ -355,7 +355,7 @@ function act(b, action){
       b._noCrit=false;
       if(sk.stormTick && d0.hp>0){ d0.st.storm=sk.stormTurns; d0.st.stormD=lv(sk.stormTick,L); b.ev.push({k:'buff',s:foe,i:ti,b:'storm'}); }
       if(d0.hp>0 && sk.drainFrac){ const x=Math.min(d0.mp, Math.round(tot*sk.drainFrac)); d0.mp-=x; }
-      if(d0.hp>0 && sk.acid){ d0.st.acid=sk.acidTurns||4; d0.st.acidV=lv(sk.acid,L); b.ev.push({k:'buff',s:foe,i:ti,b:'acid'}); }
+      if(d0.hp>0 && sk.acid){ d0.st.acidV=(d0.st.acid>0?(d0.st.acidV||0):0)+lv(sk.acid,L); d0.st.acid=sk.acidTurns||4; b.ev.push({k:'buff',s:foe,i:ti,b:'acid'}); }
       if(d0.hp>0 && sk.zap){ d0.st.zap=sk.zapTurns||6; d0.st.zapV=sk.zap; b.ev.push({k:'buff',s:foe,i:ti,b:'zap'}); }
       if(d0.hp>0 && sk.soak){ addStack(d0.st,'soak',Array.isArray(sk.soak)?lv(sk.soak,L):sk.soak,sk.soakTurns||6,skId); b.ev.push({k:'buff',s:foe,i:ti,b:'soak'}); }
       if(d0.hp>0 && sk.taunt){ d0.st.taunt=sk.tauntTurns||4; d0.st.tauntF=1; d0.st.tauntV=Array.isArray(sk.taunt)?lv(sk.taunt,L):sk.taunt; b.ev.push({k:'buff',s:foe,i:ti,b:'taunt'}); }
