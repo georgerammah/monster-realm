@@ -242,6 +242,7 @@ function pick(b,s,idx){
   const sd=b.sides[s]; if(!sd.mons[idx]||sd.mons[idx].hp<=0||idx===sd.active) idx=benchOf(b,s)[0];
   if(idx==null) return false;
   sd.active=idx; b.ev=[{k:'enter',s,i:idx}]; log(b,`${sd.name} sent out ${sd.mons[idx].n}!`);
+  if(!b.round&&b.firstOut==null){ b.firstOut=s; b.first=s; } // first monster out moves first
   b.pickQ.shift(); b.seq++;
   if(b.pickQ.length){ b.pickSide=b.pickQ[0]; return true; }
   if(b.round>0&&b.koPick&&b.koPick.length===1) b.first=b.koPick[0]; b.koPick=null;

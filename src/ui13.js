@@ -186,7 +186,8 @@ openPick=(function(prev){ return function(side, swap){
     const x=w.querySelector('#pkx'); if(x) x.style.visibility='hidden';
     setTimeout(()=>{ w.classList.add('out'); if(PICKEL===w) PICKEL=null; setTimeout(()=>w.remove(),260); if(!B) return; B.going=false;
       if(swap){ if(B.net&&B.net.role==='guest'){ NET.sendAction({swap:i}); renderBattle(); return; } act(b,{swap:i}); afterAct(); }
-      else { const s=b.pickSide; if(B.net&&B.net.role==='guest'){ NET.sendAction({pick:i}); renderBattle(); return; } pick(b,s,i); afterAct(); }
+      else { const s=side; if(b.pickSide!==s&&b.phase==='pick'&&(b.pickQ||[]).includes(s)&&!B.net){ b.pickQ=[s].concat(b.pickQ.filter(x=>x!==s)); b.pickSide=s; clearTimeout(B.aiPickT); B.aiPickT=null; }
+        if(B.net&&B.net.role==='guest'){ NET.sendAction({pick:i}); renderBattle(); return; } pick(b,s,i); afterAct(); }
     },0);
   });
 }; })(openPick);
@@ -975,7 +976,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v273 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v274 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -2566,3 +2567,17 @@ addEventListener('click',e=>{ if(e.target.closest&&e.target.closest('#battle .hi
 doPick=(function(prev){ return function(idx){ if(!B||B.going||B._picking) return; B._picking=true; closePick();
   const b=B.b, s=b.pickSide, seq=b.seq; prev(idx); const clear=()=>{ if(!B) return; if(B.b!==b||b.seq!==seq||b.phase!=='pick'||b.pickSide!==s||!B.going){ B._picking=false; return; } setTimeout(clear,120); }; setTimeout(clear,300); }; })(doPick);
 autoMove=(function(prev){ return function(){ if(!B||B.going||B._picking) return; return prev(); }; })(autoMove);
+// ---------- opening pick is a race vs the computer: whoever sends a monster out first moves first ----------
+(function(){ const race=b=>b&&b.single&&b.phase==='pick'&&!b.round&&b.firstOut==null&&B&&!B.net&&B.ctl&&B.ctl.includes('ai')&&B.ctl.includes('human');
+  const me=()=>B.ctl.indexOf('human');
+  doPick=(function(prev){ return function(idx){ const b=B&&B.b; if(race(b)&&b.pickSide!==me()&&b.pickQ.includes(me())){ clearTimeout(B.timer); clearTimeout(B.aiPickT); b.pickQ=[me()].concat(b.pickQ.filter(x=>x!==me())); b.pickSide=me(); } return prev(idx); }; })(doPick);
+  drive=(function(prev){ return function(){ const b=B&&B.b; if(!race(b)) return prev();
+    renderBattle(); if(B.paused) return;
+    if(!PICKEL&&!B.going&&!B._picking&&!B.auto) setTimeout(()=>{ if(B&&B.b===b&&race(b)&&!PICKEL&&!B.going&&!B._picking) openPick(me(),false); },350);
+    if(B.ctl[b.pickSide]==='ai'){}
+    else if(B.auto&&B.ctl[b.pickSide]==='human') prev(); }; })(drive);
+  // the computer starts thinking when your pick panel is up, and takes 1.5-5s
+  setInterval(()=>{ const b=B&&B.b; if(!race(b)||!PICKEL||B.aiPickT||B.ctl[b.pickSide]!=='ai') return; const s=b.pickSide;
+    B.aiPickT=setTimeout(()=>{ B.aiPickT=null; if(!B||B.b!==b||!race(b)||b.pickSide!==s||B.going||B._picking) return; closePick(); pick(b,s,aiPick(b,s)); afterAct(); },1500+Math.random()*3500); },100);
+  autoMove=(function(prev){ return function(){ const b=B&&B.b; if(race(b)&&!B.going&&!B._picking){ closePick(); return doPick(aiPick(b,me())); } return prev(); }; })(autoMove);
+})();
