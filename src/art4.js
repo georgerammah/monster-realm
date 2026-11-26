@@ -2,12 +2,16 @@
 const ART4={};
 const A4OL='#2a1d16';
 const a4s=(w)=>`stroke="${A4OL}" stroke-width="${w||1.8}" stroke-linejoin="round" stroke-linecap="round"`;
-function a4g(id,c,top,bot){ return `<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(c,top==null?18:top)}"/><stop offset=".6" stop-color="${c}"/><stop offset="1" stop-color="${shade(c,bot==null?-22:bot)}"/></linearGradient>`; }
+function a4g(id,c,top,bot){ // soft 3D: light from the upper left, shadow toward the lower right
+  return `<radialGradient id="${id}" cx=".36" cy=".3" r=".85" fx=".32" fy=".24"><stop offset="0" stop-color="${shade(c,top==null?24:top)}"/><stop offset=".45" stop-color="${c}"/><stop offset=".85" stop-color="${shade(c,bot==null?-20:bot)}"/><stop offset="1" stop-color="${shade(c,(bot==null?-20:bot)-12)}"/></radialGradient>`; }
 function a4eye(x,y,r,iris,st,look){ look=look||0; const pr=r*(st===0?.62:.55);
   return `<ellipse cx="${x}" cy="${y}" rx="${r*.82}" ry="${r}" fill="#fffdf6" ${a4s(1.4)}/><circle cx="${x+look+r*.12}" cy="${y+r*.08}" r="${pr}" fill="${iris}"/><circle cx="${x+look+r*.16}" cy="${y+r*.1}" r="${pr*.55}" fill="#120c08"/><circle cx="${x+look+r*.32}" cy="${y-r*.18}" r="${pr*.3}" fill="#fff"/>`; }
 function a4brow(x,y,r,dir){ return `<path d="M${x-r} ${y-r*1.05+(dir>0?-1:1)} L${x+r} ${y-r*1.05+(dir>0?1.6:-1.6)}" stroke="${A4OL}" stroke-width="2" stroke-linecap="round"/>`; }
-function a4leg(x,top,bot,w,fill,paw){ paw=paw==null?w*.62:paw;
-  return `<path d="M${x-w/2} ${top} Q${x-w/2-.5} ${(top+bot)/2} ${x-w/2+.4} ${bot-2} L${x+w/2+.6} ${bot-2} Q${x+w/2+.4} ${(top+bot)/2} ${x+w/2} ${top}Z" fill="${fill}" ${a4s(1.6)}/><ellipse cx="${x+1}" cy="${bot-1.6}" rx="${w/2+paw*.6}" ry="2.6" fill="${fill}" ${a4s(1.5)}/>`; }
+function a4leg(x,top,bot,w,fill,paw){ paw=paw==null?w*.62:paw; const h=bot-top;
+  // shoulder/thigh bulge tapering to the wrist, then a rounded paw with toe lines
+  return `<path d="M${x-w*.62} ${top} C${x-w*.85} ${top+h*.35} ${x-w*.42} ${top+h*.62} ${x-w*.4} ${bot-2.6} L${x+w*.56} ${bot-2.6} C${x+w*.52} ${top+h*.6} ${x+w*.78} ${top+h*.3} ${x+w*.6} ${top}Z" fill="${fill}" ${a4s(1.6)}/>`+
+    `<path d="M${x-w*.5-paw*.4} ${bot-.4} Q${x-w*.55-paw*.3} ${bot-5.4} ${x+1} ${bot-5.2} Q${x+w*.55+paw*.6} ${bot-5} ${x+w*.55+paw*.65} ${bot-.4}Z" fill="${fill}" ${a4s(1.5)}/>`+
+    `<path d="M${x-1} ${bot-.6} l0 -2.2 M${x+2.4} ${bot-.6} l0 -2.2" stroke="${A4OL}" stroke-width=".9" opacity=".7"/>`; }
 function a4hind(x,top,w,fill){ // rounded haunch + bent hind leg ending in a paw at x
   return `<path d="M${x-w*.2} ${top} Q${x+w*1.1} ${top+4} ${x+w*.55} ${top+12} Q${x+w*.1} ${top+16} ${x+w*.7} 90.4 L${x-w*.75} 90.4 Q${x-w*.9} ${top+14} ${x-w*1.05} ${top+7} Q${x-w*1.2} ${top} ${x-w*.2} ${top}Z" fill="${fill}" ${a4s(1.6)}/><ellipse cx="${x}" cy="90.4" rx="${w*.85}" ry="2.6" fill="${fill}" ${a4s(1.5)}/>`; }
 function a4shadow(cx,rx){ return `<ellipse cx="${cx}" cy="92.5" rx="${rx}" ry="3" fill="#000" opacity=".16"/>`; }
@@ -16,65 +20,78 @@ monSVG=(function(prev){ return function(spId,lvl,cls){ const sp=SPI[spId]; const
   const st=stageOf(lvl||1), id='a4'+(GID++); let body; try{ body=f(sp,st,id); }catch(e){ console.warn('art4',sp.id,e); return prev(spId,lvl,cls); } if(!body) return prev(spId,lvl,cls);
   return `<svg class="${cls||''}" viewBox="-4 0 108 100"><g transform="translate(50 92) scale(${A4_SC[st]}) translate(-50 -92)">${body}</g></svg>`; }; })(monSVG);
 
-// ---------- Volt family: kitten -> sleek cat with a gem collar -> winged sphinx in a striped headdress ----------
+// ---------- Volt family: kitten -> elegant cat with a jeweled collar -> winged sphinx in a striped headdress ----------
 const A4_CAT={
-  ampurr:   {b:'#6c6874',l:'#8e8a96',e:'#e8c43a',n:['#3aa84a','#f0d23a'],g:'#3fbf4a',in:'#c99aa8'},
-  sparkpaw: {b:'#ece2c4',l:'#f8f2de',e:'#4ab84a',n:['#d4482a','#f6f0e0'],g:'#e8862a',in:'#f0b0b8'},
-  thundra:  {b:'#f0d26a',l:'#fbecb0',e:'#4ab84a',n:['#3a5ab8','#f6f0e0'],g:'#e8a830',in:'#f0b0a0',s:'#3a5ab8'},
-  voltkit:  {b:'#9ab8d8',l:'#c8dbee',e:'#e8c43a',n:['#e8a030','#f6d860'],g:'#e8ecf4',in:'#e8b0c0'}};
-ART4.volt=function(sp,st,id){ const P=A4_CAT[sp.id]||{b:sp.col[0],l:sp.col[2],e:'#4ab84a',n:[sp.col[1],'#f6f0e0'],g:sp.col[1],in:'#f0b0b8'};
-  const B=id+'b', dk=shade(P.b,-30); let d=`<defs>${a4g(B,P.b)}</defs>`, g='';
+  ampurr:   {b:'#6c6874',l:'#8e8a96',ft:'#2a2830',e:'#e8c43a',n:['#3aa84a','#f0d23a'],g:'#3fbf4a',in:'#c99aa8'},
+  sparkpaw: {b:'#e6dcbc',l:'#f8f2de',ft:'#8a8478',e:'#4ab84a',n:['#d4482a','#f6f0e0'],g:'#d83a2a',in:'#f0b0b8'},
+  thundra:  {b:'#f0d26a',l:'#fbecb0',ft:'#9a8a4a',e:'#4ab84a',n:['#3a5ab8','#f6f0e0'],g:'#3a5ab8',in:'#f0b0a0',s:'#3a5ab8'},
+  voltkit:  {b:'#9ab8d8',l:'#c8dbee',ft:'#5a6a82',e:'#e8c43a',n:['#e8a030','#f6d860'],g:'#e8a030',in:'#e8b0c0'}};
+ART4.volt=function(sp,st,id){ const P=A4_CAT[sp.id]||{b:sp.col[0],l:sp.col[2],ft:shade(sp.col[0],-40),e:'#4ab84a',n:[sp.col[1],'#f6f0e0'],g:sp.col[1],in:'#f0b0b8'};
+  const B=id+'b', Bd=id+'d', dk=shade(P.b,-26); let d=`<defs>${a4g(B,P.b)}${a4g(Bd,dk)}</defs>`, g='';
   const baby=st===0, adult=st===2;
-  // layout
-  const hx=baby?62:75, hy=baby?50:37, hr=baby?16.5:12.5;
-  const bx0=baby?30:25, bx1=baby?60:70, by0=baby?62:52, by1=baby?84:77;
-  g+=a4shadow(baby?46:48, baby?22:30);
-  // tail
-  const tail=baby?`M${bx0+3} 74 Q16 74 15 62 Q15 53 23 54`:`M${bx0+3} 62 Q10 60 11 44 Q12 34 21 36`;
-  g+=`<path d="${tail}" fill="none" stroke="${A4OL}" stroke-width="${baby?8:8.6}" stroke-linecap="round"/><path d="${tail}" fill="none" stroke="${P.b}" stroke-width="${baby?4.6:5}" stroke-linecap="round"/>`;
-  if(P.s) g+=`<path d="${tail}" fill="none" stroke="${P.s}" stroke-width="5" stroke-dasharray="3 6" stroke-linecap="butt" opacity=".9"/>`;
+  // proportions: kittens are big-headed, grown cats are tall and slender
+  const k=baby?{bx0:30,bx1:62,by0:59,by1:77,hx:66,hy:46,hr:15,leg:6}:{bx0:26,bx1:68,by0:49,by1:68,hx:76,hy:30,hr:11.5,leg:6.2};
+  const {bx0,bx1,by0,by1,hx,hy,hr}=k, lw=k.leg;
+  g+=a4shadow(48,baby?22:30);
+  // tail: question-mark curl standing up behind
+  const tail=baby?`M${bx0+3} ${by0+6} Q20 ${by0+4} 20 ${by0-6} Q20 ${by0-14} 27 ${by0-14}`:`M${bx0+3} ${by0+5} Q12 ${by0+2} 13 ${by0-12} Q14 ${by0-26} 24 ${by0-26} Q30 ${by0-26} 29 ${by0-20}`;
+  g+=`<path d="${tail}" fill="none" stroke="${A4OL}" stroke-width="${baby?7.4:7}" stroke-linecap="round"/><path d="${tail}" fill="none" stroke="${P.b}" stroke-width="${baby?4.2:3.8}" stroke-linecap="round"/>`;
+  if(P.s) g+=`<path d="${tail}" fill="none" stroke="${P.s}" stroke-width="3.8" stroke-dasharray="2.4 5"/>`;
+  // a slender leg with a dark sock
+  const legC=(x,top,c,tilt,haunch)=>{ tilt=tilt||0; const h=89-top, bx=x+tilt, sock=shade(P.ft,c===P.b?0:-12);
+    const L=`M${x-lw*(haunch?1.2:.62)} ${top} C${x-lw*(haunch?1.4:.8)} ${top+h*.42} ${bx-lw*.35} ${top+h*.6} ${bx-lw*.4} 89`, R=`M${bx+lw*.5} 89 C${bx+lw*.45} ${top+h*.55} ${x+lw*(haunch?1.5:.8)} ${top+h*.32} ${x+lw*(haunch?1.1:.6)} ${top}`;
+    let s=`<path d="${L} L${bx+lw*.5} 89 C${bx+lw*.45} ${top+h*.55} ${x+lw*(haunch?1.5:.8)} ${top+h*.32} ${x+lw*(haunch?1.1:.6)} ${top}Z" fill="${c}"/>`;
+    s+=`<path d="M${bx-lw*.45} ${top+h*.64} C${bx-lw*.4} 85 ${bx-lw*.45} 88 ${bx-lw*.4} 89 L${bx+lw*.5} 89 C${bx+lw*.46} 86 ${bx+lw*.46} 82 ${bx+lw*.52} ${top+h*.62}Z" fill="${sock}"/>`;
+    s+=`<path d="${L}" fill="none" ${a4s(1.5)}/><path d="${R}" fill="none" ${a4s(1.5)}/>`;
+    s+=`<path d="M${bx-lw*.85} 91 Q${bx-lw*.9} 87.6 ${bx+.6} 87.6 Q${bx+lw*1.2} 87.6 ${bx+lw*1.25} 91Z" fill="${sock}" ${a4s(1.4)}/>`; return s; };
   // far legs
-  g+=a4hind(baby?40:37,by1-14,baby?6.4:7,dk)+a4leg(baby?55:64,by1-8,91,baby?6.6:6.8,dk);
-  // adult wing (behind body)
-  if(adult){ const W='#f8f8fb', Ws='#c9cdd8';
-    g+=`<path d="M50 58 Q40 26 4 14 Q9 22 4 25 Q15 28 6 33 Q18 35 9 41 Q21 42 13 48 Q25 48 19 54 Q31 53 28 59 Q38 58 44 62Z" fill="${W}" ${a4s(1.7)}/>`;
-    g+=`<path d="M44 52 Q32 34 12 24 M42 56 Q30 42 12 34 M38 58 Q26 48 14 44 M34 60 Q26 54 20 52" fill="none" stroke="${Ws}" stroke-width="2" stroke-linecap="round"/>`; }
+  g+=legC(baby?40:37,by1-10,`url(#${Bd})`,-1.5,1)+legC(baby?57:64,by1-10,`url(#${Bd})`,2);
+  // adult wing behind the body (swept back, layered white feathers)
+  if(adult){ const W='#fafafd', W2='#e2e4ec', W3='#c6cad6';
+    g+=`<g transform="translate(4 -10) rotate(8 56 56)">`;
+    g+=`<path d="M58 54 Q44 30 8 26 Q14 31 10 34 Q20 36 12 41 Q24 42 16 47 Q28 48 22 53 Q34 54 30 59 Q44 58 52 62Z" fill="${W}" ${a4s(1.6)}/>`;
+    g+=`<path d="M56 54 Q42 38 14 34 M54 57 Q40 46 18 44 M50 60 Q38 54 26 52" fill="none" stroke="${W2}" stroke-width="2.6" stroke-linecap="round"/>`;
+    g+=`<path d="M10 34 Q20 36 12 41 M16 47 Q28 48 22 53" fill="none" stroke="${W3}" stroke-width="1.2"/>`; g+='</g>'; }
   // body
-  g+=`<path d="M${bx0+1} ${by1-6} Q${bx0-3} ${by0+1} ${bx0+12} ${by0} Q${(bx0+bx1)/2} ${by0+3} ${bx1-8} ${by0-3} Q${bx1+4} ${by0-1} ${bx1+2} ${(by0+by1)/2+3} Q${bx1} ${by1+1} ${bx1-10} ${by1-1} Q${(bx0+bx1)/2} ${by1-5} ${bx0+12} ${by1} Q${bx0+3} ${by1+1} ${bx0+1} ${by1-6}Z" fill="url(#${B})" ${a4s()}/>`;
-  g+=`<path d="M${bx1-14} ${by1-3} Q${bx1-6} ${by1-1} ${bx1-2} ${by1-8}" fill="none" stroke="${P.l}" stroke-width="3.4" stroke-linecap="round" opacity=".85"/>`;
-  if(P.s){ for(let k=0;k<(baby?2:4);k++){ const x=bx0+12+k*((bx1-bx0-16)/(baby?2:4)); g+=`<path d="M${x} ${by0+1} q-2 6 1 11" fill="none" stroke="${P.s}" stroke-width="3" stroke-linecap="round"/>`; } }
-  // near legs
-  g+=a4hind(baby?33:31,by1-16,baby?7.2:8,P.b)+a4leg(baby?50:58,by1-12,92,baby?7.4:7.8,P.b);
-  // neck/chest up to head
-  if(!baby) g+=`<path d="M${bx1-12} ${by0+4} Q${hx-8} ${hy+4} ${hx-6} ${hy+2} L${hx+6} ${hy+6} Q${bx1+2} ${by0+6} ${bx1} ${by0+12}Z" fill="url(#${B})" ${a4s()}/>`;
-  // collar (teen) / jeweled collar (adult)
-  if(st>=1){ const cx=hx-1, cy=hy+hr+1; g+=`<path d="M${cx-9} ${cy-3} Q${cx} ${cy+4} ${cx+9} ${cy-3}" fill="none" stroke="${A4OL}" stroke-width="5.4" stroke-linecap="round"/><path d="M${cx-9} ${cy-3} Q${cx} ${cy+4} ${cx+9} ${cy-3}" fill="none" stroke="${adult?'#e8b830':P.g}" stroke-width="3" stroke-linecap="round"/>`;
-    g+=`<path d="M${cx} ${cy+1} l3 4 l-3 4 l-3 -4Z" fill="${P.g}" ${a4s(1.3)}/>`; }
-  // ears
-  const ear=(x0,x1,tx,ty)=>`<path d="M${x0} ${hy-hr*.45} L${tx} ${ty} L${x1} ${hy-hr*.75}Z" fill="${P.b}" ${a4s()}/><path d="M${x0+(tx-x0)*.3} ${hy-hr*.5} L${tx+(x0<tx?0:0)} ${ty+3.5} L${x1-(x1-tx)*.35} ${hy-hr*.72}Z" fill="${P.in}"/>`;
-  if(!adult){ g+=ear(hx-hr*.95,hx-hr*.2,hx-hr*.75,hy-hr*1.75)+ear(hx+hr*.15,hx+hr*.9,hx+hr*.75,hy-hr*1.8); }
-  // adult headdress flaps fall behind the head to the shoulders
-  if(adult){ g+=`<path d="M${hx-hr+1} ${hy-4} L${hx-hr-7} ${hy+19} L${hx+hr*.1} ${hy+17} L${hx+2} ${hy+2}Z" fill="${P.n[0]}" ${a4s(1.6)}/>`;
-    for(let k=1;k<5;k++){ const y=hy-3+k*4.4; g+=`<path d="M${hx-hr-1-k*1.3} ${y} L${hx+1} ${y-.5}" stroke="${P.n[1]}" stroke-width="2.2"/>`; } }
+  g+=`<path d="M${bx0+2} ${by1-3} Q${bx0-3} ${by0+2} ${bx0+10} ${by0} Q${(bx0+bx1)/2} ${by0+3} ${bx1-6} ${by0-3} Q${bx1+4} ${by0-2} ${bx1+3} ${by1-6} Q${bx1} ${by1+1} ${bx1-8} ${by1} Q${(bx0+bx1)/2} ${by1-3} ${bx0+10} ${by1+1} Q${bx0+3} ${by1+1} ${bx0+2} ${by1-3}Z" fill="url(#${B})" ${a4s()}/>`;
+  if(P.s) for(let i=0;i<(baby?3:5);i++){ const x=bx0+9+i*((bx1-bx0-14)/(baby?3:5)); g+=`<path d="M${x} ${by0+.5} q-2.4 4 0 8" fill="none" stroke="${P.s}" stroke-width="2.6" stroke-linecap="round"/>`; }
+  // near legs (front leg steps forward)
+  g+=legC(baby?33:31,by1-14,P.b,-2,1)+legC(baby?52:58,by1-12,P.b,3);
+  // neck
+  if(!baby) g+=`<path d="M${bx1-14} ${by0+4} Q${hx-9} ${hy+8} ${hx-6} ${hy+4} L${hx+5} ${hy+7} Q${bx1+2} ${by0} ${bx1+3} ${by0+10} L${bx1-8} ${by0+12}Z" fill="url(#${B})"/><path d="M${bx1-14} ${by0+2} Q${hx-9} ${hy+8} ${hx-6} ${hy+4}" fill="none" ${a4s()}/><path d="M${hx+5} ${hy+7} Q${bx1+2} ${by0} ${bx1+3} ${by0+10}" fill="none" ${a4s()}/>`;
+  // jeweled broad collar (teen) / gold collar (adult)
+  if(st>=1){ const cx=hx-2, cy=hy+hr+3; const col=adult?'#e8b830':'#f4f0e4';
+    g+=`<path d="M${cx-9} ${cy-4} Q${cx} ${cy+2} ${cx+9} ${cy-5} L${cx+10} ${cy} Q${cx} ${cy+8} ${cx-10} ${cy+1}Z" fill="${col}" ${a4s(1.4)}/>`;
+    g+=`<path d="M${cx-9.5} ${cy-1.5} Q${cx} ${cy+5} ${cx+9.5} ${cy-2.5}" fill="none" stroke="${P.g}" stroke-width="1.6"/>`;
+    g+=`<path d="M${cx} ${cy+3} l2.6 3.2 l-2.6 3.4 l-2.6 -3.4Z" fill="${P.g}" ${a4s(1.2)}/><circle cx="${cx-.8}" cy="${cy+5.4}" r=".8" fill="#fff" opacity=".8"/>`; }
+  // ears: tall triangles
+  const ear=(x0,x1,tx,ty)=>`<path d="M${x0} ${hy-hr*.4} L${tx} ${ty} L${x1} ${hy-hr*.78}Z" fill="url(#${B})" ${a4s()}/><path d="M${x0+(tx-x0)*.32} ${hy-hr*.5} L${tx} ${ty+4} L${x1-(x1-tx)*.3} ${hy-hr*.74}Z" fill="${P.in}" opacity=".85"/>`;
+  if(!adult) g+=ear(hx-hr*.95,hx-hr*.18,hx-hr*.72,hy-hr*(baby?1.75:2))+ear(hx+hr*.1,hx+hr*.92,hx+hr*.72,hy-hr*(baby?1.8:2.05));
+  // adult: nemes lappet + braided beard behind the face
+  if(adult){ g+=`<path d="M${hx-hr+.5} ${hy-3} L${hx-hr-6} ${hy+18} L${hx-1} ${hy+16} L${hx+1} ${hy+2}Z" fill="${P.n[0]}" ${a4s(1.5)}/>`;
+    for(let i=1;i<5;i++){ const y=hy-2+i*4.3; g+=`<path d="M${hx-hr-.6-i*1.2} ${y} L${hx} ${y-.4}" stroke="${P.n[1]}" stroke-width="2.1"/>`; }
+    g+=`<path d="M${hx+4} ${hy+hr*.8} L${hx+3} ${hy+hr*.8+9} L${hx+7} ${hy+hr*.8+9} L${hx+6.4} ${hy+hr*.8}Z" fill="#e8b830" ${a4s(1.2)}/><path d="M${hx+3.2} ${hy+hr*.8+3} h3.6 M${hx+3.1} ${hy+hr*.8+6} h3.8" stroke="${shade('#e8b830',-30)}" stroke-width="1"/>`; }
   // head
-  g+=`<path d="M${hx-hr} ${hy+1} Q${hx-hr} ${hy-hr} ${hx} ${hy-hr} Q${hx+hr+1} ${hy-hr} ${hx+hr+1} ${hy+1} Q${hx+hr+1} ${hy+hr*.9} ${hx} ${hy+hr*.92} Q${hx-hr} ${hy+hr*.9} ${hx-hr} ${hy+1}Z" fill="url(#${B})" ${a4s()}/>`;
+  g+=`<path d="M${hx-hr} ${hy+1} Q${hx-hr} ${hy-hr} ${hx} ${hy-hr} Q${hx+hr+1} ${hy-hr} ${hx+hr+1.5} ${hy+1} Q${hx+hr+1} ${hy+hr*.85} ${hx+1} ${hy+hr*.9} Q${hx-hr} ${hy+hr*.88} ${hx-hr} ${hy+1}Z" fill="url(#${B})" ${a4s()}/>`;
+  g+=`<path d="M${hx-hr+2} ${hy+hr*.55} q2 1.6 4 .4 M${hx-hr+1.5} ${hy+hr*.35} q2 1 4 .2" fill="none" stroke="${shade(P.b,-25)}" stroke-width="1" opacity=".8"/>`;
   if(P.s&&!adult) g+=`<path d="M${hx-3} ${hy-hr+1} l1 4 M${hx+1} ${hy-hr+.5} l0 4 M${hx+5} ${hy-hr+1} l-1 4" stroke="${P.s}" stroke-width="2" stroke-linecap="round"/>`;
   // muzzle
-  const mx=hx+hr*.45, my=hy+hr*.38;
-  g+=`<ellipse cx="${mx}" cy="${my}" rx="${hr*.42}" ry="${hr*.3}" fill="${P.l}" opacity=".95"/><path d="M${mx-1.6} ${my-hr*.2} l3.2 0 l-1.6 2Z" fill="#e88a9a" ${a4s(1)}/>`;
-  g+=`<path d="M${mx-3.2} ${my+1.6} Q${mx-1.6} ${my+3.4} ${mx} ${my+1.4} Q${mx+1.6} ${my+3.4} ${mx+3.2} ${my+1.6}" fill="none" stroke="${A4OL}" stroke-width="1.3" stroke-linecap="round"/>`;
-  g+=`<path d="M${mx+hr*.45} ${my} l${hr*.35} -1.4 M${mx+hr*.45} ${my+1.6} l${hr*.36} .6" stroke="${A4OL}" stroke-width=".9" opacity=".6"/>`;
-  // eyes
-  const er=baby?4.6:3.3;
-  g+=a4eye(hx-hr*.3,hy-hr*.08,er,P.e,st,.4)+a4eye(hx+hr*.42,hy-hr*.1,er*.92,P.e,st,.4);
-  if(st>=1) g+=`<path d="M${hx-hr*.3-er} ${hy-hr*.08-er*.55} L${hx-hr*.3+er} ${hy-hr*.08-er*.95}" stroke="${A4OL}" stroke-width="1.8" stroke-linecap="round"/><path d="M${hx+hr*.42-er} ${hy-hr*.1-er} L${hx+hr*.42+er} ${hy-hr*.1-er*.55}" stroke="${A4OL}" stroke-width="1.8" stroke-linecap="round"/>`;
-  // adult nemes headdress over the crown
-  if(adult){ const N=id+'n'; d+=`<pattern id="${N}" width="4.4" height="40" patternUnits="userSpaceOnUse"><rect width="4.4" height="40" fill="${P.n[0]}"/><rect width="2.2" height="40" fill="${P.n[1]}"/></pattern>`;
-    g+=`<path d="M${hx-hr-1.5} ${hy-1} Q${hx-hr} ${hy-hr-6} ${hx+1} ${hy-hr-5} Q${hx+hr+2} ${hy-hr-4} ${hx+hr+2} ${hy-2} L${hx+hr-2} ${hy-hr*.42} Q${hx} ${hy-hr*.82} ${hx-hr+2} ${hy-hr*.4}Z" fill="url(#${N})" ${a4s(1.6)}/>`;
-    g+=`<path d="M${hx-hr+2} ${hy-hr*.4} Q${hx} ${hy-hr*.82} ${hx+hr-2} ${hy-hr*.42}" fill="none" stroke="#e8b830" stroke-width="2.4"/><path d="M${hx+2} ${hy-hr-5} l1.6 -4 l1.6 4Z" fill="#e8b830" ${a4s(1.2)}/>`;
-    g+=`<path d="M${hx+hr+1} ${hy-3} L${hx+hr+3} ${hy+8} L${hx+hr-1} ${hy+8}Z" fill="${P.n[0]}" ${a4s(1.3)}/>`; }
+  const mx=hx+hr*.45, my=hy+hr*.4;
+  g+=`<ellipse cx="${mx}" cy="${my}" rx="${hr*.4}" ry="${hr*.28}" fill="${P.l}"/><path d="M${mx-1.5} ${my-hr*.2} l3 0 l-1.5 2Z" fill="#e88a9a" ${a4s(1)}/>`;
+  g+=baby?`<path d="M${mx-3} ${my+1.4} Q${mx} ${my+5.4} ${mx+3} ${my+1.4}Z" fill="#c8505a" ${a4s(1.1)}/>`:`<path d="M${mx-3} ${my+1.6} Q${mx-1.5} ${my+3.2} ${mx} ${my+1.4} Q${mx+1.5} ${my+3.2} ${mx+3} ${my+1.6}" fill="none" stroke="${A4OL}" stroke-width="1.2" stroke-linecap="round"/>`;
+  g+=`<path d="M${mx+hr*.42} ${my-.4} l${hr*.4} -1.6 M${mx+hr*.42} ${my+1.4} l${hr*.42} .6 M${mx-hr*.42} ${my} l${-hr*.36} -1" stroke="${A4OL}" stroke-width=".8" opacity=".55"/>`;
+  // eyes: kittens wide and round, grown cats narrowed and haughty
+  const er=baby?4.4:3.1;
+  g+=a4eye(hx-hr*.28,hy-hr*.06,er,P.e,st,.4)+a4eye(hx+hr*.42,hy-hr*.08,er*.92,P.e,st,.4);
+  if(st>=1) g+=`<path d="M${hx-hr*.28-er-.5} ${hy-hr*.06-er*.35} Q${hx-hr*.28} ${hy-hr*.06-er*1.05} ${hx-hr*.28+er+.5} ${hy-hr*.06-er*.5}" fill="${P.b}" stroke="${A4OL}" stroke-width="1.6"/><path d="M${hx+hr*.42-er-.5} ${hy-hr*.08-er*.5} Q${hx+hr*.42} ${hy-hr*.08-er*1.05} ${hx+hr*.42+er+.5} ${hy-hr*.08-er*.35}" fill="${P.b}" stroke="${A4OL}" stroke-width="1.6"/>`;
+  // adult nemes over the crown with gold band and cobra
+  if(adult){ const N=id+'n'; d+=`<pattern id="${N}" width="4.2" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(8)"><rect width="4.2" height="40" fill="${P.n[0]}"/><rect width="2.1" height="40" fill="${P.n[1]}"/></pattern>`;
+    g+=`<path d="M${hx-hr-1.5} ${hy} Q${hx-hr-1} ${hy-hr-5} ${hx+1} ${hy-hr-4.5} Q${hx+hr+2} ${hy-hr-4} ${hx+hr+2.4} ${hy-1} L${hx+hr-1.6} ${hy-hr*.38} Q${hx} ${hy-hr*.8} ${hx-hr+2} ${hy-hr*.36}Z" fill="url(#${N})" ${a4s(1.5)}/>`;
+    g+=`<path d="M${hx-hr+2} ${hy-hr*.36} Q${hx} ${hy-hr*.8} ${hx+hr-1.6} ${hy-hr*.38}" fill="none" stroke="${A4OL}" stroke-width="4.2"/><path d="M${hx-hr+2} ${hy-hr*.36} Q${hx} ${hy-hr*.8} ${hx+hr-1.6} ${hy-hr*.38}" fill="none" stroke="#e8b830" stroke-width="2.4"/>`;
+    g+=`<path d="M${hx+2.6} ${hy-hr*.72} q-1.6 -4 .6 -6.6 q2.6 1.4 1.4 6.4Z" fill="#e8b830" ${a4s(1.1)}/>`;
+    g+=`<path d="M${hx+hr+1.4} ${hy-2} L${hx+hr+3.6} ${hy+9} L${hx+hr-.6} ${hy+9}Z" fill="url(#${N})" ${a4s(1.2)}/>`;
+    g+=`<path d="M${hx-hr*.62} ${hy-hr*1.2} L${hx-hr*.5} ${hy-hr*1.95} L${hx-hr*.1} ${hy-hr*1.1}Z" fill="url(#${B})" ${a4s(1.4)}/>`; }
   return d+g; };
-
 // ---------- Tiger family: chunky cub -> prowling cat with spiked cuffs -> snarling sabertooth (Tigera grows a lion's mane) ----------
 const A4_TIG={
   stripel:    {b:'#f0cf7a',l:'#fbedc4',s:null,mane:'#d8742a',e:'#3fbf4a'},
