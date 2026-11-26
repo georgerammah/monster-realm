@@ -12,6 +12,12 @@ function a4leg(x,top,bot,w,fill,paw){ paw=paw==null?w*.62:paw; const h=bot-top;
   return `<path d="M${x-w*.62} ${top} C${x-w*.85} ${top+h*.35} ${x-w*.42} ${top+h*.62} ${x-w*.4} ${bot-2.6} L${x+w*.56} ${bot-2.6} C${x+w*.52} ${top+h*.6} ${x+w*.78} ${top+h*.3} ${x+w*.6} ${top}Z" fill="${fill}" ${a4s(1.6)}/>`+
     `<path d="M${x-w*.5-paw*.4} ${bot-.4} Q${x-w*.55-paw*.3} ${bot-5.4} ${x+1} ${bot-5.2} Q${x+w*.55+paw*.6} ${bot-5} ${x+w*.55+paw*.65} ${bot-.4}Z" fill="${fill}" ${a4s(1.5)}/>`+
     `<path d="M${x-1} ${bot-.6} l0 -2.2 M${x+2.4} ${bot-.6} l0 -2.2" stroke="${A4OL}" stroke-width=".9" opacity=".7"/>`; }
+function a4sockLeg(x,top,c,sock,lw,tilt,haunch){ tilt=tilt||0; const h=89-top, bx=x+tilt;
+  const L=`M${x-lw*(haunch?1.2:.62)} ${top} C${x-lw*(haunch?1.4:.8)} ${top+h*.42} ${bx-lw*.35} ${top+h*.6} ${bx-lw*.4} 89`, R=`M${bx+lw*.5} 89 C${bx+lw*.45} ${top+h*.55} ${x+lw*(haunch?1.5:.8)} ${top+h*.32} ${x+lw*(haunch?1.1:.6)} ${top}`;
+  let s=`<path d="${L} ${R.replace('M','L')}Z" fill="${c}"/>`;
+  if(sock) s+=`<path d="M${bx-lw*.45} ${top+h*.62} C${bx-lw*.4} 85 ${bx-lw*.45} 88 ${bx-lw*.4} 89 L${bx+lw*.5} 89 C${bx+lw*.46} 86 ${bx+lw*.46} 82 ${bx+lw*.52} ${top+h*.6}Z" fill="${sock}"/>`;
+  s+=`<path d="${L}" fill="none" ${a4s(1.5)}/><path d="${R}" fill="none" ${a4s(1.5)}/>`;
+  s+=`<path d="M${bx-lw*.85} 91 Q${bx-lw*.9} 87.6 ${bx+.6} 87.6 Q${bx+lw*1.2} 87.6 ${bx+lw*1.25} 91Z" fill="${sock||c}" ${a4s(1.4)}/>`; return s; }
 function a4hind(x,top,w,fill){ // rounded haunch + bent hind leg ending in a paw at x
   return `<path d="M${x-w*.2} ${top} Q${x+w*1.1} ${top+4} ${x+w*.55} ${top+12} Q${x+w*.1} ${top+16} ${x+w*.7} 90.4 L${x-w*.75} 90.4 Q${x-w*.9} ${top+14} ${x-w*1.05} ${top+7} Q${x-w*1.2} ${top} ${x-w*.2} ${top}Z" fill="${fill}" ${a4s(1.6)}/><ellipse cx="${x}" cy="90.4" rx="${w*.85}" ry="2.6" fill="${fill}" ${a4s(1.5)}/>`; }
 function a4shadow(cx,rx){ return `<ellipse cx="${cx}" cy="92.5" rx="${rx}" ry="3" fill="#000" opacity=".16"/>`; }
@@ -98,6 +104,8 @@ const A4_TIG={
   shadestripe:{b:'#f6f3f2',l:'#ffffff',s:'#cf2a2a',e:'#3fbf4a'},
   voltiger:   {b:'#f28a2a',l:'#fbe4c6',s:'#2b2216',e:'#3fbf4a'},
   frostrype:  {b:'#c4ee44',l:'#ecffc4',s:'#8a4ab8',e:'#3fbf4a'}};
+function a4wedge(x,y,len,ang,w,c){ const a=ang*Math.PI/180, dx=Math.cos(a), dy=Math.sin(a), nx=-dy, ny=dx;
+  return `<path d="M${(x+nx*w).toFixed(1)} ${(y+ny*w).toFixed(1)} Q${(x+dx*len*.5+nx*w*.8).toFixed(1)} ${(y+dy*len*.5+ny*w*.8).toFixed(1)} ${(x+dx*len).toFixed(1)} ${(y+dy*len).toFixed(1)} Q${(x+dx*len*.5-nx*w*.6).toFixed(1)} ${(y+dy*len*.5-ny*w*.6).toFixed(1)} ${(x-nx*w).toFixed(1)} ${(y-ny*w).toFixed(1)}Z" fill="${c}"/>`; }
 function a4cuff(x,y,w){ let g=`<rect x="${x-w/2-1.2}" y="${y-2.4}" width="${w+2.4}" height="4.8" rx="2" fill="#c8302a" ${a4s(1.4)}/>`; for(let k=0;k<3;k++) g+=`<path d="M${x-w/2+k*(w/2)} ${y-2.4} l1.2 -2.6 l1.2 2.6Z" fill="#f4f4f4" ${a4s(1)}/>`; return g; }
 ART4.tiger=function(sp,st,id){ const P=A4_TIG[sp.id]||{b:sp.col[0],l:sp.col[2],s:sp.col[1],e:'#3fbf4a'};
   const B=id+'b', dk=shade(P.b,-28); let d=`<defs>${a4g(B,P.b)}</defs>`, g='';
@@ -113,14 +121,16 @@ ART4.tiger=function(sp,st,id){ const P=A4_TIG[sp.id]||{b:sp.col[0],l:sp.col[2],s
   // body: heavy shoulders, low head
   const body=baby?'M26 76 Q22 62 36 61 Q50 60 60 56 Q72 54 74 66 Q74 80 62 84 Q46 86 34 84 Q26 83 26 76Z'
                  :'M22 66 Q18 50 34 48 Q48 46 58 40 Q72 35 79 46 Q84 62 74 73 Q58 78 42 76 Q24 76 22 66Z';
-  g+=`<path d="${body}" fill="url(#${B})" ${a4s()}/>`;
-  g+=`<path d="${baby?'M40 83 Q52 85 62 82':'M44 75 Q58 77 72 71'}" fill="none" stroke="${P.l}" stroke-width="3.6" stroke-linecap="round" opacity=".9"/>`;
-  if(P.s){ const xs=baby?[38,46,54]:[30,38,46,54,62]; xs.forEach((x,k)=>{ const y=baby?61:(48-k*1.6); g+=`<path d="M${x} ${y} q-3 5 0 10 q1 3 -1 6" fill="none" stroke="${P.s}" stroke-width="${baby?2.6:3.2}" stroke-linecap="round"/>`; }); }
+  const CL=id+'cb'; d+=`<clipPath id="${CL}"><path d="${body}"/></clipPath>`;
+  g+=`<path d="${body}" fill="url(#${B})"/>`;
+  let inner=`<ellipse cx="${baby?60:70}" cy="${baby?80:70}" rx="${baby?12:14}" ry="${baby?8:10}" fill="${P.l}"/><ellipse cx="${baby?46:50}" cy="${baby?88:80}" rx="${baby?16:22}" ry="6" fill="${P.l}" opacity=".9"/>`;
+  if(P.s){ const n=baby?4:7; for(let i=0;i<n;i++){ const x=(baby?32:26)+i*(baby?8:7.4), top=baby?58:(52-Math.sin(i/(n-1)*3)*8); inner+=a4wedge(x,top-2,baby?11:15+(i%2)*4,96+(i%3)*6,baby?2.2:2.8,P.s); } }
+  g+=`<g clip-path="url(#${CL})">${inner}</g><path d="${body}" fill="none" ${a4s()}/>`;
   // near legs (front leg is thick and muscular)
   g+=a4hind(baby?30:28,baby?66:56,baby?8:9.4,P.b);
   const fx=baby?56:66; g+=a4leg(fx,baby?68:58,92,baby?9:12,P.b,baby?5:6);
-  if(P.s&&!baby) g+=`<path d="M${fx-5} 70 l4 1 M${fx-5} 76 l4 1" stroke="${P.s}" stroke-width="2.6" stroke-linecap="round"/>`;
-  if(st>=1) g+=a4cuff(fx+.5,84,baby?9:12)+a4cuff(baby?62:72,84,baby?8:10);
+  if(P.s) [[fx-(baby?4.4:5.8),70],[fx-(baby?4.4:5.8),76.5],[baby?24.5:22.5,68],[baby?25:23,74.5]].forEach(([x,y])=>g+=a4wedge(x,y,baby?4:5.6,6,1.4,P.s));
+  if(st>=1) g+=a4cuff(fx+.5,84,baby?9:12)+a4cuff(baby?62:72,84,baby?8:10)+a4cuff(baby?30:28,84,baby?8:10);
   g+=`<path d="M${fx-4} 91 l0 -2.6 M${fx} 91.4 l0 -2.6 M${fx+4} 91 l0 -2.6" stroke="${A4OL}" stroke-width="1.1"/>`;
   // Tigera's mane
   if(P.mane&&adult){ const cx=hx-3, cy=hy-1, n=20, a0=-4.5, a1=0.45; let m='';
@@ -130,7 +140,8 @@ ART4.tiger=function(sp,st,id){ const P=A4_TIG[sp.id]||{b:sp.col[0],l:sp.col[2],s
   [[hx-hr*.62,-1],[hx+hr*.42,1]].forEach(([x,sg])=>{ g+=`<ellipse cx="${x}" cy="${hy-hr*.86}" rx="${hr*.32}" ry="${hr*.3}" fill="${P.b}" ${a4s(1.6)}/><ellipse cx="${x}" cy="${hy-hr*.82}" rx="${hr*.17}" ry="${hr*.15}" fill="${shade(P.b,-25)}"/>`; });
   // head
   g+=`<path d="M${hx-hr} ${hy} Q${hx-hr} ${hy-hr*.95} ${hx} ${hy-hr*.95} Q${hx+hr*1.05} ${hy-hr*.95} ${hx+hr*1.1} ${hy+1} Q${hx+hr*1.12} ${hy+hr*.85} ${hx+2} ${hy+hr*.88} Q${hx-hr*1.05} ${hy+hr*.9} ${hx-hr} ${hy}Z" fill="url(#${B})" ${a4s()}/>`;
-  if(P.s) g+=`<path d="M${hx-2} ${hy-hr*.92} l.6 4 M${hx+2.5} ${hy-hr*.9} l0 4 M${hx-hr*.95} ${hy+1} l4 1 M${hx-hr*.9} ${hy+4.5} l4 0" stroke="${P.s}" stroke-width="2.2" stroke-linecap="round"/>`;
+  g+=`<path d="M${hx-hr*.9} ${hy+hr*.15} L${hx-hr*1.3} ${hy+hr*.5} L${hx-hr*.85} ${hy+hr*.55} L${hx-hr*1.15} ${hy+hr*.85} L${hx-hr*.55} ${hy+hr*.8}Z" fill="url(#${B})" ${a4s(1.3)}/>`;
+  if(P.s){ g+=a4wedge(hx-1,hy-hr*.95,6,90,1.6,P.s)+a4wedge(hx+3,hy-hr*.92,5,95,1.4,P.s)+a4wedge(hx-5,hy-hr*.88,4.6,80,1.3,P.s)+a4wedge(hx-hr,hy,6,8,1.5,P.s)+a4wedge(hx-hr,hy+4,5,0,1.3,P.s); }
   // muzzle
   const mx=hx+hr*.48, my=hy+hr*.42;
   g+=`<ellipse cx="${mx}" cy="${my}" rx="${hr*.5}" ry="${hr*.36}" fill="${P.l}" ${a4s(1.3)}/><path d="M${mx+hr*.18} ${my-hr*.3} l3.4 0 l-1.7 2.4Z" fill="#c87a6a" ${a4s(1)}/>`;
@@ -151,8 +162,8 @@ const A4_HND={
   cragmaw:  {b:'#4e4462',l:'#7a7090',leg:'#2e2840',tip:'#2e2840',c:'#3ab8d8',e:'#3ab8d8'}};
 function a4foxHead(hx,hy,r,P,st,id,snarl,B){ let g='';
   // ears
-  g+=`<path d="M${hx-r*.8} ${hy-r*.3} L${hx-r*.55} ${hy-r*1.9} L${hx+r*.05} ${hy-r*.75}Z" fill="${P.b}" ${a4s()}/><path d="M${hx-r*.62} ${hy-r*.5} L${hx-r*.52} ${hy-r*1.45} L${hx-r*.15} ${hy-r*.75}Z" fill="${P.leg}" opacity=".55"/>`;
-  g+=`<path d="M${hx+r*.05} ${hy-r*.7} L${hx+r*.62} ${hy-r*1.95} L${hx+r*.82} ${hy-r*.45}Z" fill="${P.b}" ${a4s()}/><path d="M${hx+r*.22} ${hy-r*.75} L${hx+r*.6} ${hy-r*1.5} L${hx+r*.68} ${hy-r*.6}Z" fill="${P.leg}" opacity=".55"/>`;
+  g+=`<path d="M${hx-r*.9} ${hy-r*.25} L${hx-r*.7} ${hy-r*2.3} L${hx+r*.1} ${hy-r*.75}Z" fill="${P.b}" ${a4s()}/><path d="M${hx-r*.62} ${hy-r*.5} L${hx-r*.52} ${hy-r*1.45} L${hx-r*.15} ${hy-r*.75}Z" fill="${P.leg}" opacity=".55"/>`;
+  g+=`<path d="M${hx+r*.0} ${hy-r*.7} L${hx+r*.7} ${hy-r*2.35} L${hx+r*.95} ${hy-r*.4}Z" fill="${P.b}" ${a4s()}/><path d="M${hx+r*.22} ${hy-r*.75} L${hx+r*.6} ${hy-r*1.5} L${hx+r*.68} ${hy-r*.6}Z" fill="${P.leg}" opacity=".55"/>`;
   // skull + long snout
   g+=`<path d="M${hx-r} ${hy+r*.1} Q${hx-r} ${hy-r} ${hx} ${hy-r*.92} Q${hx+r*.8} ${hy-r*.9} ${hx+r*.95} ${hy-r*.15} L${hx+r*2} ${hy+r*.12} Q${hx+r*2.15} ${hy+r*.45} ${hx+r*1.9} ${hy+r*.6} L${hx+r*.6} ${hy+r*.9} Q${hx-r*.3} ${hy+r*1.05} ${hx-r} ${hy+r*.1}Z" fill="url(#${B})" ${a4s()}/>`;
   g+=`<path d="M${hx-r*.2} ${hy+r*.95} Q${hx+r*.6} ${hy+r*.7} ${hx+r*1.9} ${hy+r*.6} Q${hx+r*.9} ${hy+r*1.35} ${hx-r*.2} ${hy+r*.95}Z" fill="${P.l}" ${a4s(1.3)}/>`;
@@ -166,36 +177,39 @@ function a4foxHead(hx,hy,r,P,st,id,snarl,B){ let g='';
   if(st>=1) g+=`<path d="M${hx+r*.38-er} ${hy-r*.18-er*.7} L${hx+r*.38+er*1.1} ${hy-r*.18-er*.15}" stroke="${A4OL}" stroke-width="2" stroke-linecap="round"/>`;
   return g; }
 ART4.hound=function(sp,st,id){ const P=A4_HND[sp.id]||{b:sp.col[0],l:sp.col[2],leg:shade(sp.col[0],-40),tip:sp.col[2],c:sp.col[1],e:'#3a2a1a'};
-  const B=id+'b'; let d=`<defs>${a4g(B,P.b)}</defs>`, g='';
+  const B=id+'b', Bd=id+'d'; let d=`<defs>${a4g(B,P.b)}${a4g(Bd,shade(P.b,-22))}</defs>`, g='';
   const baby=st===0, adult=st===2;
-  const bx0=baby?30:24, bx1=baby?62:66, by0=baby?64:54, by1=baby?82:76;
+  const bx0=baby?32:24, bx1=baby?62:66, by0=baby?64:54, by1=baby?80:74, lw=baby?5.8:6.4;
   g+=a4shadow(48,30);
-  // bushy tail swept up
-  const tl=baby?`M${bx0+2} 72 Q14 72 12 58 Q18 62 22 60 Q18 54 22 48 Q28 60 ${bx0+6} 66Z`:`M${bx0+2} 62 Q8 62 6 42 Q12 46 16 44 Q12 36 18 28 Q26 46 ${bx0+8} 56Z`;
-  g+=`<path d="${tl}" fill="${P.b}" ${a4s()}/>`;
-  g+=`<path d="${baby?'M12 58 Q18 62 22 60 Q18 54 22 48 Q15 50 12 58Z':'M6 42 Q12 46 16 44 Q12 36 18 28 Q8 32 6 42Z'}" fill="${P.tip}" ${a4s(1.4)}/>`;
+  // big fluffy tail curling up, tufted edge
+  const tl=baby?`M${bx0+2} 72 Q16 74 13 60 L17 61 Q14 54 18 48 L21 52 Q22 44 28 44 Q24 52 27 58 Q30 66 ${bx0+6} 66Z`
+                :`M${bx0+2} 62 Q8 64 5 46 L9 47 Q6 38 11 30 L14 34 Q16 24 24 22 Q19 32 21 42 Q24 54 ${bx0+8} 56Z`;
+  g+=`<path d="${tl}" fill="url(#${B})" ${a4s()}/>`;
+  const TC=id+'tc'; d+=`<clipPath id="${TC}"><path d="${tl}"/></clipPath>`;
+  g+=`<g clip-path="url(#${TC})"><ellipse cx="${baby?20:14}" cy="${baby?48:26}" rx="${baby?10:13}" ry="${baby?9:12}" fill="${P.tip}"/></g><path d="${tl}" fill="none" ${a4s()}/>`;
   // far legs
-  const lg=(x,w,c)=>a4leg(x,by1-8,91,w,c);
-  g+=lg(baby?40:36,baby?6:6.6,shade(P.leg,-10))+lg(baby?58:60,baby?6:6.6,shade(P.leg,-10));
+  g+=a4sockLeg(baby?41:37,by1-10,`url(#${Bd})`,shade(P.leg,-12),lw,-1.5,1)+a4sockLeg(baby?57:61,by1-8,`url(#${Bd})`,shade(P.leg,-12),lw,2);
   // body
-  g+=`<path d="M${bx0} ${by1-6} Q${bx0-2} ${by0} ${bx0+12} ${by0} L${bx1-6} ${by0-1} Q${bx1+5} ${by0} ${bx1+3} ${by1-7} Q${bx1} ${by1+1} ${bx1-10} ${by1} L${bx0+10} ${by1} Q${bx0+1} ${by1} ${bx0} ${by1-6}Z" fill="url(#${B})" ${a4s()}/>`;
-  // white chest
-  g+=`<path d="M${bx1-10} ${by0+2} Q${bx1+6} ${by0+4} ${bx1+2} ${by1-4} Q${bx1-4} ${by1-1} ${bx1-12} ${by1-4} Q${bx1-6} ${by0+10} ${bx1-10} ${by0+2}Z" fill="${P.l}" ${a4s(1.3)}/>`;
-  // near legs with dark stockings
-  const nl=(x,w)=>{ let s=a4leg(x,by1-10,92,w,P.b); if(st>=1) s+=`<path d="M${x-w/2+.2} 82 L${x+w/2+.4} 82 L${x+w/2+.6} 90.2 L${x-w/2+.4} 90.2Z" fill="${P.leg}"/><ellipse cx="${x+1}" cy="90.4" rx="${w/2+w*.37}" ry="2.6" fill="${P.leg}" ${a4s(1.5)}/>`; return s; };
-  g+=nl(baby?33:30,baby?7:7.6)+nl(baby?53:56,baby?7:7.6);
-  // neck
+  const body=`M${bx0} ${by1-5} Q${bx0-2} ${by0} ${bx0+12} ${by0} L${bx1-6} ${by0-1} Q${bx1+5} ${by0} ${bx1+3} ${by1-6} Q${bx1} ${by1+1} ${bx1-10} ${by1} L${bx0+10} ${by1} Q${bx0+1} ${by1} ${bx0} ${by1-5}Z`;
+  const CL=id+'cb'; d+=`<clipPath id="${CL}"><path d="${body}"/></clipPath>`;
+  g+=`<path d="${body}" fill="url(#${B})"/><g clip-path="url(#${CL})"><ellipse cx="${bx1-2}" cy="${by1-2}" rx="11" ry="9" fill="${P.l}"/></g><path d="${body}" fill="none" ${a4s()}/>`;
+  // near legs
+  g+=a4sockLeg(baby?34:30,by1-12,P.b,P.leg,lw+.6,-2,1)+a4sockLeg(baby?53:56,by1-10,P.b,P.leg,lw+.6,3);
+  // neck + chest ruff
   const hx=baby?64:70, hy=baby?50:38, r=baby?12:9.5;
-  if(!baby) g+=`<path d="M${bx1-14} ${by0+2} Q${hx-8} ${hy+6} ${hx-6} ${hy} L${hx+6} ${hy+4} Q${bx1+2} ${by0} ${bx1+2} ${by0+8}Z" fill="url(#${B})" ${a4s()}/>`;
-  // adult: second head behind
-  if(adult){ const B2=id+'c'; d+=a4g(B2,shade(P.b,-14)); g+=`<g transform="translate(-14 4)">${a4foxHead(hx,hy,r*.9,Object.assign({},P,{b:shade(P.b,-14)}),st,id,true,B2)}</g>`; }
+  if(!baby){ g+=`<path d="M${bx1-14} ${by0+3} Q${hx-8} ${hy+6} ${hx-6} ${hy} L${hx+6} ${hy+4} Q${bx1+3} ${by0} ${bx1+3} ${by0+9} L${bx1-8} ${by0+12}Z" fill="url(#${B})"/><path d="M${bx1-14} ${by0+2} Q${hx-8} ${hy+6} ${hx-6} ${hy}" fill="none" ${a4s()}/>`;
+    let ruff=`M${hx+6} ${hy+4}`; for(let i=0;i<5;i++){ const y=hy+6+i*3.6; ruff+=` L${hx+10-i*.8} ${y+1.6} L${hx+6-i*.6} ${y+3}`; } ruff+=` L${bx1-6} ${by0+12} L${bx1-8} ${by0+4}Z`;
+    g+=`<path d="${ruff}" fill="${P.l}" ${a4s(1.4)}/>`; }
+  // adult: two extra heads behind
+  if(adult){ const B2=id+'c'; d+=a4g(B2,shade(P.b,-16)); const P2=Object.assign({},P,{b:shade(P.b,-16)});
+    g+=`<g transform="translate(-17 -3) rotate(-16 ${hx} ${hy})">${a4foxHead(hx,hy,r*.86,P2,st,id,true,B2)}</g>`;
+    g+=`<g transform="translate(-9 12) rotate(18 ${hx} ${hy})">${a4foxHead(hx,hy,r*.86,P2,st,id,true,B2)}</g>`; }
   g+=a4foxHead(hx,hy,r,P,st,id,adult,B);
   // collar
   if(st>=1){ const cx=hx-2, cy=hy+r*1.05+2; g+=`<path d="M${cx-8} ${cy-4} Q${cx+1} ${cy+3} ${cx+9} ${cy-4}" fill="none" stroke="${A4OL}" stroke-width="5.6" stroke-linecap="round"/><path d="M${cx-8} ${cy-4} Q${cx+1} ${cy+3} ${cx+9} ${cy-4}" fill="none" stroke="${P.c}" stroke-width="3.2" stroke-linecap="round"/>`;
-    if(adult){ for(let k=0;k<4;k++){ const x=cx-6+k*4.6, y=cy-1.2+Math.abs(k-1.5)*-1.2; g+=`<path d="M${x-1.4} ${y} l1.4 3.4 l1.4 -3.4Z" fill="#e8e8ec" ${a4s(.9)}/>`; } }
+    if(adult){ for(let k=0;k<5;k++){ const x=cx-7+k*4, y=cy-2.6+Math.abs(k-2)*-1; g+=`<path d="M${x-1.4} ${y} l1.4 ${k===2?5:3.6} l1.4 ${k===2?-5:-3.6}Z" fill="#eceef2" ${a4s(.9)}/>`; } }
     else g+=`<circle cx="${cx+1}" cy="${cy+2.6}" r="2.2" fill="#e8c43a" ${a4s(1.1)}/>`; }
   return d+g; };
-
 // ---------- Bug family: round beetle -> horned beetle on legs -> rearing beetle with raised wing cases (Hunnybee is a bee) ----------
 const A4_BUG={
   leafwing:{sh:'#d8282a',sp:'#1e1612',spA:'#ecd44a',hd:'#2a2020',leg:'#2a2020',e:'#e8d04a',bk:'#c8282a'},
