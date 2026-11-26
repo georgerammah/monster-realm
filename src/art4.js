@@ -505,3 +505,52 @@ monSVG=(function(prev){ const CL={trunkle:['#3a7ad8','#e8c43a'],tuskmoor:['#8a3a
     if(st===2){ o+=`<rect x="38" y="28" width="22" height="22" rx="1.5" fill="#a8a8ae" ${a4s(1.6)}/><path d="M38 28 v-5 h4.4 v3 h4 v-3 h4.4 v3 h4 v-3 h4.4 v5" fill="#a8a8ae" ${a4s(1.4)}/>`;
       o+=`<path d="M38 36 H60 M38 43 H60 M45 28 V36 M53 36 V43 M45 43 V50" stroke="#7a7a82" stroke-width="1.2"/><rect x="46" y="31" width="5" height="7" rx="2.4" fill="#2a2420"/>`; }
     const i=out.lastIndexOf('</g></svg>'); return i>0? out.slice(0,i)+o+out.slice(i) : out; }; })(monSVG);
+
+// ---------- Drake family: little S-shaped wyrm -> low dragon with stubby wings -> rearing dragon with big bat wings ----------
+const A4_DR={
+  emberling:{b:'#3a6ad8',s:'#f2d04a',w:'#f2d04a',e:'#f2d04a'},
+  magmaw:   {b:'#e8342a',s:'#f2a02a',w:'#f28a2a',e:'#f2d04a'},
+  scorchet: {b:'#3fbf3a',s:'#b8f04a',w:'#2a8a2a',e:'#f2d04a'},
+  pyrodrake:{b:'#6a4a8a',s:'#c8f24a',w:'#c8f24a',e:'#c8f24a'}};
+ART4.drake=function(sp,st,id){ const P=A4_DR[sp.id]||{b:sp.col[0],s:sp.col[1],w:sp.col[1],e:'#f2d04a'};
+  const B=id+'b', Bd=id+'d', W=id+'w'; let d=`<defs>${a4g(B,P.b)}${a4g(Bd,shade(P.b,-22))}${a4g(W,P.w,20,-25)}</defs>`, g=''; const baby=st===0, adult=st===2;
+  g+=a4shadow(48,baby?14:28);
+  const jaw=(hx,hy,r,open)=>{ let s=`<path d="M${hx-r} ${hy} Q${hx-r} ${hy-r} ${hx} ${hy-r*1.02} Q${hx+r*1.2} ${hy-r*1.05} ${hx+r*2.1} ${hy-r*.15} Q${hx+r*2.3} ${hy+r*.25} ${hx+r*2.05} ${hy+r*.38} L${hx+r*.5} ${hy+r*.55} Q${hx-r*.6} ${hy+r*.9} ${hx-r} ${hy}Z" fill="url(#${B})" ${a4s()}/>`;
+    if(open){ s+=`<path d="M${hx+r*.4} ${hy+r*.5} L${hx+r*2} ${hy+r*.4} Q${hx+r*1.6} ${hy+r*1.2} ${hx+r*.7} ${hy+r*1.25}Z" fill="#7a1e1e" ${a4s(1.2)}/><path d="M${hx+r*.5} ${hy+r*1.25} Q${hx+r*1.3} ${hy+r*1.5} ${hx+r*1.9} ${hy+r*1}" fill="none" ${a4s(1.4)}/>`;
+      for(let i=0;i<4;i++) s+=`<path d="M${hx+r*(.7+i*.33)} ${hy+r*(.5-i*.03)} l${r*.09} ${r*.3} l${r*.09} ${-r*.3}Z" fill="#fff" ${a4s(.6)}/>`; }
+    else s+=`<path d="M${hx+r*.8} ${hy+r*.45} Q${hx+r*1.5} ${hy+r*.55} ${hx+r*2} ${hy+r*.3}" fill="none" ${a4s(1.3)}/>`;
+    s+=`<circle cx="${hx+r*1.85}" cy="${hy-r*.1}" r="${r*.08}" fill="${A4OL}"/>`;
+    const er=baby?r*.38:r*.28; s+=a4eye(hx+r*.45,hy-r*.35,er,P.e,st,.5); if(st>=1) s+=`<path d="M${hx+r*.45-er} ${hy-r*.35-er*.9} L${hx+r*.45+er*1.2} ${hy-r*.35-er*.3}" stroke="${A4OL}" stroke-width="2" stroke-linecap="round"/>`;
+    return s; };
+  if(baby){ // S-shaped wyrm standing on its tail
+    const sp1='M44 90 Q30 90 34 80 Q40 70 52 70 Q62 68 58 58 Q54 48 48 52';
+    g+=`<path d="${sp1}" fill="none" stroke="${A4OL}" stroke-width="13" stroke-linecap="round"/><path d="${sp1}" fill="none" stroke="url(#${B})" stroke-width="9.6" stroke-linecap="round"/>`;
+    g+=`<path d="M38 84 Q44 76 54 74 M58 64 Q60 60 58 56" fill="none" stroke="${P.s}" stroke-width="4" stroke-linecap="round"/>`;
+    g+=jaw(52,46,9,false); return d+g; }
+  if(!adult){ // low dragon on short legs, stubby wings
+    g+=`<path d="M28 74 Q14 76 10 66 Q8 58 16 60 Q14 66 22 68Z" fill="url(#${B})" ${a4s()}/>`;
+    g+=a4sockLeg(38,72,`url(#${Bd})`,null,6,-2,1)+a4sockLeg(60,72,`url(#${Bd})`,null,6,2);
+    g+=`<path d="M42 62 L34 46 L40 50 L38 40 L48 54Z" fill="url(#${W})" ${a4s(1.5)}/>`;
+    const body='M24 72 Q22 58 38 56 Q54 54 64 50 Q74 50 74 62 Q72 76 58 78 Q40 80 24 72Z';
+    const CL=id+'c'; d+=`<clipPath id="${CL}"><path d="${body}"/></clipPath>`;
+    g+=`<path d="${body}" fill="url(#${B})"/><g clip-path="url(#${CL})"><path d="M20 76 Q46 70 76 66 L76 82 L20 82Z" fill="${P.s}"/>${[34,44,54].map(x=>a4wedge(x,57,9,100,2.4,P.s)).join('')}</g><path d="${body}" fill="none" ${a4s()}/>`;
+    g+=a4sockLeg(32,72,P.b,null,6.6,-2,1)+a4sockLeg(56,72,P.b,null,6.6,3);
+    [44,52,60].forEach((x,i)=>g+=`<path d="M${x-3} ${56-i*1.4} L${x} ${50-i*1.4} L${x+3} ${55-i*1.4}Z" fill="${P.s}" ${a4s(1.1)}/>`);
+    g+=jaw(70,46,10,false); g+=`<path d="M66 37 l-3 -6 l6 3Z M71 36 l0 -6 l4 5Z" fill="${P.s}" ${a4s(1)}/>`;
+    return d+g; }
+  // adult: rearing dragon with big bat wings
+  const wing=(dx,dy,flip,c)=>`<g transform="translate(${dx} ${dy})"><path d="M50 50 L36 14 Q30 22 26 20 Q24 30 16 30 Q18 40 8 42 Q16 50 10 56 Q24 54 34 60Z" fill="${c}" ${a4s(1.6)}/><path d="M50 50 L26 20 M48 52 L16 30 M44 56 L8 42" fill="none" stroke="${shade(P.b,-20)}" stroke-width="2.4" stroke-linecap="round"/></g>`;
+  g+=wing(10,-4,false,`url(#${W})`);
+  g+=`<path d="M34 80 Q16 86 10 76 Q6 68 14 66 Q14 74 26 74Z" fill="url(#${B})" ${a4s()}/>`;
+  g+=a4sockLeg(62,70,`url(#${Bd})`,null,7,3);
+  const body='M30 82 Q24 64 38 54 Q48 46 56 40 Q66 36 70 46 Q72 60 64 72 Q56 84 30 82Z';
+  const CL=id+'c'; d+=`<clipPath id="${CL}"><path d="${body}"/></clipPath>`;
+  g+=`<path d="${body}" fill="url(#${B})"/><g clip-path="url(#${CL})"><path d="M56 40 Q72 50 64 72 Q56 84 40 84 L60 84 L76 40Z" fill="${P.s}"/>${[[36,58],[42,52],[48,48]].map(([x,y])=>a4wedge(x,y,10,70,2.4,P.s)).join('')}</g><path d="${body}" fill="none" ${a4s()}/>`;
+  for(let i=0;i<5;i++) g+=`<path d="M${30+i*5.6} ${62-i*4.4} l-4 -4 l5 0Z" fill="${P.s}" ${a4s(1)}/>`;
+  g+=a4hind(38,66,10,`url(#${B})`);
+  g+=`<path d="M62 56 Q72 60 74 70" fill="none" stroke="${A4OL}" stroke-width="8" stroke-linecap="round"/><path d="M62 56 Q72 60 74 70" fill="none" stroke="${P.b}" stroke-width="5" stroke-linecap="round"/><path d="M72 71 l2 4 M75 70 l3 3" stroke="${A4OL}" stroke-width="1.6" stroke-linecap="round"/>`;
+  g+=wing(16,-8,false,`url(#${W})`);
+  g+=`<path d="M60 40 Q64 32 70 30" fill="none" stroke="${A4OL}" stroke-width="11" stroke-linecap="round"/><path d="M60 40 Q64 32 70 30" fill="none" stroke="${P.b}" stroke-width="7.6" stroke-linecap="round"/>`;
+  g+=`<path d="M68 22 L62 12 L71 18Z M74 21 L74 10 L78 19Z" fill="#f4eee0" ${a4s(1.2)}/>`;
+  g+=jaw(72,28,9.5,true);
+  return d+g; };
