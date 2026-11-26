@@ -189,9 +189,9 @@ ART4.hound=function(sp,st,id){ const P=A4_HND[sp.id]||{b:sp.col[0],l:sp.col[2],l
   g+=`<g clip-path="url(#${TC})"><ellipse cx="${baby?20:14}" cy="${baby?48:26}" rx="${baby?10:13}" ry="${baby?9:12}" fill="${P.tip}"/></g><path d="${tl}" fill="none" ${a4s()}/>`;
   // far legs
   g+=a4sockLeg(baby?41:37,by1-10,`url(#${Bd})`,shade(P.leg,-12),lw,-1.5,1)+a4sockLeg(baby?57:61,by1-8,`url(#${Bd})`,shade(P.leg,-12),lw,2);
-  // adult: two extra heads fanned out behind the main one, each on its own neck
+  // adult: second head behind the main one, each on its own neck
   if(adult){ const hx=70, hy=38, r=9.5; const B2=id+'c'; d+=a4g(B2,shade(P.b,-14)); const P2=Object.assign({},P,{b:shade(P.b,-14)});
-    [[-12,-15,.82,-22],[-24,-1,.8,-8]].forEach(([dx,dy,sc,rot])=>{ const cx=hx+dx, cy=hy+dy;
+    [[-17,-13,.86,-26]].forEach(([dx,dy,sc,rot])=>{ const cx=hx+dx, cy=hy+dy;
       g+=`<path d="M${bx1-20} ${by0+6} C${cx-8} ${cy+14} ${cx-6} ${cy+4} ${cx-2} ${cy+2} C${cx+4} ${cy+2} ${cx+8} ${cy+8} ${cx+4} ${cy+12} C${cx+2} ${cy+18} ${bx1-8} ${by0} ${bx1-6} ${by0+8}Z" fill="url(#${B2})" ${a4s(1.6)}/>`;
       g+=`<g transform="translate(${cx} ${cy}) rotate(${rot}) scale(${sc}) translate(${-hx} ${-hy})">${a4foxHead(hx,hy,r,P2,st,id,false,B2)}</g>`; }); }
   // body

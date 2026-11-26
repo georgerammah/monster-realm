@@ -5028,7 +5028,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (281).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (282).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6688,7 +6688,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v281 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v282 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -8491,9 +8491,9 @@ ART4.hound=function(sp,st,id){ const P=A4_HND[sp.id]||{b:sp.col[0],l:sp.col[2],l
   g+=`<g clip-path="url(#${TC})"><ellipse cx="${baby?20:14}" cy="${baby?48:26}" rx="${baby?10:13}" ry="${baby?9:12}" fill="${P.tip}"/></g><path d="${tl}" fill="none" ${a4s()}/>`;
   // far legs
   g+=a4sockLeg(baby?41:37,by1-10,`url(#${Bd})`,shade(P.leg,-12),lw,-1.5,1)+a4sockLeg(baby?57:61,by1-8,`url(#${Bd})`,shade(P.leg,-12),lw,2);
-  // adult: two extra heads fanned out behind the main one, each on its own neck
+  // adult: second head behind the main one, each on its own neck
   if(adult){ const hx=70, hy=38, r=9.5; const B2=id+'c'; d+=a4g(B2,shade(P.b,-14)); const P2=Object.assign({},P,{b:shade(P.b,-14)});
-    [[-12,-15,.82,-22],[-24,-1,.8,-8]].forEach(([dx,dy,sc,rot])=>{ const cx=hx+dx, cy=hy+dy;
+    [[-17,-13,.86,-26]].forEach(([dx,dy,sc,rot])=>{ const cx=hx+dx, cy=hy+dy;
       g+=`<path d="M${bx1-20} ${by0+6} C${cx-8} ${cy+14} ${cx-6} ${cy+4} ${cx-2} ${cy+2} C${cx+4} ${cy+2} ${cx+8} ${cy+8} ${cx+4} ${cy+12} C${cx+2} ${cy+18} ${bx1-8} ${by0} ${bx1-6} ${by0+8}Z" fill="url(#${B2})" ${a4s(1.6)}/>`;
       g+=`<g transform="translate(${cx} ${cy}) rotate(${rot}) scale(${sc}) translate(${-hx} ${-hy})">${a4foxHead(hx,hy,r,P2,st,id,false,B2)}</g>`; }); }
   // body
