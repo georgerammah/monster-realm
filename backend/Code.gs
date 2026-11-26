@@ -144,10 +144,11 @@ function adm(p){
   const t = p.t;
   if (p.op === 'gift') {
     if (!okUid(t)) return {ok:0, err:'bad target'};
-    const n = Math.floor(+p.n || 0); if (n < 1 || n > 100000) return {ok:0, err:'bad amount'};
+    const cashGift = p.kind === 'cash', key = (cashGift ? 'ccredit/' : 'credit/') + t;
+    const n = Math.floor(+p.n || 0); if (n < 1 || n > (cashGift ? 10000000 : 100000)) return {ok:0, err:'bad amount'};
     const lock = LockService.getScriptLock(); lock.waitLock(8000);
-    try { rawSetNL('credit/'+t, String((+rawGet('credit/'+t) || 0) + n)); } finally { lock.releaseLock(); }
-    logAdmin(p.uid, 'gift', t, n); return {ok:1};
+    try { rawSetNL(key, String((+rawGet(key) || 0) + n)); } finally { lock.releaseLock(); }
+    logAdmin(p.uid, cashGift ? 'gift-cash' : 'gift', t, n); return {ok:1};
   }
   if (p.op === 'list') {
     const rows = sheet().getDataRange().getValues(), P = {};
@@ -220,8 +221,9 @@ function checkSave(uid, v){
   try {
     let rec = null; try { rec = JSON.parse(rawGet('eco/'+uid) || 'null'); } catch (_) {}
     const credit = +rawGet('credit/'+uid) || 0;
+    const ccredit = +rawGet('ccredit/'+uid) || 0, admin = isAdminUid(uid); // admins (testing accounts) skip the pace limits
     let mush = Math.max(0, Math.floor(+save.mush || 0)), cash = Math.max(0, Math.floor(+save.cash || 0));
-    if (rec) {
+    if (rec && !admin) {
       const hrs = Math.max(0, (now - (+rec.at || now)) / 3600000);
       const mOk = (+rec.mush || 0) + Math.min(150, 15 + Math.ceil(40 * hrs));
       const cOk = (+rec.cash || 0) + Math.min(60000, 3000 + Math.ceil(8000 * hrs));
@@ -229,6 +231,7 @@ function checkSave(uid, v){
       if (cash > cOk) cash = cOk;
     }
     if (credit) { mush += credit; rawSetNL('credit/'+uid, ''); }
+    if (ccredit) { cash += ccredit; rawSetNL('ccredit/'+uid, ''); }
     if (mush !== save.mush) { save.mush = mush; fix.mush = mush; }
     if (cash !== (save.cash|0)) { save.cash = cash; fix.cash = cash; }
     rawSetNL('eco/'+uid, JSON.stringify({mush:mush, cash:cash, at:now}));
