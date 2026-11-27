@@ -976,7 +976,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v292 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v293 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1364,8 +1364,8 @@ function stName(k,src){ const s=src&&src!=='basic'&&SK[src]; return s?s.n:(BUFF_
 function stList0(m){ const st=m.st, out=[], P=v=>Math.round((v||0)*100)+'%', T=t=>`${t} turn${t>1?'s':''}`;
   Object.keys(ST_ICON).filter(k=>st[k]>0).forEach(k=>{
     const S=st[k+'S'];
-    if((k==='soak'||k==='scorch'||k==='acid')&&S&&S.length){ const what=k==='soak'?'water':k==='acid'?'nature':'fire', dsrc=k==='soak'?'wave':k==='acid'?'acidbite':'emberspit';
-      S.slice().sort((a,b)=>(b.at||0)-(a.at||0)).forEach(x=>out.push({k, stack:1, at:x.at||0, t:x.t, exp:x.t<=1, name:stName(k,x.src||dsrc), ic:stIconFor(k,x.src||dsrc), tip:`Takes ${P(x.v)} more ${what} damage (${T(x.t)})`})); return; }
+    if((k==='soak'||k==='scorch'||k==='acid'||k==='taunt')&&S&&S.length){ const what=k==='soak'?'water':k==='acid'?'nature':k==='taunt'?'physical':'fire', dsrc=k==='soak'?'wave':k==='acid'?'acidbite':k==='taunt'?'taunt':'emberspit';
+      S.slice().sort((a,b)=>(b.at||0)-(a.at||0)).forEach(x=>out.push({k, stack:1, at:x.at||0, t:x.t, exp:x.t<=1, name:stName(k,x.src||dsrc), ic:stIconFor(k,x.src||dsrc), tip:k==='taunt'?`Deals ${P(x.v)} more and takes ${P(x.v)} more physical damage (${T(x.t)})`:`Takes ${P(x.v)} more ${what} damage (${T(x.t)})`})); return; }
     out.push({k, at:st[k+'At']||0, t:st[k], exp:st[k]<=1, name:stName(k,st[k+'Src']), ic:stIconFor(k,st[k+'Src']), tip:stDesc(m,k)}); });
   return out; }
 act=(function(prev){ return function(b,action){
@@ -1373,7 +1373,7 @@ act=(function(prev){ return function(b,action){
   const sk=action&&action.skill&&SK[action.skill]?action.skill:'basic';
   const r=prev(b,action);
   if(r) b.sides.forEach((sd,s)=>sd.mons.forEach((m,i)=>{ const o=snap[s]&&snap[s][i]; if(!o) return;
-    Object.keys(ST_ICON).forEach(k=>{ if((m.st[k]|0)>o[k]&&k!=='soak'&&k!=='scorch'&&k!=='acid'){ m.st[k+'Src']=sk; m.st[k+'At']=stSeq(); } }); }));
+    Object.keys(ST_ICON).forEach(k=>{ if((m.st[k]|0)>o[k]&&k!=='soak'&&k!=='scorch'&&k!=='acid'&&k!=='taunt'){ m.st[k+'Src']=sk; m.st[k+'At']=stSeq(); } }); }));
   return r; }; })(act);
 // items listed one card per copy (three Krill's Swords show as three)
 function itemLine(id){ const it=ITEMS[id], f=it.fx||{}, b=it.b||{};
@@ -2460,7 +2460,7 @@ stDesc=(function(prev){ return function(m,k){ if(k==='roots'){ const v=Math.roun
 Object.assign(SK.souleater,{m:[.8,.02],mpAtk:[.4,.01],mp:[8,4]}); DEFAULT_SK.souleater=JSON.parse(JSON.stringify(SK.souleater));
 // Death Roll (MK): physical bite that heals 104 for 2 turns, 92 mana at level 10 (same effect as Devour)
 (function(){ const P=(a,t)=>[a,+((t-a)/9).toFixed(4)];
-  SK.deathroll={n:'Death Roll',el:'neutral',t:'enemy',k:'hit',m:[1,0],mp:P(10,92),hotFlat:P(14,104),turns:2}; DEFAULT_SK.deathroll=JSON.parse(JSON.stringify(SK.deathroll));
+  SK.deathroll={n:'Death Roll',el:'neutral',t:'enemy',k:'hit',m:[1,0],mp:P(10,92),hotFlat:P(14,104),turns:2,hotNow:1}; DEFAULT_SK.deathroll=JSON.parse(JSON.stringify(SK.deathroll));
   skillDesc=(function(prev){ return function(id,L){ if(id==='deathroll') return `Grab your prey and take a bite out of them causing physical damage and healing for ${Math.round(lv(SK.deathroll.hotFlat,L||1))} health for ${SK.deathroll.turns} turns.`; return prev(id,L); }; })(skillDesc);
   ICON.mkdeathroll='<path d="M5 13.5 C5 7.5 10 4.5 14.5 6 C19 7.5 20 13 16 15.5 C13 17.4 9.5 15.6 10 12.6 C10.4 10.4 13.2 10 14.2 11.6" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M14.5 6 L19.5 5 L17 8.6Z" fill="#fff"/><circle cx="16.6" cy="7.4" r=".9" fill="#f05a22"/>';
   MK_ICON.deathroll='mkdeathroll'; })();

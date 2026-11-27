@@ -153,7 +153,7 @@ const UNLOCK = [1,1,10,20];
 var STSEQ=0; function stSeq(){ return ++STSEQ; }
 function addStack(st,k,v,t,src){ const S=st[k+'S']=(st[k+'S']||[]).filter(x=>x.t>0); S.push({v,t,src,fresh:1,at:stSeq()}); syncStack(st,k); }
 function syncStack(st,k){ const S=st[k+'S']||[]; st[k]=S.reduce((a,x)=>Math.max(a,x.t),0); st[k+'V']=S.reduce((a,x)=>a+x.v,0); }
-function tickStacks(st){ ['soak','scorch','acid'].forEach(k=>{ const S=st[k+'S']; if(!S||!S.length) return; S.forEach(x=>{ if(x.fresh) delete x.fresh; else x.t--; }); st[k+'S']=S.filter(x=>x.t>0); syncStack(st,k); }); }
+function tickStacks(st){ ['soak','scorch','acid','taunt'].forEach(k=>{ const S=st[k+'S']; if(!S||!S.length) return; S.forEach(x=>{ if(x.fresh) delete x.fresh; else x.t--; }); st[k+'S']=S.filter(x=>x.t>0); syncStack(st,k); }); }
 function stageOf(lvl){ return lvl>=20?2:lvl>=10?1:0; }
 const STAGE_N = ['Baby','Teen','Adult'];
 function slotsOf(lvl){ return lvl>=20?4:lvl>=10?3:2; }
@@ -222,7 +222,7 @@ function beginTurn(b){
     const a = actor(b); const m=a.m;
     if(m.hp<=0){ b.turnIdx++; continue; }
     const st=m.st;
-    ['bubble','lsh','fsh','fwall','nsh','ash','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','zap','eshift','crush','taunt','wcry','wdef'].forEach(k=>{ if(st[k]>0){ if(st[k+'F']){ st[k+'F']=0; return; } st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
+    ['bubble','lsh','fsh','fwall','nsh','ash','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','zap','eshift','crush','wcry','wdef'].forEach(k=>{ if(st[k]>0){ if(st[k+'F']){ st[k+'F']=0; return; } st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
     for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm'],['frost','water','the blizzard'],['soul','nature','soul drain']]){
       if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']*(b.sdMul||1)))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el,dk:k,ph:1}); log(b,`${m.n} is hurt by ${nm}.`);
         if(st[k+'H']&&st[k+'By']){ const c=b.sides[st[k+'By'][0]]&&b.sides[st[k+'By'][0]].mons[st[k+'By'][1]]; if(c&&c.hp>0){ const h=Math.min(c.maxhp-c.hp,st[k+'H']); c.hp+=h; b.ev.push({k:'heal',s:st[k+'By'][0],i:st[k+'By'][1],v:st[k+'H'],rv:h,ph:1}); } } }
@@ -359,7 +359,7 @@ function act(b, action){
       if(d0.hp>0 && sk.acid){ addStack(d0.st,'acid',lv(sk.acid,L),sk.acidTurns||4,skId); b.ev.push({k:'buff',s:foe,i:ti,b:'acid'}); }
       if(d0.hp>0 && sk.zap){ d0.st.zap=sk.zapTurns||6; d0.st.zapV=sk.zap; b.ev.push({k:'buff',s:foe,i:ti,b:'zap'}); }
       if(d0.hp>0 && sk.soak){ addStack(d0.st,'soak',Array.isArray(sk.soak)?lv(sk.soak,L):sk.soak,sk.soakTurns||6,skId); b.ev.push({k:'buff',s:foe,i:ti,b:'soak'}); }
-      if(d0.hp>0 && sk.taunt){ d0.st.taunt=sk.tauntTurns||4; d0.st.tauntF=1; d0.st.tauntV=Array.isArray(sk.taunt)?lv(sk.taunt,L):sk.taunt; b.ev.push({k:'buff',s:foe,i:ti,b:'taunt'}); }
+      if(d0.hp>0 && sk.taunt){ addStack(d0.st,'taunt',Array.isArray(sk.taunt)?lv(sk.taunt,L):sk.taunt,sk.tauntTurns||4,'taunt'); b.ev.push({k:'buff',s:foe,i:ti,b:'taunt'}); }
       if(d0.hp>0 && sk.crush){ d0.st.crush=sk.crushTurns||4; d0.st.crushF=1; d0.st.crushV=Array.isArray(sk.crush)?lv(sk.crush,L):sk.crush; b.ev.push({k:'buff',s:foe,i:ti,b:'crush'}); }
       if(d0.hp>0 && sk.scorch){ addStack(d0.st,'scorch',Array.isArray(sk.scorch)?lv(sk.scorch,L):sk.scorch,sk.scorchTurns||6,skId); b.ev.push({k:'buff',s:foe,i:ti,b:'scorch'}); }
       if(d0.hp>0 && sk.weaken){ d0.st.cripple=2; d0.st.crippleF=1; d0.st.crippleV=Math.max(d0.st.crippleV||0, lv(sk.weaken,L)); b.ev.push({k:'buff',s:foe,i:ti,b:'cripple'}); }
@@ -372,7 +372,7 @@ function act(b, action){
     });
     const landed=!b.ev.slice(ev0).some(e=>e.k==='miss'&&e.s===foe); // a hit for 0 still lands; a dodge doesn't
     if(sk.mpAtk && landed && me.hp>0){ const d1=b.sides[foe].mons[targets[0]]; const x=Math.min(d1?d1.mp:0, Math.round(me.atk*lv(sk.mpAtk,L))); if(x>0){ d1.mp-=x; const g=Math.min(me.maxmp-me.mp,x); me.mp+=g; if(x>0){ b.ev.push({k:'mana',s:foe,i:tgt,v:-x,rv:-x}); b.ev.push({k:'mana',s:a.s,i:a.i,v:x,rv:g,ph:2}); } } }
-    if(sk.hotFlat && me.hp>0){ me.st.roots=sk.turns||2; me.st.rootsV=lv(sk.hotFlat,L)/me.maxhp; b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); }
+    if(sk.hotFlat && me.hp>0){ me.st.roots=sk.turns||2; me.st.rootsV=lv(sk.hotFlat,L)/me.maxhp; b.ev.push({k:'buff',s:a.s,i:a.i,b:'roots'}); if(sk.hotNow) hot0.r=99; }
     if(sk.leech && tot>0 && me.hp>0){ const hv=Math.min(me.maxhp-me.hp,Math.round(tot*(sk.leechL?lv(sk.leechL,L):sk.leech))); me.hp+=hv; b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.mpgain && tot>0){ me.mp=Math.min(me.maxmp, me.mp+Math.round(tot*sk.mpgain)); }
     if(sk.mpLeech && tot>0 && me.hp>0){ const d1=b.sides[foe].mons[tgt]; const x=Math.min(d1.mp, Math.round(sk.mpSteal?lv(sk.mpSteal,L):tot*sk.mpLeech)); d1.mp-=x; const g=Math.min(me.maxmp-me.mp,x); me.mp+=g; if(x>0){ b.ev.push({k:'mana',s:foe,i:tgt,v:-x,rv:-x}); b.ev.push({k:'mana',s:a.s,i:a.i,v:x,rv:g,ph:2}); } }
@@ -398,7 +398,7 @@ function act(b, action){
     if(sk.heal){ const hv=Math.min(me.maxhp-me.hp,Math.round(me.maxhp*lv(sk.heal,L))); me.hp+=hv; b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.mpHeal){ const v=Math.round(lv(sk.mpHeal,L)), g=Math.min(me.maxmp-me.mp,v); me.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v,rv:g}); }
     if(sk.healFlat){ const hv=Math.min(me.maxhp-me.hp,Math.round(lv(sk.healFlat,L))); me.hp+=hv; b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
-    if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','scorch','zap','acid','eshift','crush','taunt','soul','wcry'].forEach(k=>me.st[k]=0); me.st.soakS=[]; me.st.scorchS=[]; me.st.acidS=[]; }
+    if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','scorch','zap','acid','eshift','crush','taunt','soul','wcry'].forEach(k=>me.st[k]=0); me.st.soakS=[]; me.st.scorchS=[]; me.st.acidS=[]; me.st.tauntS=[]; }
   } else if(sk.k==='drain' && sk.stealHp){
     const d=b.sides[foe].mons[tgt];
     if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:foe,i:tgt}); log(b,`${a.n} missed!`); }
