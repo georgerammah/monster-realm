@@ -19,7 +19,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (290).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (291).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -599,7 +599,7 @@ function startSearch(champSh){
   w.querySelector('#scpu').onclick=()=>{ stopSearch(); champSh.close(); startBattle({mode:'rival', foe:rivalTeam()}); };
   SEARCH.t=setInterval(()=>{ if(!SEARCH) return;
     if(B){ const c=SEARCH.champSh; stopSearch(); c&&c.close(); return; }
-    if(Date.now()-SEARCH.t0>20000) w.querySelector('#scpu').style.display='';
+    
     const c=NET.peers.filter(p=>!p.me&&p.searching&&!p.busy&&p.cid&&p.cid>NET.cid&&!(SEARCH.tried[p.cid]>Date.now()-8000));
     if(c.length&&!NET.pending){ c.sort((a,b)=>Math.abs((a.rank|0)-myRank())-Math.abs((b.rank|0)-myRank())); SEARCH.tried[c[0].cid]=Date.now(); NET.challenge(c[0].cid); }
   },1500);
