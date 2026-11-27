@@ -17,16 +17,26 @@
       if(stopped) return;
       try{ const r=await call({a:'poll', r:name, since, from:cid, peers:lobby&&!!peersFn});
         if(r.ok){ if(since>=0) (r.msgs||[]).forEach(m=>(hs[m.t]||[]).forEach(f=>{ try{ f(m.d); }catch(e){} })); since=r.n; if(r.peers&&peersFn) peersFn(r.peers); } }catch(e){}
-      if(!stopped) timer=setTimeout(loop, lobby?2500:900);
+      if(!stopped) timer=setTimeout(loop, lobby?2500:(ws&&ws.readyState===1?3000:900));
     }
+    // live battles also get a direct WebSocket through our Cloudflare relay (messages arrive in a blink); the Apps Script relay stays as backup
+    let ws=null, wsTries=0;
+    function openWs(){ if(lobby||stopped||!window.WebSocket||wsTries>4) return; wsTries++;
+      try{ ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/rt/'+encodeURIComponent(name.replace(/[^A-Za-z0-9_-]/g,'_')));
+        ws.onmessage=e=>{ try{ const m=JSON.parse(e.data); (hs[m.t]||[]).forEach(f=>{ try{ f(m.d); }catch(_){} }); }catch(_){} };
+        ws.onopen=()=>{ wsTries=0; };
+        ws.onclose=()=>{ ws=null; if(!stopped) setTimeout(openWs,1500); };
+        ws.onerror=()=>{ try{ ws&&ws.close(); }catch(_){} };
+      }catch(_){ ws=null; } }
+    openWs();
     loop();
     return {
-      emit:(t,d)=>call({a:'emit', r:name, from:cid, uid, topic:t, data:d}).catch(()=>{}),
+      emit:(t,d)=>{ if(ws&&ws.readyState===1){ try{ ws.send(JSON.stringify({t,d})); }catch(_){} } return call({a:'emit', r:name, from:cid, uid, topic:t, data:d}).catch(()=>{}); },
       on:(t,f)=>{ (hs[t]=hs[t]||[]).push(f); },
       presence:p=>{ pres=Object.assign({},p); const send=()=>call({a:'presence', r:name, cid, uid, p:pres}).then(r=>{ if(r.ok&&r.peers&&peersFn) peersFn(r.peers); }).catch(()=>{}); send(); clearInterval(hb); hb=setInterval(send,9000); },
       onPeers:f=>{ peersFn=f; },
       join:n=>mkRoom(n),
-      leave:()=>{ stopped=true; clearTimeout(timer); clearInterval(hb); if(pres) call({a:'presence', r:name, cid, p:null}).catch(()=>{}); }
+      leave:()=>{ stopped=true; clearTimeout(timer); clearInterval(hb); try{ ws&&ws.close(); }catch(_){} if(pres) call({a:'presence', r:name, cid, p:null}).catch(()=>{}); }
     };
   }
   let lobbyRoom=null;
