@@ -17,7 +17,8 @@
       if(stopped) return;
       try{ const r=await call({a:'poll', r:name, since, from:cid, peers:lobby&&!!peersFn});
         if(r.ok){ if(since>=0) (r.msgs||[]).forEach(m=>(hs[m.t]||[]).forEach(f=>{ try{ f(m.d); }catch(e){} })); since=r.n; if(r.peers&&peersFn) peersFn(r.peers); } }catch(e){}
-      if(!stopped) timer=setTimeout(loop, lobby?2500:(ws&&ws.readyState===1?3000:900));
+      // background: barely check in; lobby: every few seconds; live battle: fast unless the direct connection is carrying it
+      if(!stopped) timer=setTimeout(loop, window.MR_HIDDEN?15000:lobby?(window.MR_ARENA_OPEN?2500:6000):(ws&&ws.readyState===1?3000:900));
     }
     // live battles also get a direct WebSocket through our Cloudflare relay (messages arrive in a blink); the Apps Script relay stays as backup
     let ws=null, wsTries=0;
@@ -33,7 +34,7 @@
     return {
       emit:(t,d)=>{ if(ws&&ws.readyState===1){ try{ ws.send(JSON.stringify({t,d})); }catch(_){} } return call({a:'emit', r:name, from:cid, uid, topic:t, data:d}).catch(()=>{}); },
       on:(t,f)=>{ (hs[t]=hs[t]||[]).push(f); },
-      presence:p=>{ pres=Object.assign({},p); const send=()=>call({a:'presence', r:name, cid, uid, p:pres}).then(r=>{ if(r.ok&&r.peers&&peersFn) peersFn(r.peers); }).catch(()=>{}); send(); clearInterval(hb); hb=setInterval(send,9000); },
+      presence:p=>{ pres=Object.assign({},p); const send=()=>window.MR_HIDDEN?Promise.resolve():call({a:'presence', r:name, cid, uid, p:pres}).then(r=>{ if(r.ok&&r.peers&&peersFn) peersFn(r.peers); }).catch(()=>{}); send(); clearInterval(hb); hb=setInterval(send,9000); },
       onPeers:f=>{ peersFn=f; },
       join:n=>mkRoom(n),
       leave:()=>{ stopped=true; clearTimeout(timer); clearInterval(hb); try{ ws&&ws.close(); }catch(_){} if(pres) call({a:'presence', r:name, cid, p:null}).catch(()=>{}); }

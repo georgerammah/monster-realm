@@ -1704,6 +1704,10 @@ body{overscroll-behavior:none}
 .zs-minfo .xpbar i{background:linear-gradient(180deg,#d65ad6,#9a2a9e)}
 .zs-minfo .xpbar em{font:italic calc(min(4.2*var(--vh),20px))/calc(min(5.2*var(--vh),26px)) "Lilita One",system-ui;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.45);letter-spacing:.5px}
 .zs-minfo .xpbar .lvb:has(svg){background:linear-gradient(#f7e27a,#c99a1e 55%,#a67812)!important}
+/* battery: animated monsters get their own GPU layer and no live shadow filter, so the phone isn't redrawing them every frame */
+.mcard svg,.bart svg,.mon-hero svg,.zone-art svg,.pet svg,.tcard svg,.za-m svg,.zc-svg svg,.fart svg,.cloud,.roam,.roam svg{will-change:transform;backface-visibility:hidden}
+.fart svg,.pet svg{filter:none!important}
+html.paused *,html.paused *::before,html.paused *::after{animation-play-state:paused!important}
 </style></head>
 <body oncontextmenu="if(!/INPUT|TEXTAREA/.test(event.target.tagName))event.preventDefault()">
 <div id="hud"></div><main id="view"></main>
