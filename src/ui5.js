@@ -274,7 +274,10 @@ NET.startHost = async function(d){
     if(a.seq!==bb.seq){ NET.broadcast(); return; }
     if(bb.phase==='pick'){ if(bb.pickSide===1 && a.pick!=null && pick(bb,1,a.pick|0)) afterAct(); else NET.broadcast(); return; }
     const ac=actor(bb);
-    if(ac && ac.s===1){ const ok = a.swap!=null ? act(bb,{swap:a.swap|0}) : act(bb,{skill:a.skill,target:a.target}); if(ok) afterAct(); else NET.broadcast(); }
+    if(ac && ac.s===1){ let ok;
+      if(a.swap!=null&&a.skill){ act(bb,{swap:a.swap|0}); ok=act(bb,{skill:a.skill,target:a.target}); } // guest swapped then attacked: one message
+      else ok = a.swap!=null ? act(bb,{swap:a.swap|0}) : act(bb,{skill:a.skill,target:a.target});
+      if(ok) afterAct(); else NET.broadcast(); }
     else NET.broadcast();
   });
   mr.on('forfeit', a=>{ if(!B||!B.net||a.matchId!==B.net.matchId||B.b.over) return; B.b.over=true; B.b.winner=0; B.b.fled=1; B.b.log.push(`${B.b.sides[1].name} forfeited.`); B.b.seq++; NET.broadcast(); drive(); });
@@ -282,7 +285,7 @@ NET.startHost = async function(d){
     if(!B||!B.net) return; NET.broadcast(); const bb=B.b; if(bb.over||B.paused) return;
     const late=(Date.now()-B.net.last)/1000;
     if(bb.phase==='pick' && bb.pickSide===1 && late>PICK_SECS+9){ pick(bb,1,aiPick(bb,1)); afterAct(); }
-    else if(bb.phase==='fight'){ const ac=actor(bb); if(ac && ac.s===1 && late>TURN_SECS+4){ act(bb,{skill:'basic',target:castTarget(ac,'basic')}); afterAct(); } }
+    else if(bb.phase==='fight'){ const ac=actor(bb); if(ac && ac.s===1 && late>TURN_SECS+8){ act(bb,{skill:'basic',target:castTarget(ac,'basic')}); afterAct(); } }
   },2000);
   openBattle(); NET.updatePresence(); NET.broadcast(); renderBattle();
   showIntro(()=>{ if(!B) return; B.paused=false; B.stamp=Date.now(); B.net.last=Date.now(); NET.broadcast(); drive(); });

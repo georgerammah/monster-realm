@@ -976,7 +976,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v286 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v287 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -2595,3 +2595,11 @@ drawTeam=(function(prev){ return function(){ const body=TEAMSH&&TEAMSH.body; con
 // ---------- motto Save works on the first tap (fires on touch-down, before the keyboard closes and the sheet jumps); Enter saves too ----------
 addEventListener('pointerdown',e=>{ const b=e.target.closest&&e.target.closest('#mtok'); if(!b||b._fired) return; e.preventDefault(); b._fired=1; b.click(); },true);
 addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target&&e.target.id==='mtin'){ e.preventDefault(); const b=document.getElementById('mtok'); if(b&&!b._fired){ b._fired=1; b.click(); } } },true);
+// ---------- live battles as the guest: swapping happens instantly on your phone and goes out together with your attack (one trip to the server instead of two) ----------
+NET.sendAction=(function(prev){ return function(a){ if(!B||!B.net||B.net.role!=='guest'||!B.b) return prev(a);
+  const b=B.b;
+  if(a&&a.swap!=null&&!a.skill){ // apply the swap locally, keep the turn's seq so the host still sees it as this turn
+    if(B.net.pendSwap!=null&&b.seq!==B.net.baseSeq) B.net.pendSwap=null; if(B.net.pendSwap==null) B.net.baseSeq=b.seq; if(act(b,{swap:a.swap|0})){ B.net.pendSwap=a.swap|0; b.seq=B.net.baseSeq; } renderBattle(); return; }
+  if(B.net.pendSwap!=null&&b.seq!==B.net.baseSeq) B.net.pendSwap=null; // the turn moved on without it
+  if(B.net.pendSwap!=null&&a&&a.skill){ const m=Object.assign({swap:B.net.pendSwap,seq:B.net.baseSeq},a); B.net.pendSwap=null; B.net.sent=B.net.baseSeq; B.net.action=m; NET.mr.emit('action',Object.assign({matchId:B.net.matchId},m)); return; }
+  return prev(a); }; })(NET.sendAction);
