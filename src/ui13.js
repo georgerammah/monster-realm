@@ -976,7 +976,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v293 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v294 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1358,14 +1358,18 @@ QUESTS.push({id:'q12', n:'Clear Sky Grasslands', r:35, ok:s=>(s.zones.grasslands
 // ---------- status icons use the icon of the ability that caused them; stacked effects show one icon each ----------
 function stIconFor(k,src){ const s=src&&SK[src]; return s? (n=>icon(skIconKey(src),(EL[s.el]||EL.neutral).c,n)) : (n=>icon(ST_ICON[k][0],ST_ICON[k][1],n)); }
 function stList(m){ const r=stList0(m); const H=B&&B.hideSt&&B.hideSt.get?B.hideSt.get(m):null; let out=r;
-  if(H){ const left=Object.assign({},H); out=r.filter(x=>{ if(left[x.k]>0){ if(x.stack){ left[x.k]--; return false; } return false; } return true; }); }
+  if(H){ const left=Object.assign({},H); let lastHid=false; out=r.filter(x=>{ if(x.pair) return !lastHid; lastHid=false; if(left[x.k]>0){ if(x.stack){ left[x.k]--; } lastHid=true; return false; } return true; }); }
   return out.sort((a,b)=>(a.at||0)-(b.at||0)); }
 function stName(k,src){ const s=src&&src!=='basic'&&SK[src]; return s?s.n:(BUFF_N[k]||(k[0].toUpperCase()+k.slice(1))); }
 function stList0(m){ const st=m.st, out=[], P=v=>Math.round((v||0)*100)+'%', T=t=>`${t} turn${t>1?'s':''}`;
   Object.keys(ST_ICON).filter(k=>st[k]>0).forEach(k=>{
     const S=st[k+'S'];
     if((k==='soak'||k==='scorch'||k==='acid'||k==='taunt')&&S&&S.length){ const what=k==='soak'?'water':k==='acid'?'nature':k==='taunt'?'physical':'fire', dsrc=k==='soak'?'wave':k==='acid'?'acidbite':k==='taunt'?'taunt':'emberspit';
-      S.slice().sort((a,b)=>(b.at||0)-(a.at||0)).forEach(x=>out.push({k, stack:1, at:x.at||0, t:x.t, exp:x.t<=1, name:stName(k,x.src||dsrc), ic:stIconFor(k,x.src||dsrc), tip:k==='taunt'?`Deals ${P(x.v)} more and takes ${P(x.v)} more physical damage (${T(x.t)})`:`Takes ${P(x.v)} more ${what} damage (${T(x.t)})`})); return; }
+      S.slice().sort((a,b)=>(b.at||0)-(a.at||0)).forEach(x=>{
+        if(k==='taunt'){ // two symbols per Taunt, like Krill's Sword: what it deals and what it takes
+          out.push({k, stack:1, at:x.at||0, t:x.t, exp:x.t<=1, name:'Taunt', ic:sz=>icon('up','#e8501e',sz), tip:`Deals ${P(x.v)} more physical damage (${T(x.t)})`});
+          out.push({k, stack:1, pair:1, at:(x.at||0)+.5, t:x.t, exp:x.t<=1, name:'Taunt', ic:stIconFor(k,'taunt'), tip:`Takes ${P(x.v)} more physical damage (${T(x.t)})`}); return; }
+        out.push({k, stack:1, at:x.at||0, t:x.t, exp:x.t<=1, name:stName(k,x.src||dsrc), ic:stIconFor(k,x.src||dsrc), tip:`Takes ${P(x.v)} more ${what} damage (${T(x.t)})`}); }); return; }
     out.push({k, at:st[k+'At']||0, t:st[k], exp:st[k]<=1, name:stName(k,st[k+'Src']), ic:stIconFor(k,st[k+'Src']), tip:stDesc(m,k)}); });
   return out; }
 act=(function(prev){ return function(b,action){
