@@ -976,7 +976,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v295 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v296 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -1364,7 +1364,7 @@ function stName(k,src){ const s=src&&src!=='basic'&&SK[src]; return s?s.n:(BUFF_
 function stList0(m){ const st=m.st, out=[], P=v=>Math.round((v||0)*100)+'%', T=t=>`${t} turn${t>1?'s':''}`;
   Object.keys(ST_ICON).filter(k=>st[k]>0).forEach(k=>{
     const S=st[k+'S'];
-    if((k==='soak'||k==='scorch'||k==='acid'||k==='taunt')&&S&&S.length){ const what=k==='soak'?'water':k==='acid'?'nature':k==='taunt'?'physical':'fire', dsrc=k==='soak'?'wave':k==='acid'?'acidbite':k==='taunt'?'taunt':'emberspit';
+    if((k==='soak'||k==='scorch'||k==='acid'||k==='taunt'||k==='zap')&&S&&S.length){ const what=k==='soak'?'water':k==='acid'?'nature':k==='taunt'?'physical':k==='zap'?'lightning':'fire', dsrc=k==='soak'?'wave':k==='acid'?'acidbite':k==='taunt'?'taunt':k==='zap'?'arclightning':'emberspit';
       S.slice().sort((a,b)=>(b.at||0)-(a.at||0)).forEach(x=>{
         if(k==='taunt'){ // two symbols per Taunt, like Krill's Sword: what it deals and what it takes
           out.push({k, stack:1, at:x.at||0, t:x.t, exp:x.t<=1, name:'Taunt', ic:stIconFor(k,'taunt'), tip:`Deals ${P(x.v)} more physical damage (${T(x.t)})`});
@@ -1377,7 +1377,7 @@ act=(function(prev){ return function(b,action){
   const sk=action&&action.skill&&SK[action.skill]?action.skill:'basic';
   const r=prev(b,action);
   if(r) b.sides.forEach((sd,s)=>sd.mons.forEach((m,i)=>{ const o=snap[s]&&snap[s][i]; if(!o) return;
-    Object.keys(ST_ICON).forEach(k=>{ if((m.st[k]|0)>o[k]&&k!=='soak'&&k!=='scorch'&&k!=='acid'&&k!=='taunt'){ m.st[k+'Src']=sk; m.st[k+'At']=stSeq(); } }); }));
+    Object.keys(ST_ICON).forEach(k=>{ if((m.st[k]|0)>o[k]&&k!=='soak'&&k!=='scorch'&&k!=='acid'&&k!=='taunt'&&k!=='zap'){ m.st[k+'Src']=sk; m.st[k+'At']=stSeq(); } }); }));
   return r; }; })(act);
 // items listed one card per copy (three Krill's Swords show as three)
 function itemLine(id){ const it=ITEMS[id], f=it.fx||{}, b=it.b||{};

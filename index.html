@@ -1909,7 +1909,7 @@ const UNLOCK = [1,1,10,20];
 var STSEQ=0; function stSeq(){ return ++STSEQ; }
 function addStack(st,k,v,t,src){ const S=st[k+'S']=(st[k+'S']||[]).filter(x=>x.t>0); S.push({v,t,src,fresh:1,at:stSeq()}); syncStack(st,k); }
 function syncStack(st,k){ const S=st[k+'S']||[]; st[k]=S.reduce((a,x)=>Math.max(a,x.t),0); st[k+'V']=S.reduce((a,x)=>a+x.v,0); }
-function tickStacks(st){ ['soak','scorch','acid','taunt'].forEach(k=>{ const S=st[k+'S']; if(!S||!S.length) return; S.forEach(x=>{ if(x.fresh) delete x.fresh; else x.t--; }); st[k+'S']=S.filter(x=>x.t>0); syncStack(st,k); }); }
+function tickStacks(st){ ['soak','scorch','acid','taunt','zap'].forEach(k=>{ const S=st[k+'S']; if(!S||!S.length) return; S.forEach(x=>{ if(x.fresh) delete x.fresh; else x.t--; }); st[k+'S']=S.filter(x=>x.t>0); syncStack(st,k); }); }
 function stageOf(lvl){ return lvl>=20?2:lvl>=10?1:0; }
 const STAGE_N = ['Baby','Teen','Adult'];
 function slotsOf(lvl){ return lvl>=20?4:lvl>=10?3:2; }
@@ -1978,7 +1978,7 @@ function beginTurn(b){
     const a = actor(b); const m=a.m;
     if(m.hp<=0){ b.turnIdx++; continue; }
     const st=m.st;
-    ['bubble','lsh','fsh','fwall','nsh','ash','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','zap','eshift','crush','wcry','wdef'].forEach(k=>{ if(st[k]>0){ if(st[k+'F']){ st[k+'F']=0; return; } st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
+    ['bubble','lsh','fsh','fwall','nsh','ash','mshield','absorb','crit','focus','evade','cripple','pers','soak','scorch','eshift','crush','wcry','wdef'].forEach(k=>{ if(st[k]>0){ if(st[k+'F']){ st[k+'F']=0; return; } st[k]--; if(!st[k]&&st[k+'Hp']!=null) st[k+'Hp']=0; } }); tickStacks(st);
     for(const [k,el,nm] of [['burn','fire','its burn'],['poison','nature','poison'],['storm','bolt','the storm'],['frost','water','the blizzard'],['soul','nature','soul drain']]){
       if(st[k]>0 && m.hp>0){ const d=Math.min(m.hp,Math.max(1,Math.round(st[k+'D']*(b.sdMul||1)))); m.hp=Math.max(0,m.hp-d); st[k]--; b.ev.push({k:'dot',s:a.s,i:a.i,v:d,el,dk:k,ph:1}); log(b,`${m.n} is hurt by ${nm}.`);
         if(st[k+'H']&&st[k+'By']){ const c=b.sides[st[k+'By'][0]]&&b.sides[st[k+'By'][0]].mons[st[k+'By'][1]]; if(c&&c.hp>0){ const h=Math.min(c.maxhp-c.hp,st[k+'H']); c.hp+=h; b.ev.push({k:'heal',s:st[k+'By'][0],i:st[k+'By'][1],v:st[k+'H'],rv:h,ph:1}); } } }
@@ -2113,7 +2113,7 @@ function act(b, action){
       if(sk.stormTick && d0.hp>0){ d0.st.storm=sk.stormTurns; d0.st.stormD=lv(sk.stormTick,L); b.ev.push({k:'buff',s:foe,i:ti,b:'storm'}); }
       if(d0.hp>0 && sk.drainFrac){ const x=Math.min(d0.mp, Math.round(tot*sk.drainFrac)); d0.mp-=x; }
       if(d0.hp>0 && sk.acid){ addStack(d0.st,'acid',lv(sk.acid,L),sk.acidTurns||4,skId); b.ev.push({k:'buff',s:foe,i:ti,b:'acid'}); }
-      if(d0.hp>0 && sk.zap){ d0.st.zap=sk.zapTurns||6; d0.st.zapV=sk.zap; b.ev.push({k:'buff',s:foe,i:ti,b:'zap'}); }
+      if(d0.hp>0 && sk.zap){ addStack(d0.st,'zap',sk.zap,sk.zapTurns||6,skId); b.ev.push({k:'buff',s:foe,i:ti,b:'zap'}); }
       if(d0.hp>0 && sk.soak){ addStack(d0.st,'soak',Array.isArray(sk.soak)?lv(sk.soak,L):sk.soak,sk.soakTurns||6,skId); b.ev.push({k:'buff',s:foe,i:ti,b:'soak'}); }
       if(d0.hp>0 && sk.taunt){ addStack(d0.st,'taunt',Array.isArray(sk.taunt)?lv(sk.taunt,L):sk.taunt,sk.tauntTurns||4,'taunt'); b.ev.push({k:'buff',s:foe,i:ti,b:'taunt'}); }
       if(d0.hp>0 && sk.crush){ d0.st.crush=sk.crushTurns||4; d0.st.crushF=1; d0.st.crushV=Array.isArray(sk.crush)?lv(sk.crush,L):sk.crush; b.ev.push({k:'buff',s:foe,i:ti,b:'crush'}); }
@@ -2154,7 +2154,7 @@ function act(b, action){
     if(sk.heal){ const hv=Math.min(me.maxhp-me.hp,Math.round(me.maxhp*lv(sk.heal,L))); me.hp+=hv; b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
     if(sk.mpHeal){ const v=Math.round(lv(sk.mpHeal,L)), g=Math.min(me.maxmp-me.mp,v); me.mp+=g; b.ev.push({k:'mana',s:a.s,i:a.i,v,rv:g}); }
     if(sk.healFlat){ const hv=Math.min(me.maxhp-me.hp,Math.round(lv(sk.healFlat,L))); me.hp+=hv; b.ev.push({k:'heal',s:a.s,i:a.i,v:hv}); }
-    if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','scorch','zap','acid','eshift','crush','taunt','soul','wcry'].forEach(k=>me.st[k]=0); me.st.soakS=[]; me.st.scorchS=[]; me.st.acidS=[]; me.st.tauntS=[]; }
+    if(sk.cleanse){ ['burn','poison','storm','frost','cripple','stun','soak','scorch','zap','acid','eshift','crush','taunt','soul','wcry'].forEach(k=>me.st[k]=0); me.st.soakS=[]; me.st.scorchS=[]; me.st.acidS=[]; me.st.tauntS=[]; me.st.zapS=[]; }
   } else if(sk.k==='drain' && sk.stealHp){
     const d=b.sides[foe].mons[tgt];
     if(d.st.evade>0 && rnd(b)<d.st.evadeV){ b.ev.push({k:'miss',s:foe,i:tgt}); log(b,`${a.n} missed!`); }
@@ -5035,7 +5035,7 @@ function splash(){
     const loading=()=>{
     const sparks=Array.from({length:26},()=>{ const s=(.5+Math.random()*1.3).toFixed(2); return `<i class="spark glow" style="left:${Math.random()*100}%;--dx:${(Math.random()*80-40).toFixed(0)}px;--s:${s};animation-duration:${(5+Math.random()*6).toFixed(1)}s;animation-delay:-${(Math.random()*10).toFixed(1)}s"></i>`; }).join('');
     el.innerHTML=`${sparks}<div class="sp-plate"><div class="sp-mon l">${monSVG('pyrodrake',22)}</div><div class="sp-mon r">${monSVG('thundra',22)}</div><div class="sp-title"><span>Monster</span><span>Realm</span></div></div>
-      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (295).0</div>`;
+      <div class="ld-box"><div class="ld-t" id="sptxt">Checking Content...</div><div class="ld-bar"><i></i></div></div><div class="ld-studio">Tiny Tusk Studios</div><div class="ld-ver">v1.0 (296).0</div>`;
     const bar=el.querySelector('.ld-bar i'), txt=el.querySelector('#sptxt');
     let done=false; const finish=()=>{ if(done) return; done=true; el.classList.add('out'); setTimeout(()=>{ el.remove(); res(); },500); };
     setTimeout(()=>{
@@ -6695,7 +6695,7 @@ function openRestore(){
       if(!save||!save.name) return err('No game found for that code.');
       localStorage.setItem('mr-uid',code); if(ckey) localStorage.setItem('mr-key',ckey); localStorage.setItem(LS_KEY,JSON.stringify(save)); location.reload(); }catch(_){ err("Couldn't reach the server. Try again."); } }; }
 PANELS.menu=(function(prev){ return function(){ const c=myCode(); return prev()+`<div class="xfer"><b>Transfer code</b><span>Use it to move your game to another phone or to the home-screen app.</span><div class="xrow"><code id="xcode">${esc(c)}</code><button class="btn sm" id="xcopy">Copy</button></div><button class="btn ghost sm" id="xrest">Restore a game</button></div><div class="diag">${diagLine()}</div>`; }; })(PANELS.menu);
-function diagLine(){ const l=window.__lay||{}; return `v295 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
+function diagLine(){ const l=window.__lay||{}; return `v296 · ${l.SA?'app':'web'} · ${l.iw}×${l.ih} · scr ${l.sw}×${l.sh} · in ${l.t}/${l.b} · pad ${l.pl||0}/${l.pr||0} · ${l.L}×${l.S} · ♪ ${(window.__musicLoop&&window.__musicLoop().playing)?'loop':'live'}`; }
 bindView=(function(prev){ return function(v){ prev(v); v=v||document; const cp=v.querySelector('#xcopy'); if(cp) cp.onclick=()=>{ const c=myCode(); (navigator.clipboard?navigator.clipboard.writeText(c):Promise.reject()).then(()=>toast('Copied'),()=>{ const r=document.createRange(); r.selectNodeContents(v.querySelector('#xcode')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Code selected'); }); };
   const rs=v.querySelector('#xrest'); if(rs) rs.onclick=openRestore; }; })(bindView);
 new MutationObserver(()=>{ const onb=[...document.querySelectorAll('.onb')].find(x=>!x.querySelector('#onbrst')); const go=onb&&onb.querySelector('#go'); if(!go) return; const b=document.createElement('button'); b.id='onbrst'; b.className='btn ghost sm'; b.textContent='Already playing? Restore your game'; b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); openRestore(); }; go.insertAdjacentElement('afterend',b); }).observe(document.documentElement,{childList:true,subtree:true});
@@ -7083,7 +7083,7 @@ function stName(k,src){ const s=src&&src!=='basic'&&SK[src]; return s?s.n:(BUFF_
 function stList0(m){ const st=m.st, out=[], P=v=>Math.round((v||0)*100)+'%', T=t=>`${t} turn${t>1?'s':''}`;
   Object.keys(ST_ICON).filter(k=>st[k]>0).forEach(k=>{
     const S=st[k+'S'];
-    if((k==='soak'||k==='scorch'||k==='acid'||k==='taunt')&&S&&S.length){ const what=k==='soak'?'water':k==='acid'?'nature':k==='taunt'?'physical':'fire', dsrc=k==='soak'?'wave':k==='acid'?'acidbite':k==='taunt'?'taunt':'emberspit';
+    if((k==='soak'||k==='scorch'||k==='acid'||k==='taunt'||k==='zap')&&S&&S.length){ const what=k==='soak'?'water':k==='acid'?'nature':k==='taunt'?'physical':k==='zap'?'lightning':'fire', dsrc=k==='soak'?'wave':k==='acid'?'acidbite':k==='taunt'?'taunt':k==='zap'?'arclightning':'emberspit';
       S.slice().sort((a,b)=>(b.at||0)-(a.at||0)).forEach(x=>{
         if(k==='taunt'){ // two symbols per Taunt, like Krill's Sword: what it deals and what it takes
           out.push({k, stack:1, at:x.at||0, t:x.t, exp:x.t<=1, name:'Taunt', ic:stIconFor(k,'taunt'), tip:`Deals ${P(x.v)} more physical damage (${T(x.t)})`});
@@ -7096,7 +7096,7 @@ act=(function(prev){ return function(b,action){
   const sk=action&&action.skill&&SK[action.skill]?action.skill:'basic';
   const r=prev(b,action);
   if(r) b.sides.forEach((sd,s)=>sd.mons.forEach((m,i)=>{ const o=snap[s]&&snap[s][i]; if(!o) return;
-    Object.keys(ST_ICON).forEach(k=>{ if((m.st[k]|0)>o[k]&&k!=='soak'&&k!=='scorch'&&k!=='acid'&&k!=='taunt'){ m.st[k+'Src']=sk; m.st[k+'At']=stSeq(); } }); }));
+    Object.keys(ST_ICON).forEach(k=>{ if((m.st[k]|0)>o[k]&&k!=='soak'&&k!=='scorch'&&k!=='acid'&&k!=='taunt'&&k!=='zap'){ m.st[k+'Src']=sk; m.st[k+'At']=stSeq(); } }); }));
   return r; }; })(act);
 // items listed one card per copy (three Krill's Swords show as three)
 function itemLine(id){ const it=ITEMS[id], f=it.fx||{}, b=it.b||{};
